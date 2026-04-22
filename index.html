@@ -8,22 +8,22 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    /* dark analytical dashboard palette */
-    --bg: #0F1419;
-    --surface: #151B23;
-    --surface-raised: #1F2730;
-    --surface-hover: #252E3A;
-    --border: #30363D;
-    --border-subtle: #21262D;
+    /* dark analytical dashboard palette — lightened for readability */
+    --bg: #161D26;
+    --surface: #1D2632;
+    --surface-raised: #263041;
+    --surface-hover: #2E394B;
+    --border: #3A4354;
+    --border-subtle: #2A3445;
     --text: #E6EDF3;
-    --text-muted: #8B949E;
-    --text-dim: #6E7681;
+    --text-muted: #9CA5B4;
+    --text-dim: #7A8294;
     --accent: #F59E0B;
     --accent-dim: #B67508;
     --accent-hover: #FBBF24;
-    --navy: #1F2730;            /* legacy alias used by a few components */
-    --navy-dark: #0F1419;
-    --navy-light: #252E3A;
+    --navy: #263041;            /* legacy alias used by a few components */
+    --navy-dark: #161D26;
+    --navy-light: #2E394B;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
     --color-low: #3FB950;
@@ -1159,6 +1159,83 @@
     transition: width 0.3s ease;
   }
 
+  /* ---- EFFORT BREAKDOWN (code / data / infra / app) ---- */
+  .report-effort {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px 22px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
+  }
+  .re-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .re-head .re-title {
+    font-size: 0.72rem; color: var(--text-dim);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .re-head .re-total {
+    font-size: 0.8rem; color: var(--text-muted);
+    font-family: var(--mono);
+  }
+  .re-head .re-total b {
+    color: var(--accent); font-weight: 600; font-size: 1.05rem;
+  }
+  .re-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .re-card {
+    background: var(--surface-raised);
+    border-radius: 4px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--text-dim);
+    position: relative;
+  }
+  .re-card.re-code  { border-left-color: var(--accent); }
+  .re-card.re-data  { border-left-color: var(--color-low); }
+  .re-card.re-infra { border-left-color: #3B82F6; }
+  .re-card.re-app   { opacity: 0.65; }
+  .re-card .re-label {
+    font-size: 0.66rem; color: var(--text-muted);
+    letter-spacing: 0.14em; text-transform: uppercase;
+    font-family: var(--mono);
+    margin-bottom: 6px;
+  }
+  .re-card .re-value {
+    font-size: 1.55rem; font-weight: 300; color: var(--text);
+    line-height: 1.1;
+  }
+  .re-card .re-value .re-unit {
+    font-size: 0.72rem; color: var(--text-dim);
+    letter-spacing: 0.04em; font-weight: 400; margin-left: 3px;
+  }
+  .re-card .re-value.re-oos {
+    font-size: 0.9rem; color: var(--accent);
+    letter-spacing: 0.1em; font-weight: 600; text-transform: uppercase;
+  }
+  .re-card .re-note {
+    font-size: 0.7rem; color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .re-note-line {
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.76rem; color: var(--text-muted);
+    line-height: 1.55;
+  }
+  .re-note-line code {
+    color: var(--accent);
+    background: var(--surface-raised);
+    padding: 1px 6px; border-radius: 3px;
+    font-size: 0.82em;
+    border: 1px solid var(--border);
+  }
+
   /* ---- CAROUSEL (presentation-style slides in the middle of the page) ---- */
   .carousel {
     position: relative;
@@ -1220,7 +1297,7 @@
   /* the slide itself — white-on-dark card that reads as a presentation slide */
   .carousel-body {
     position: relative;
-    background: linear-gradient(145deg, #1C2530 0%, #151B23 55%, #10161E 100%);
+    background: linear-gradient(145deg, #2B3649 0%, #212A38 55%, #1A2230 100%);
     border: 1px solid var(--border);
     border-radius: 8px;
     min-height: 460px;
@@ -1556,9 +1633,9 @@
   </div>
   <div class="header-right">
     <span class="credit-line" id="credit-line">Prepared by <strong>Darshan Singh</strong></span>
-    <span class="conf-badge" onclick="switchTab('about')" title="How confident is this tool?">
+    <span class="conf-badge" id="header-conf-badge" onclick="switchTab('about')" title="How confident is this tool? Click for details.">
       <span class="dot"></span>
-      <span>confidence ~92%</span>
+      <span>confidence <span id="header-conf-num">~55%</span></span>
     </span>
     <button class="gear-btn" id="gear-btn" onclick="toggleGearMenu(event)" title="Settings">&#9881;</button>
     <button id="btn-help" title="Help" onclick="toggleHelp()">?</button>
@@ -1603,7 +1680,7 @@
     <div class="sc-value unrated" id="sc-code-value">Not assessed</div>
     <div class="sc-row">
       <span class="sc-tier" id="sc-code-tier"></span>
-      <span class="sc-conf">conf ~92%</span>
+      <span class="sc-conf" id="sc-code-conf">conf ~55%</span>
     </div>
   </div>
   <div class="score-card" onclick="switchTab('reports')">
@@ -1611,7 +1688,7 @@
     <div class="sc-value unrated" id="sc-ready-value">Not assessed</div>
     <div class="sc-row">
       <span class="sc-tier" id="sc-ready-tier"></span>
-      <span class="sc-conf">conf ~92%</span>
+      <span class="sc-conf" id="sc-ready-conf">conf ~55%</span>
     </div>
   </div>
   <div class="score-card" onclick="switchTab('reports')">
@@ -1619,7 +1696,7 @@
     <div class="sc-value unrated" id="sc-comp-value">Not assessed</div>
     <div class="sc-row">
       <span class="sc-tier" id="sc-comp-tier"></span>
-      <span class="sc-conf">conf ~92%</span>
+      <span class="sc-conf" id="sc-comp-conf">conf ~55%</span>
     </div>
   </div>
 </div>
@@ -1757,6 +1834,7 @@ GO"></textarea>
   </div>
   <div id="reports-content" style="display:none;">
     <div class="report-scores" id="report-scores"></div>
+    <div class="report-effort" id="report-effort"></div>
     <div class="carousel" id="report-carousel"></div>
     <div class="report-narrative">
       <h3>Engagement Context</h3>
@@ -1928,14 +2006,16 @@ GO"></textarea>
   </div>
 
   <div class="about-section about-limitations">
-    <h3 style="color: var(--color-veryhigh);">When confidence drops</h3>
-    <p>The tool produces estimates with approximately <b>90–95% confidence</b> for a well-formed input and a substantially-filled checklist. Confidence drops sharply when:</p>
+    <h3 style="color: var(--color-veryhigh);">How confidence is computed</h3>
+    <p>Confidence is <b>computed dynamically</b> from the data you provide — not a fixed number. It starts at a cautious 55% baseline with nothing filled in, and moves from there:</p>
     <ul>
-      <li>SQL is malformed or mixed with non-SQL content</li>
-      <li>The checklist is sparsely filled</li>
-      <li>The platform uses features outside the 40-rule set (custom extended stored procs, IQ columnar analytics, Replication Server topology, undocumented thick-client dependencies)</li>
-      <li>The source dialect is not Sybase — the analyzer's rewrite suggestions are Sybase-specific (see the Other Databases note in About)</li>
+      <li><b>+20%</b> when an analyzer run has happened</li>
+      <li><b>+5%</b> if the analyzed SQL actually contains Sybase-specific patterns (a dialect sanity check)</li>
+      <li><b>-15%</b> if SQL was analyzed but no Sybase patterns were found — usually means wrong dialect pasted in</li>
+      <li><b>Up to +20%</b> scaled by the fraction of checklist items answered</li>
+      <li><b>Floor:</b> 40%. <b>Ceiling:</b> 95%. Nothing in this tool is ever "100% confident".</li>
     </ul>
+    <p style="margin-top:10px">Confidence also drops sharply (even when the number looks fine) whenever the platform uses features outside the 40-rule set — custom extended stored procedures, Sybase IQ columnar analytics, Replication Server topology, undocumented thick-client dependencies — or when checklist items are self-reported rather than verified.</p>
   </div>
 
   <div class="about-section about-limitations">
@@ -2083,6 +2163,16 @@ function updateScoreStrip() {
   updateScoreCard('code',  state.scores.code,      TIER_CODE);
   updateScoreCard('ready', state.scores.readiness, TIER_READY);
   updateScoreCard('comp',  state.scores.composite, TIER_COMPOSITE);
+  updateHeaderConfidence();
+}
+function updateHeaderConfidence() {
+  const pct = '~' + Math.round(computeConfidence() * 100) + '%';
+  const h = document.getElementById('header-conf-num');
+  if (h) h.textContent = pct;
+  ['sc-code-conf', 'sc-ready-conf', 'sc-comp-conf'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'conf ' + pct;
+  });
 }
 function recomputeComposite() {
   const c = state.scores.code, r = state.scores.readiness;
@@ -2208,10 +2298,13 @@ function locScore(lines) {
 }
 
 function bucket(score) {
-  if (score <= 3)  return { name:'Low',       effort:'0.5 day',     days:0.5, cls:'bucket-low',      color:'#2E7D32' };
-  if (score <= 8)  return { name:'Medium',    effort:'1-2 days',    days:1.5, cls:'bucket-medium',   color:'#F57F17' };
-  if (score <= 15) return { name:'High',      effort:'3-5 days',    days:4,   cls:'bucket-high',     color:'#E65100' };
-  return               { name:'Very High', effort:'5-10+ days',  days:7.5, cls:'bucket-veryhigh', color:'#B71C1C' };
+  // Per-object effort is code-migration only (rewrite + unit-test). Data / infra / app
+  // migration are tracked separately in computeEffortBand(). These numbers are deliberately
+  // modest — a single trivial proc rewrite is hours, not days.
+  if (score <= 3)  return { name:'Low',       effort:'1-2 hrs',     days:0.15, cls:'bucket-low',      color:'#2E7D32' };
+  if (score <= 8)  return { name:'Medium',    effort:'0.5 day',     days:0.5,  cls:'bucket-medium',   color:'#F57F17' };
+  if (score <= 15) return { name:'High',      effort:'1-2 days',    days:1.5,  cls:'bucket-high',     color:'#E65100' };
+  return               { name:'Very High', effort:'2-4 days',    days:3,    cls:'bucket-veryhigh', color:'#B71C1C' };
 }
 
 // ============================================================
@@ -4085,16 +4178,55 @@ function renderReports() {
   document.getElementById('reports-content').style.display = haveData ? 'block' : 'none';
   if (!haveData) return;
   renderBigScores();
+  renderEffortBreakdown();
   renderCarousel();
   if (document.getElementById('nv-client'))         document.getElementById('nv-client').value         = state.meta.client || '';
   if (document.getElementById('nv-analyst'))        document.getElementById('nv-analyst').value        = state.meta.analyst || '';
   if (document.getElementById('nv-recommendation')) document.getElementById('nv-recommendation').value = state.meta.recommendation || '';
 }
 
+function renderEffortBreakdown() {
+  const container = document.getElementById('report-effort');
+  if (!container) return;
+  const e = computeEffortBand();
+  const cal = Math.max(1, Math.round(e.central / 2));
+  container.innerHTML = `
+    <div class="re-head">
+      <div class="re-title">Effort &mdash; by workstream</div>
+      <div class="re-total">Total: <b>${e.totalDays}</b> person-days &middot; ~${e.central} PM &middot; ~${cal} month${cal === 1 ? '' : 's'} with 2 FTE</div>
+    </div>
+    <div class="re-grid">
+      <div class="re-card re-code">
+        <div class="re-label">Code migration</div>
+        <div class="re-value">${e.code}<span class="re-unit">pd</span></div>
+        <div class="re-note">Rewrite procs / views / functions / triggers to PL/pgSQL + tests.</div>
+      </div>
+      <div class="re-card re-data">
+        <div class="re-label">Data migration</div>
+        <div class="re-value">${e.data}<span class="re-unit">pd</span></div>
+        <div class="re-note">Schema DDL translation, BCP &rarr; COPY, row/checksum validation.</div>
+      </div>
+      <div class="re-card re-infra">
+        <div class="re-label">Infra migration</div>
+        <div class="re-value">${e.infra}<span class="re-unit">pd</span></div>
+        <div class="re-note">PostgreSQL install / HA, backup + restore, monitoring.</div>
+      </div>
+      <div class="re-card re-app">
+        <div class="re-label">App migration</div>
+        <div class="re-value re-oos">Out of scope</div>
+        <div class="re-note">Connection strings, driver swaps, ORM updates &mdash; owned by app team.</div>
+      </div>
+    </div>
+    <div class="re-note-line">
+      Numbers inflate by up to ~40% from the readiness gap. Add <b>20&ndash;30% contingency</b> on top for UAT cycles and go-live stabilisation.
+      Per-object days use the heuristic: <code>Low 0.15pd &middot; Medium 0.5pd &middot; High 1.5pd &middot; Very High 3pd</code> &mdash; see the Analysis heat map for breakdown.
+    </div>`;
+}
+
 function renderBigScores() {
   const container = document.getElementById('report-scores');
   if (!container) return;
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
 
   function bigScoreCard(label, score, tiers) {
     const tier = tierFor(score, tiers);
@@ -4125,7 +4257,7 @@ function renderBigScores() {
 
 function buildSlides() {
   const m = state.codeMetrics;
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const client = escapeHtml(state.meta.client || 'Organization');
   const analyst = escapeHtml(state.meta.analyst || '');
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
@@ -4265,23 +4397,44 @@ function buildSlides() {
   }
   const s6 = `<h3>06 · Macro Risks</h3><div class="slide-body">${s6body}</div>`;
 
-  // Slide 7: Effort & Timeline
+  // Slide 7: Effort & Timeline — broken out by category
   const effort = computeEffortBand();
-  const calendarMonths = Math.round(effort.central / 2);
+  const calendarMonths = Math.max(1, Math.round(effort.central / 2));
   const s7 = `
     <h3>07 · Effort &amp; Timeline</h3>
-    <div class="slide-hero">${effort.low}–${effort.high} <span style="font-size:1.2rem;color:#8B949E">person-months</span></div>
+    <div class="slide-hero">${effort.totalDays} <span style="font-size:1.2rem;color:#8B949E">person-days &middot; ~${effort.central} PM</span></div>
     <div class="slide-body">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:480px;margin-bottom:16px">
-        <div style="background:#1F2730;border-radius:3px;padding:12px"><div style="font-size:1.4rem;font-weight:300">${effort.low}</div><div style="font-size:0.72rem;color:#8B949E">Low PM</div></div>
-        <div style="background:#1F2730;border-radius:3px;padding:12px"><div style="font-size:1.4rem;font-weight:300">${effort.central}</div><div style="font-size:0.72rem;color:#8B949E">Central PM</div></div>
-        <div style="background:#1F2730;border-radius:3px;padding:12px"><div style="font-size:1.4rem;font-weight:300">${effort.high}</div><div style="font-size:0.72rem;color:#8B949E">High PM</div></div>
+      <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">Breakdown by workstream</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:780px;margin-bottom:18px">
+        <div style="background:#1F2730;border-radius:4px;padding:12px;border-left:3px solid #F59E0B">
+          <div style="font-size:0.66rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Code migration</div>
+          <div style="font-size:1.5rem;font-weight:300">${effort.code}</div>
+          <div style="font-size:0.68rem;color:#8B949E">person-days</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:12px;border-left:3px solid #3FB950">
+          <div style="font-size:0.66rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Data migration</div>
+          <div style="font-size:1.5rem;font-weight:300">${effort.data}</div>
+          <div style="font-size:0.68rem;color:#8B949E">person-days</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:12px;border-left:3px solid #3B82F6">
+          <div style="font-size:0.66rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Infra migration</div>
+          <div style="font-size:1.5rem;font-weight:300">${effort.infra}</div>
+          <div style="font-size:0.68rem;color:#8B949E">person-days</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:12px;border-left:3px solid #6E7681;opacity:0.7">
+          <div style="font-size:0.66rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">App migration</div>
+          <div style="font-size:0.9rem;font-weight:400;color:#F59E0B;margin-top:6px">OUT OF SCOPE</div>
+          <div style="font-size:0.68rem;color:#8B949E">handled by app team</div>
+        </div>
       </div>
       <ul>
-        <li>Calendar months (2 FTE): ~${calendarMonths} months</li>
-        <li>Contingency: Add 20–30% for scope creep, UAT cycles, and go-live stabilisation.</li>
-        <li>Estimate excludes: data migration, infrastructure provisioning, and application-layer rewrites.</li>
-        <li>Confidence: ~${conf}%</li>
+        <li><strong>Total:</strong> ${effort.totalDays} person-days (~${effort.central} PM at 20 working days/PM).</li>
+        <li><strong>Calendar:</strong> ~${calendarMonths} month${calendarMonths === 1 ? '' : 's'} with 2 FTE allocated.</li>
+        <li><strong>Code migration</strong> covers rewriting stored procs / views / functions / triggers to PL/pgSQL, plus unit tests. Readiness gap multiplier applied.</li>
+        <li><strong>Data migration</strong> covers schema DDL translation, bulk data load (BCP → COPY), and row-count / checksum validation.</li>
+        <li><strong>Infra migration</strong> covers PostgreSQL install/cluster, replication / HA, backup + restore, and monitoring setup.</li>
+        <li><strong>App migration</strong> is excluded — connection strings, driver swaps, and any ORM-level changes are scoped and owned by the application team.</li>
+        <li>Add 20–30% contingency for UAT cycles and go-live stabilisation. Confidence: ~${conf}%.</li>
       </ul>
     </div>`;
 
@@ -4436,30 +4589,75 @@ function buildTopDelayFactors() {
   return factors.slice(0, 8);
 }
 
+// ---- Confidence — computed from available data, not hardcoded ----
+// Starts at a baseline, rises as analyzer + checklist provide evidence,
+// falls if the analyzed SQL doesn't look Sybase. Capped at 0.95.
+function computeConfidence() {
+  let conf = 0.55;
+  const m = state.codeMetrics;
+  if (m) {
+    conf += 0.20;                                      // +20% for having any analysis
+    if (m.sybaseCount > 0) conf += 0.05;               // +5% — dialect looks correct
+    if (m.sybaseCount === 0 && m.totalObjects > 0) {   // -15% — likely non-Sybase
+      conf -= 0.15;
+    }
+  }
+  const answered = CHECKLIST.filter(i => state.checklist[i.id] !== undefined).length;
+  if (answered > 0 && CHECKLIST.length > 0) {
+    conf += Math.min(0.20, (answered / CHECKLIST.length) * 0.22);  // up to +20%
+  }
+  return Math.max(0.40, Math.min(0.95, Math.round(conf * 100) / 100));
+}
+
+// ---- Effort — broken out by category (code / data / infra), app is OOS ----
 function computeEffortBand() {
   const m = state.codeMetrics;
-  let base = 0.25;  // floor — even trivial work is not zero
-  if (m && m.totalLOC) {
-    // Baseline: ~1 PM per 8,000 LOC of analyzed source
-    base = m.totalLOC / 8000;
-    // Complexity bump: harder objects add extra time
-    base += (m.buckets.veryHigh * 0.30)
-          + (m.buckets.high      * 0.10)
-          + (m.buckets.medium    * 0.03);
-    // Extra signals
-    if (m.dynamicSqlCount > 0) base += Math.min(0.8, 0.1 * m.dynamicSqlCount);
-    if (m.cursorCount     > 0) base += Math.min(0.5, 0.05 * m.cursorCount);
-    base = Math.max(0.25, base);
-  }
-  // Readiness gap inflates by up to 50% — much less aggressive than before
-  const readinessGap = state.scores.readiness || 0;
-  const mult = 1 + 0.005 * readinessGap;
-  const central = base * mult;
+  const gap = state.scores.readiness || 0;
+  const mult = 1 + 0.004 * gap;                        // readiness gap inflates up to ~40%
   const round1 = (v) => Math.round(v * 10) / 10;
+
+  // 1. Code migration — driven by per-object buckets, not raw LOC. A single trivial
+  //    proc is hours, a very-high proc is 2-4 days. Dynamic SQL / cursors add bumps.
+  let code = 0.5;
+  if (m && m.buckets) {
+    code = (m.buckets.veryHigh || 0) * 3
+         + (m.buckets.high     || 0) * 1.5
+         + (m.buckets.medium   || 0) * 0.5
+         + (m.buckets.low      || 0) * 0.15;
+    if (m.dynamicSqlCount > 0) code += Math.min(3,   0.5  * m.dynamicSqlCount);
+    if (m.cursorCount     > 0) code += Math.min(2,   0.25 * m.cursorCount);
+    code = Math.max(0.5, code);
+  }
+  code *= mult;
+
+  // 2. Data migration — schema DDL, BCP/COPY, validation. Scales mildly with object count.
+  let data = 2;
+  if (m) data += Math.min(8, (m.totalObjects || 0) * 0.15);
+  data *= mult;
+
+  // 3. Infra migration — PG install, replication / HA, backup, monitoring. Largely fixed
+  //    with a small size premium.
+  let infra = 4;
+  if (m && m.totalLOC > 5000)  infra += 2;
+  if (m && m.totalLOC > 20000) infra += 3;
+  infra *= mult;
+
+  const codeD  = round1(code);
+  const dataD  = round1(data);
+  const infraD = round1(infra);
+  const totalDays = round1(codeD + dataD + infraD);
+
+  // Keep person-month semantics for downstream callers (1 PM = 20 working days).
+  const centralPM = round1(totalDays / 20);
   return {
-    low: Math.max(0.25, round1(central * 0.85)),
-    high: round1(central * 1.25),
-    central: round1(central)
+    code:  codeD,
+    data:  dataD,
+    infra: infraD,
+    app:   'out of scope',
+    totalDays,
+    central: centralPM,
+    low:  round1(centralPM * 0.85),
+    high: round1(centralPM * 1.25),
   };
 }
 
@@ -4596,12 +4794,12 @@ function _scoreSection(label, score, tiers, tcls) {
 }
 
 function _headerBlock(title, subtitle) {
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const creditSpan = state.showCredit ? '<span>prepared by <b>Darshan Singh</b></span>' : '';
   const client = escapeHtml(state.meta.client || 'Organization');
   const analyst = state.meta.analyst ? escapeHtml(state.meta.analyst) : '';
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  const confTitle = `Confidence band ~${conf}% reflects the tool's coverage of common Sybase T-SQL constructs: 40 regex rules span identity/text/image/money/cursors/dynamic-SQL/cross-DB refs/sp_* calls. Drops sharply on malformed SQL, non-Sybase dialects, partial checklist, or constructs outside the rule set (Replication Server topology, custom XPs, IQ internals). It is a self-assessed triage number, not a statistical guarantee.`;
+  const confTitle = `Confidence is computed dynamically — not hardcoded. Starts at 55%, +20% when analyzer runs, +5% if Sybase patterns are detected (dialect check), up to +20% for checklist completion. -15% if SQL was analyzed but no Sybase patterns were found (likely wrong dialect). Floor 40%, ceiling 95%. Currently ~${conf}%.`;
   return `<div class="page">
 <div class="doc-header">
   <div class="dh-title">Sybase &middot; Migration Evaluator</div>
@@ -4681,9 +4879,12 @@ function _delayFactorsMD(factors) {
 
 function _effortBlock() {
   const e = computeEffortBand();
-  const cal = Math.round(e.central / 2);
-  const conf = Math.round((state.confidence || 0.92) * 100);
-  return { low: e.low, central: e.central, high: e.high, cal, conf };
+  const cal = Math.max(1, Math.round(e.central / 2));
+  const conf = Math.round(computeConfidence() * 100);
+  return {
+    low: e.low, central: e.central, high: e.high, cal, conf,
+    code: e.code, data: e.data, infra: e.infra, app: e.app, totalDays: e.totalDays,
+  };
 }
 
 // ---- downloadRawJSON ----
@@ -4691,10 +4892,10 @@ function downloadRawJSON() {
   const ts = new Date();
   const effort = computeEffortBand();
   const payload = {
-    _disclaimer: "Regex-based triage tool with ~92% confidence on well-formed input. Not a substitute for on-site review. Checklist is not exhaustive. Feedback: darshan.meel@gmail.com",
+    _disclaimer: "Regex-based triage tool. Confidence is computed dynamically from analysis + checklist coverage (floor 40%, ceiling 95%). Not a substitute for on-site review. Checklist is not exhaustive. Feedback: darshan.meel@gmail.com",
     tool: 'Sybase Migration Evaluator v2',
     generatedAt: ts.toISOString(),
-    confidence: state.confidence,
+    confidence: computeConfidence(),
     meta: state.meta,
     scores: state.scores,
     codeMetrics: state.codeMetrics,
@@ -4710,7 +4911,7 @@ function downloadRawJSON() {
 function downloadTechReportHTML() {
   const ts = new Date();
   const m = state.codeMetrics;
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const factors = buildTopDelayFactors();
   const effort = _effortBlock();
 
@@ -4752,10 +4953,14 @@ ${_checklistSectionHTML()}
 <h2>Top Delay Factors</h2>
 ${_delayFactorsHTML(factors)}
 <h2>Effort Estimate</h2>
+<div class="section-intro">Broken out by workstream. App migration (connection strings, drivers, ORM updates) is typically owned by the application team and excluded here.</div>
 <div class="kv-grid">
-  <div class="kv-chip"><div class="k">Low</div><div class="v">${effort.low} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">PM</span></div></div>
-  <div class="kv-chip"><div class="k">Central</div><div class="v">${effort.central} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">PM</span></div></div>
-  <div class="kv-chip"><div class="k">High</div><div class="v">${effort.high} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">PM</span></div></div>
+  <div class="kv-chip"><div class="k">Code migration</div><div class="v">${effort.code} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">person-days</span></div></div>
+  <div class="kv-chip"><div class="k">Data migration</div><div class="v">${effort.data} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">person-days</span></div></div>
+  <div class="kv-chip"><div class="k">Infra migration</div><div class="v">${effort.infra} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">person-days</span></div></div>
+  <div class="kv-chip" style="opacity:0.75"><div class="k">App migration</div><div class="v" style="font-size:0.85rem;color:#F59E0B">OUT OF SCOPE</div></div>
+  <div class="kv-chip"><div class="k">Total (person-days)</div><div class="v">${effort.totalDays} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">pd</span></div></div>
+  <div class="kv-chip"><div class="k">Total (person-months)</div><div class="v">${effort.central} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">PM</span></div></div>
   <div class="kv-chip"><div class="k">Calendar (2 FTE)</div><div class="v">~${effort.cal} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">mo</span></div></div>
 </div>
 <div class="conf-note"><strong>About the ~${conf}% confidence number.</strong> This band reflects how well the 40-rule regex engine covers common Sybase T-SQL constructs (identity / text&middot;image / money / cursors / dynamic SQL / cross-DB refs / sp_* calls / GOTO / <code>@@</code> globals). It is the tool's self-assessed triage fidelity, not a statistical guarantee.
@@ -4771,7 +4976,7 @@ ${_delayFactorsHTML(factors)}
 function downloadTechReportMD() {
   const ts = new Date();
   const m = state.codeMetrics;
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const factors = buildTopDelayFactors();
   const effort = _effortBlock();
   const client = state.meta.client || 'Organization';
@@ -4821,9 +5026,9 @@ function downloadTechReportMD() {
 
   md += `## Checklist Answers\n\n${_checklistSectionMD()}`;
   md += `## Top Delay Factors\n\n${_delayFactorsMD(factors)}`;
-  md += `## Effort Estimate\n\n| Band | Person-Months |\n|---|---|\n| Low | ${effort.low} |\n| Central | ${effort.central} |\n| High | ${effort.high} |\n| Calendar (2 FTE) | ~${effort.cal} months |\n\n`;
+  md += `## Effort Estimate — by workstream\n\n| Workstream | Person-days |\n|---|---|\n| Code migration | ${effort.code} |\n| Data migration | ${effort.data} |\n| Infra migration | ${effort.infra} |\n| App migration | OUT OF SCOPE (owned by app team) |\n| **Total** | **${effort.totalDays}** (~${effort.central} PM, ~${effort.cal} months with 2 FTE) |\n\n*Add 20–30% contingency for UAT and go-live stabilisation.*\n\n`;
   md += `---\n\n> **Confidence & Limitations:** Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review.\n\n`;
-  md += `---\n*Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Feedback: darshan.meel@gmail.com*\n`;
+  md += `---\n*Generated by Sybase Migration Evaluator &middot; ~${conf}% confidence (computed from analysis + checklist coverage) &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Feedback: darshan.meel@gmail.com*\n`;
 
   downloadBlob(md, `sybase_tech_report_${formatDatetime(ts)}.md`, 'text/markdown');
   showToast('Technical report (Markdown) exported.');
@@ -4832,7 +5037,7 @@ function downloadTechReportMD() {
 // ---- downloadExecBriefHTML ----
 function downloadExecBriefHTML() {
   const ts = new Date();
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const factors = buildTopDelayFactors();
   const effort = _effortBlock();
   const compT = tierFor(state.scores.composite, TIER_COMPOSITE);
@@ -4842,7 +5047,7 @@ function downloadExecBriefHTML() {
 
   const overallRec = state.meta.recommendation && state.meta.recommendation.trim()
     ? escapeHtml(state.meta.recommendation)
-    : (comp != null ? `Platform carries ${compT ? compT.label : ''} migration risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data — complete analysis and checklist.');
+    : (comp != null ? `Platform carries ${compT ? compT.label : ''} migration risk with a composite score of ${comp}/100. Effort estimate: ${effort.totalDays} person-days (~${effort.central} PM) — code ${effort.code}pd · data ${effort.data}pd · infra ${effort.infra}pd · app out of scope.` : 'Insufficient data — complete analysis and checklist.');
 
   let approachRec, conditionsList;
   if (comp == null) {
@@ -4882,10 +5087,14 @@ ${_headerBlock('Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary
 </div>
 <h2>Top 3 Macro Risks</h2>
 ${top3risks.length ? top3risks : '<p style="color:#888;font-style:italic">No significant risks identified or insufficient data.</p>'}
-<h2>Effort Estimate</h2>
+<h2>Effort Estimate &mdash; by workstream</h2>
+<div class="section-intro">App migration is typically owned by the application team and is excluded from this estimate.</div>
 <div class="kv-grid">
-  <div class="kv-chip"><div class="k">Effort range</div><div class="v">${effort.low}&ndash;${effort.high} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">person-months</span></div></div>
-  <div class="kv-chip"><div class="k">Central estimate</div><div class="v">${effort.central} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">PM</span></div></div>
+  <div class="kv-chip"><div class="k">Code migration</div><div class="v">${effort.code} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">person-days</span></div></div>
+  <div class="kv-chip"><div class="k">Data migration</div><div class="v">${effort.data} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">person-days</span></div></div>
+  <div class="kv-chip"><div class="k">Infra migration</div><div class="v">${effort.infra} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">person-days</span></div></div>
+  <div class="kv-chip" style="opacity:0.75"><div class="k">App migration</div><div class="v" style="font-size:0.9rem;color:#F59E0B">OUT OF SCOPE</div></div>
+  <div class="kv-chip"><div class="k">Total</div><div class="v">${effort.totalDays} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">pd &middot; ~${effort.central} PM</span></div></div>
   <div class="kv-chip"><div class="k">Calendar (2 FTE)</div><div class="v">~${effort.cal} <span style="font-size:0.72rem;color:#8B949E;font-weight:400">months</span></div></div>
   <div class="kv-chip"><div class="k">Confidence</div><div class="v">~${conf}<span style="font-size:0.72rem;color:#8B949E;font-weight:400">%</span></div></div>
 </div>
@@ -4905,7 +5114,7 @@ ${top3risks.length ? top3risks : '<p style="color:#888;font-style:italic">No sig
 // ---- downloadExecBriefMD ----
 function downloadExecBriefMD() {
   const ts = new Date();
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const factors = buildTopDelayFactors();
   const effort = _effortBlock();
   const compT = tierFor(state.scores.composite, TIER_COMPOSITE);
@@ -4916,7 +5125,7 @@ function downloadExecBriefMD() {
 
   const overallRec = state.meta.recommendation && state.meta.recommendation.trim()
     ? state.meta.recommendation
-    : (comp != null ? `Platform carries ${compT ? compT.label : ''} migration risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data — complete analysis and checklist.');
+    : (comp != null ? `Platform carries ${compT ? compT.label : ''} migration risk with a composite score of ${comp}/100. Effort estimate: ${effort.totalDays} person-days (~${effort.central} PM) — code ${effort.code}pd · data ${effort.data}pd · infra ${effort.infra}pd · app out of scope.` : 'Insufficient data — complete analysis and checklist.');
 
   let approachRec, conditions;
   if (comp == null) {
@@ -4951,11 +5160,11 @@ function downloadExecBriefMD() {
   md += `| Migration Readiness | ${state.scores.readiness ?? 'N/A'} | ${tierFor(state.scores.readiness, TIER_READY)?.label ?? 'N/A'} |\n`;
   md += `| Composite Risk | ${state.scores.composite ?? 'N/A'} | ${tierFor(state.scores.composite, TIER_COMPOSITE)?.label ?? 'N/A'} |\n\n`;
   md += `## Top 3 Macro Risks\n\n${_delayFactorsMD(factors.slice(0, 3))}`;
-  md += `## Effort Estimate\n\n| Band | Person-Months |\n|---|---|\n| Low | ${effort.low} |\n| Central | ${effort.central} |\n| High | ${effort.high} |\n| Calendar (2 FTE) | ~${effort.cal} months |\n\n`;
+  md += `## Effort Estimate — by workstream\n\n| Workstream | Person-days |\n|---|---|\n| Code migration | ${effort.code} |\n| Data migration | ${effort.data} |\n| Infra migration | ${effort.infra} |\n| App migration | OUT OF SCOPE (owned by app team) |\n| **Total** | **${effort.totalDays}** (~${effort.central} PM, ~${effort.cal} months with 2 FTE) |\n\n*Add 20–30% contingency for UAT and go-live stabilisation.*\n\n`;
   md += `## Approach Recommendation\n\n${mdEsc(approachRec)}\n\n`;
   md += `## Recommended Engagement Conditions\n\n${conditions.map((c,i) => `${i+1}. ${mdEsc(c)}`).join('\n')}\n\n`;
   md += `---\n\n> **Confidence note:** Generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. Triage aid only — not a substitute for on-site review.\n\n`;
-  md += `---\n*Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Feedback: darshan.meel@gmail.com*\n`;
+  md += `---\n*Generated by Sybase Migration Evaluator &middot; ~${conf}% confidence (computed from analysis + checklist coverage) &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Feedback: darshan.meel@gmail.com*\n`;
 
   downloadBlob(md, `sybase_exec_brief_${formatDatetime(ts)}.md`, 'text/markdown');
   showToast('Executive brief (Markdown) exported.');
@@ -5359,15 +5568,15 @@ function downloadSlideDeck() {
   const slides = buildSlides();
   const total = slides.length;
 
-  const _slimNoteSD = `<div class="slide-limit-note">Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
+  const _slimNoteSD = `<div class="slide-limit-note">Regex-based triage &middot; ~${conf}% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
 
   const slidesData = slides.map(s => s.html);
 
-  const conf = Math.round((state.confidence || 0.92) * 100);
+  const conf = Math.round(computeConfidence() * 100);
   const creditHtml = state.showCredit ? ' &middot; Prepared by Darshan Singh' : '';
   const html = _instaDeckHTML({
     docTitle: 'Migration Evaluation Deck',
-    brandText: `Sybase Migration Evaluator &middot; conf ~${conf}%${creditHtml}`,
+    brandText: `Sybase Migration Evaluator &middot; conf ~${conf}% (live)${creditHtml}`,
     slidesHTML: slidesData,
     total,
     slimNote: _slimNoteSD,
