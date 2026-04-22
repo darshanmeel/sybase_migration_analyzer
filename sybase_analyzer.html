@@ -738,7 +738,7 @@ const RULES = [
   { id:'SYB-111', name:'SET IDENTITY_INSERT',  category:'identity',         severity:'high',   score:3, pattern:/\bset\s+identity_insert\b/gi,        postgres:'OVERRIDING SYSTEM VALUE',  note:'SET IDENTITY_INSERT maps to INSERT ... OVERRIDING SYSTEM VALUE.' },
   // ansi_good (zero score)
   { id:'ANSI-001', name:'COALESCE (ANSI)',     category:'ansi_good',        severity:'low',    score:0, pattern:/\bcoalesce\s*\(/gi,                  postgres:'COALESCE - portable as-is', note:'ANSI-standard; no migration needed.' },
-  { id:'ANSI-002', name:'CASE WHEN (ANSI)',    category:'ansi_good',        severity:'low',    score:0, pattern:/\bcase\s+when\b/gi,                  postgres:'CASE WHEN - portable as-is', note:'ANSI-standard; no migration needed.' },
+  { id:'ANSI-002', name:'CASE WHEN (ANSI)',    category:'ansi_good',        severity:'low',    score:0, pattern:/\bcase\b/gi,                         postgres:'CASE WHEN - portable as-is', note:'ANSI-standard; no migration needed.' },
   { id:'ANSI-003', name:'CAST (ANSI)',         category:'ansi_good',        severity:'low',    score:0, pattern:/\bcast\s*\([\s\S]{0,60}?\bas\b/gi,   postgres:'CAST - portable as-is',    note:'ANSI-standard; no migration needed.' },
   { id:'ANSI-004', name:'Standard JOINs',     category:'ansi_good',        severity:'low',    score:0, pattern:/\b(?:inner|left|right|full)\s+(?:outer\s+)?join\b/gi, postgres:'Standard JOINs - portable as-is', note:'ANSI-standard join syntax; no migration needed.' },
 ];
@@ -927,6 +927,9 @@ function analyzeObject(obj) {
   const lines = src.split('\n').length;
   const ls = locScore(lines);
 
+  // Strip single-line comments before rule matching (but keep original source for display)
+  const strippedSource = src.replace(/--[^\r\n]*/g, '');
+
   // For each rule, find all matches with positions
   const matchesByRule = [];
   let totalRuleScore = 0;
@@ -936,19 +939,24 @@ function analyzeObject(obj) {
   const allRanges = []; // {start, end, rule}
 
   for (const rule of RULES) {
-    // Reset lastIndex for global patterns
+    // Run rule against strippedSource for accurate counting (ignores comments)
     rule.pattern.lastIndex = 0;
     const localMatches = [];
     let m;
-    while ((m = rule.pattern.exec(src)) !== null) {
+    while ((m = rule.pattern.exec(strippedSource)) !== null) {
       localMatches.push({ index: m.index, length: m[0].length, text: m[0] });
-      allRanges.push({ start: m.index, end: m.index + m[0].length, rule });
     }
     if (localMatches.length > 0) {
       matchesByRule.push({ rule, matches: localMatches });
       totalRuleScore += rule.score;
       if (!categoryMap[rule.category]) categoryMap[rule.category] = [];
       categoryMap[rule.category].push({ rule, count: localMatches.length });
+    }
+    // Build annotation ranges from the original source so highlights align with display
+    rule.pattern.lastIndex = 0;
+    let ma;
+    while ((ma = rule.pattern.exec(src)) !== null) {
+      allRanges.push({ start: ma.index, end: ma.index + ma[0].length, rule });
     }
   }
 
@@ -1128,7 +1136,6 @@ function renderTableRows(results) {
   for (let i = 0; i < sorted.length; i++) {
     const r = sorted[i];
     const tr = document.createElement('tr');
-    tr.dataset.objIndex = results.indexOf(r);
     tr.innerHTML =
       `<td class="obj-name-cell" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</td>` +
       `<td><span class="type-badge type-${r.type}">${r.type}</span></td>` +
@@ -1352,6 +1359,11 @@ function loadFile(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('sql-input').value = e.target.result;
+  };
+  reader.onerror = () => {
+    document.getElementById('file-name-display').textContent = '';
+    currentFileName = null;
+    alert('Could not read file. Please try a different file or paste the SQL directly.');
   };
   reader.readAsText(file);
 }
