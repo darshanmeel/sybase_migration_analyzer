@@ -1416,7 +1416,7 @@
     <span class="credit-line" id="credit-line">Prepared by <strong>Darshan Singh</strong></span>
     <span class="conf-badge" onclick="switchTab('about')" title="How confident is this tool?">
       <span class="dot"></span>
-      <span>confidence ~0.92</span>
+      <span>confidence ~92%</span>
     </span>
     <button class="gear-btn" id="gear-btn" onclick="toggleGearMenu(event)" title="Settings">&#9881;</button>
     <button id="btn-help" title="Help" onclick="toggleHelp()">?</button>
@@ -2609,7 +2609,8 @@ function clearAll() {
   document.getElementById('summary-banner').classList.remove('visible');
   document.getElementById('heatmap-section').classList.remove('visible');
   document.getElementById('details-section').classList.remove('visible');
-  document.getElementById('export-buttons').classList.remove('visible');
+  const exportBtns = document.getElementById('export-buttons');
+  if (exportBtns) exportBtns.classList.remove('visible');
   document.getElementById('heatmap-tbody').innerHTML = '';
   document.getElementById('details-container').innerHTML = '';
   document.getElementById('banner-stats').innerHTML = '';
@@ -2618,6 +2619,12 @@ function clearAll() {
   analysisResults = null;
   sortState = { col: 8, asc: false };
   applySortIndicator();
+  // V2: clear code metrics + score so the strip and reports reset
+  state.codeResults = null;
+  state.codeMetrics = null;
+  state.scores.code = null;
+  recomputeComposite();
+  updateScoreStrip();
 }
 
 // ============================================================
@@ -3256,12 +3263,26 @@ function renderChecklist() {
     html += `</div></div>`;
   });
   container.innerHTML = html;
-  recalculateReadiness();
   updateAllPhaseProgress();
+  // Note: do NOT call recalculateReadiness() here — we don't want to score
+  // the checklist as "100/100 SEVERE GAPS" just because the user hasn't
+  // touched anything yet. The score starts as null (Not assessed) and only
+  // begins being computed after the first user interaction.
 }
 
 // ---- Recalculate readiness score ----
+// Only scores once the user has explicitly interacted with at least one item.
+// Before that, readiness stays null ("Not assessed") so the Reports-tab
+// empty-state can correctly show and reports don't claim SEVERE GAPS from
+// an untouched checklist.
 function recalculateReadiness() {
+  const anyInteraction = CHECKLIST.some(i => state.checklist[i.id] !== undefined);
+  if (!anyInteraction) {
+    state.scores.readiness = null;
+    recomputeComposite();
+    updateScoreStrip();
+    return;
+  }
   const totalWeight = CHECKLIST.reduce((s, i) => s + i.riskWeight, 0);
   const unchecked = CHECKLIST.reduce((s, i) => {
     return s + (state.checklist[i.id]?.checked === true ? 0 : i.riskWeight);
