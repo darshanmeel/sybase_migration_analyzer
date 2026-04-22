@@ -2512,9 +2512,12 @@ function setTargetDialect(t) {
   }
   // Recompute target-adjusted Code Complexity and Composite Risk
   if (state.codeMetrics) {
-    state.scores.code = computeCodeScore(state.codeMetrics, t);
-    recomputeComposite();
-    updateScoreStrip();
+    const newCodeScore = computeCodeScore(state.codeMetrics, t);
+    if (newCodeScore !== null) {
+      state.scores.code = newCodeScore;
+      recomputeComposite();
+      updateScoreStrip();
+    }
   }
   if (state.activeTab === 'reports') renderReports();
   if (typeof renderRuleCatalog === 'function')  renderRuleCatalog();
@@ -2982,39 +2985,84 @@ const TARGET_CODE_MULTIPLIER = {
   oracle:   1.25,  // more translation; ~25% more effort
 };
 
-// Per-category score multipliers when computing Code Complexity for a given target.
-// Values < 1 reduce a category's score contribution (constructs native in that target).
-// Values > 1 increase it (constructs that require more work than the Postgres baseline).
-const CATEGORY_TARGET_DISCOUNT = {
-  mssql: {
-    sybase_function: 0.1,   // ISNULL, GETDATE, CONVERT, DATEPART, etc. work natively in SQL Server
-    sybase_global:   0.1,   // @@rowcount, @@error, @@identity, @@trancount work natively
-    temp_table:      0.15,  // #temp / ##global tables are identical in SQL Server
-    cursor:          0.5,   // cursor syntax works; minor FAST_FORWARD / scroll differences
-    locking_hint:    0.4,   // HOLDLOCK, NOLOCK, ROWLOCK, etc. are SQL Server-native
-    control_flow:    0.25,  // GOTO, WHILE, IF EXISTS all work natively
-    error_handling:  0.35,  // RAISERROR, PRINT, TRY/CATCH all supported
-    data_type:       0.55,  // MONEY, TINYINT, DATETIME work; TEXT/IMAGE deprecated but present
-    syntax:          0.45,  // TOP N, SET ROWCOUNT, SELECT INTO work; old-style outer joins don't
-    identity:        0.2,   // IDENTITY column and SET IDENTITY_INSERT work natively
-    trigger:         0.35,  // inserted/deleted pseudo-tables and INSTEAD OF work natively
-    transaction:     0.25,  // BEGIN TRAN, SAVE TRAN syntax identical
-    dynamic_sql:     0.6,   // EXEC / sp_executesql work; dynamic SQL still warrants review
-    cross_database:  0.5,   // db..table syntax works but linked-server config differs
-    schema_legacy:   0.65,  // sp_rename works; sp_addtype / CREATE DEFAULT don't
-  },
-  oracle: {
-    sybase_function: 1.2,   // ISNULL/GETDATE/CONVERT need NVL/SYSDATE/TO_CHAR etc.
-    sybase_global:   1.1,   // @@identity → RETURNING INTO; @@error maps differently
-    cursor:          1.3,   // PL/SQL cursor syntax diverges significantly
-    locking_hint:    1.1,   // Oracle hint syntax is quite different
-    transaction:     1.2,   // no BEGIN TRAN keyword; savepoint syntax differs
-    dynamic_sql:     1.1,   // EXECUTE IMMEDIATE vs EXEC; DBMS_SQL for complex cases
-    data_type:       1.1,   // DATE includes time; NUMBER vs INT; CLOB vs TEXT
-    syntax:          1.15,  // TOP N → ROWNUM/FETCH FIRST; many syntax divergences
-    identity:        1.2,   // IDENTITY → sequences + triggers or GENERATED ALWAYS AS IDENTITY
-  },
-  postgres: {},  // baseline — no adjustments
+// Per-rule score overrides by target dialect.
+// Omitted rules use their original score. Values are absolute (not multipliers).
+// mssql: constructs native in SQL Server score 0 (no rewrite needed).
+// oracle: constructs harder in Oracle score higher than the postgres baseline.
+const RULE_TARGET_SCORE_OVERRIDE = {
+  // ---- sybase_function: all native in MSSQL ----
+  'SYB-001': { mssql: 0 },                   // ISNULL          identical
+  'SYB-002': { mssql: 0 },                   // GETDATE         identical
+  'SYB-003': { mssql: 1,  oracle: 3 },       // CONVERT         style codes need checking in MSSQL; complex in Oracle
+  'SYB-004': { mssql: 0,  oracle: 3 },       // DATEPART        native in MSSQL; EXTRACT in Oracle
+  'SYB-005': { mssql: 0,  oracle: 3 },       // DATEADD         native in MSSQL; interval arithmetic in Oracle
+  'SYB-006': { mssql: 0,  oracle: 3 },       // DATEDIFF        native in MSSQL; MONTHS_BETWEEN/interval in Oracle
+  'SYB-007': { mssql: 0 },                   // CHARINDEX        native
+  'SYB-008': { mssql: 0 },                   // PATINDEX         native
+  'SYB-009': { mssql: 0 },                   // STUFF            native
+  'SYB-010': { mssql: 0 },                   // STR              native
+  'SYB-011': { mssql: 0 },                   // LEN              native
+  'SYB-012': { mssql: 0 },                   // SUBSTRING        native
+  'SYB-013': { mssql: 0 },                   // SUSER_NAME / USER_NAME  native
+  'SYB-014': { mssql: 0 },                   // DB_NAME / DB_ID  native
+  'SYB-015': { mssql: 0 },                   // DATALENGTH       native
+  'SYB-016': { mssql: 0 },                   // REPLICATE/SPACE  native
+  'SYB-017': { mssql: 0 },                   // REVERSE          native
+  // ---- sybase_global: all native in MSSQL ----
+  'SYB-020': { mssql: 1 },                   // @@identity       works but SCOPE_IDENTITY() is safer
+  'SYB-021': { mssql: 0 },                   // @@rowcount       identical
+  'SYB-022': { mssql: 0 },                   // @@error          identical
+  'SYB-023': { mssql: 0 },                   // @@trancount      identical
+  'SYB-024': { mssql: 0 },                   // @@servername     identical
+  'SYB-025': { mssql: 0 },                   // @@version / @@spid  identical
+  // ---- dynamic_sql ----
+  'SYB-030': { mssql: 3 },                   // EXEC dynamic SQL  works; still warrants review
+  'SYB-031': { mssql: 0 },                   // sp_executesql    identical
+  // ---- cross_database ----
+  'SYB-040': { mssql: 2 },                   // db..table refs   syntax works; linked-server config differs
+  // ---- temp_table ----
+  'SYB-050': { mssql: 0 },                   // #temp            identical
+  'SYB-051': { mssql: 1 },                   // ##global temp    mostly works; session-scope edge cases
+  // ---- locking_hint: all native in MSSQL ----
+  'SYB-060': { mssql: 0 },                   // HOLDLOCK         identical
+  'SYB-061': { mssql: 0 },                   // NOHOLDLOCK       equivalent
+  'SYB-062': { mssql: 1 },                   // READPAST         behavior differs slightly
+  'SYB-063': { mssql: 0 },                   // WITH (NOLOCK)    identical
+  'SYB-064': { mssql: 0 },                   // ROWLOCK / TABLOCK etc.  identical
+  // ---- cursor ----
+  'SYB-070': { mssql: 1,  oracle: 4 },       // cursor           minor MSSQL diffs; PL/SQL diverges significantly
+  // ---- control_flow: all native in MSSQL ----
+  'SYB-080': { mssql: 0 },                   // GOTO             identical
+  'SYB-083': { mssql: 0 },                   // WHILE            identical
+  'SYB-084': { mssql: 0 },                   // IF EXISTS        identical
+  'SYB-085': { mssql: 0 },                   // RETURN n         identical
+  // ---- error_handling: all native in MSSQL ----
+  'SYB-081': { mssql: 0 },                   // RAISERROR        identical
+  'SYB-082': { mssql: 0 },                   // PRINT            identical
+  'SYB-086': { mssql: 0 },                   // TRY/CATCH        identical
+  // ---- data_type ----
+  'SYB-090': { mssql: 0,  oracle: 2 },       // MONEY/SMALLMONEY identical in MSSQL; NUMBER in Oracle
+  'SYB-091': { mssql: 1 },                   // TEXT/IMAGE       deprecated in MSSQL; plan migration
+  'SYB-092': { mssql: 0 },                   // TINYINT          identical
+  'SYB-095': { mssql: 0 },                   // DATETIME/SMALLDATETIME  identical
+  'SYB-096': { mssql: 0 },                   // NCHAR/NVARCHAR   identical
+  // ---- syntax ----
+  'SYB-100': { mssql: 0,  oracle: 3 },       // TOP N            native in MSSQL; ROWNUM/FETCH FIRST in Oracle
+  'SYB-101': { mssql: 0 },                   // SELECT INTO #temp  identical
+  'SYB-102': { mssql: 0 },                   // INSERT...EXEC    identical
+  'SYB-104': { mssql: 0 },                   // SET ROWCOUNT     identical (deprecated but works)
+  'SYB-106': { mssql: 0 },                   // USE <database>   identical
+  // ---- identity ----
+  'SYB-110': { mssql: 0,  oracle: 4 },       // IDENTITY column  native in MSSQL; sequence+trigger in Oracle
+  'SYB-111': { mssql: 0 },                   // SET IDENTITY_INSERT  native
+  // ---- trigger ----
+  'SYB-120': { mssql: 0,  oracle: 4 },       // inserted/deleted  native in MSSQL; :OLD/:NEW in Oracle
+  'SYB-121': { mssql: 0,  oracle: 3 },       // INSTEAD OF trigger  native in MSSQL; different syntax in Oracle
+  // ---- transaction ----
+  'SYB-130': { mssql: 0,  oracle: 2 },       // BEGIN/COMMIT TRAN  identical in MSSQL; different in Oracle
+  'SYB-131': { mssql: 1 },                   // Named SAVE TRAN  works in MSSQL (savepoint semantics)
+  // ---- schema_legacy ----
+  'SYB-141': { mssql: 0 },                   // sp_rename        identical
 };
 
 // ============================================================
@@ -3344,9 +3392,7 @@ function buildCodeMetrics(results) {
   let totalDays = 0;
   let totalIssues = 0, sybaseCount = 0, dynamicSqlCount = 0, crossDbCount = 0, cursorCount = 0;
   const ruleCounts = {};
-  const categoryMatchCounts = {};
-  const categoryScoreSums = {};
-  let baseScoreSum = 0;
+  let totalLocScore = 0;
   for (const r of results) {
     const b = r.bucket.name;
     if (b === 'Low') buckets.low++;
@@ -3356,7 +3402,7 @@ function buildCodeMetrics(results) {
     totalDays      += r.bucket.days;
     totalIssues    += r.totalIssues || 0;
     sybaseCount    += r.sybaseCount || 0;
-    baseScoreSum   += r.totalScore  || 0;
+    totalLocScore  += locScore(r.lines);
     if (r.hasDynamicSQL) dynamicSqlCount++;
     if (r.hasCrossDB)    crossDbCount++;
     if (r.hasCursor)     cursorCount++;
@@ -3365,12 +3411,6 @@ function buildCodeMetrics(results) {
         const id = m.rule.id;
         if (!ruleCounts[id]) ruleCounts[id] = { id, name: m.rule.name, category: m.rule.category, count: 0, score: m.rule.score };
         ruleCounts[id].count += m.matches.length;
-        const cat = m.rule.category;
-        if (cat !== 'ansi_good') {
-          const cnt = m.matches.length;
-          categoryMatchCounts[cat] = (categoryMatchCounts[cat] || 0) + cnt;
-          categoryScoreSums[cat]   = (categoryScoreSums[cat]   || 0) + cnt * m.rule.score;
-        }
       }
     }
   }
@@ -3385,51 +3425,66 @@ function buildCodeMetrics(results) {
     buckets, totalDays, totalIssues, sybaseCount,
     dynamicSqlCount, crossDbCount, cursorCount,
     topRulesByMatches, topObjectsByScore,
-    categoryMatchCounts, categoryScoreSums, baseScoreSum,
+    allRuleCounts: ruleCounts, totalLocScore,
   };
 }
 function computeCodeScore(m, target) {
   if (!m) return null;
-  const tgt      = target || state.targetDialect || 'postgres';
-  const discount = (CATEGORY_TARGET_DISCOUNT && CATEGORY_TARGET_DISCOUNT[tgt]) || {};
+  const tgt = target || state.targetDialect || 'postgres';
 
-  // Start from stored baseScoreSum; fall back to live reduction for legacy imports
-  let adjustedScoreSum = m.baseScoreSum != null
-    ? m.baseScoreSum
-    : (state.codeResults ? state.codeResults.reduce((s, r) => s + (r.totalScore || 0), 0) : 0);
+  // Accumulate target-adjusted rule scores and effective match count
+  let adjRuleScoreSum = 0;
+  let adjMatchCount   = 0;  // matches where targetScore > 0 (true mismatches for this target)
 
-  // Apply category-level target discounts (factor < 1 = cheaper, > 1 = harder)
-  if (m.categoryScoreSums) {
-    for (const [cat, factor] of Object.entries(discount)) {
-      adjustedScoreSum -= (m.categoryScoreSums[cat] || 0) * (1 - factor);
+  if (m.allRuleCounts) {
+    for (const rc of Object.values(m.allRuleCounts)) {
+      if (rc.category === 'ansi_good') continue;
+      const override    = RULE_TARGET_SCORE_OVERRIDE[rc.id];
+      const targetScore = (override && override[tgt] != null) ? override[tgt] : rc.score;
+      adjRuleScoreSum += rc.count * targetScore;
+      if (targetScore > 0) adjMatchCount += rc.count;
     }
+  } else if (state.codeResults) {
+    // Legacy import: allRuleCounts missing but codeResults available — recompute from per-object matches
+    for (const r of state.codeResults) {
+      if (!r.matchesByRule) continue;
+      for (const mb of r.matchesByRule) {
+        if (mb.rule.category === 'ansi_good') continue;
+        const override    = RULE_TARGET_SCORE_OVERRIDE[mb.rule.id];
+        const targetScore = (override && override[tgt] != null) ? override[tgt] : mb.rule.score;
+        adjRuleScoreSum += mb.matches.length * targetScore;
+        if (targetScore > 0) adjMatchCount += mb.matches.length;
+      }
+    }
+  } else {
+    // No per-rule data at all (very old import, no codeResults): return null so caller keeps existing score
+    return null;
   }
-  adjustedScoreSum = Math.max(0, adjustedScoreSum);
 
+  // LOC score is target-independent (code size doesn't change)
+  const locSum = m.totalLocScore != null
+    ? m.totalLocScore
+    : (state.codeResults ? state.codeResults.reduce((s, r) => s + locScore(r.lines), 0) : 0);
+
+  const adjustedScoreSum = Math.max(0, adjRuleScoreSum) + locSum;
   const avg = m.totalObjects > 0 ? adjustedScoreSum / m.totalObjects : 0;
   // An "average object score" of ~15 is HIGH. Map: score = min(100, round(avg * 6.7))
   let raw = Math.round(avg * 6.7);
 
-  // Density signal: Sybase-specific issues per 100 LOC, adjusted for target
+  // Density signal: effective mismatches per 100 LOC for this target
   if (m.totalLOC > 0) {
-    let adjSybase = m.sybaseCount;
-    if (m.categoryMatchCounts) {
-      for (const [cat, factor] of Object.entries(discount)) {
-        adjSybase -= (m.categoryMatchCounts[cat] || 0) * (1 - factor);
-      }
-    }
-    adjSybase = Math.max(0, adjSybase);
-    const density = adjSybase / m.totalLOC * 100;
+    const density = adjMatchCount / m.totalLOC * 100;
     raw += Math.min(20, Math.round(density * 2));
   }
 
-  // Per-signal bumps also scaled by target affinity
-  const dynFactor  = discount.dynamic_sql    != null ? discount.dynamic_sql    : 1;
-  const crossFactor= discount.cross_database != null ? discount.cross_database : 1;
-  const curFactor  = discount.cursor         != null ? discount.cursor         : 1;
-  if (m.dynamicSqlCount > 0) raw += Math.round(Math.min(15, 3 + m.dynamicSqlCount * 2) * dynFactor);
-  if (m.crossDbCount    > 0) raw += Math.round(Math.min(10, 2 + m.crossDbCount   * 2) * crossFactor);
-  if (m.cursorCount     > 0) raw += Math.round(Math.min(10, 2 + m.cursorCount    * 1) * curFactor);
+  // Object-level signals (dynamic SQL, cross-DB, cursor) scaled by target affinity
+  // Uses per-rule target scores to determine effective weight
+  const dynScore    = (RULE_TARGET_SCORE_OVERRIDE['SYB-030']?.[tgt] ?? 5);
+  const crossScore  = (RULE_TARGET_SCORE_OVERRIDE['SYB-040']?.[tgt] ?? 3);
+  const cursorScore = (RULE_TARGET_SCORE_OVERRIDE['SYB-070']?.[tgt] ?? 3);
+  if (m.dynamicSqlCount > 0) raw += Math.round(Math.min(15, 3 + m.dynamicSqlCount * 2) * (dynScore   / 5));
+  if (m.crossDbCount    > 0) raw += Math.round(Math.min(10, 2 + m.crossDbCount   * 2) * (crossScore  / 3));
+  if (m.cursorCount     > 0) raw += Math.round(Math.min(10, 2 + m.cursorCount    * 1) * (cursorScore / 3));
 
   return Math.max(0, Math.min(100, raw));
 }
