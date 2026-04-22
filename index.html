@@ -3409,8 +3409,9 @@ function buildCodeMetrics(results) {
     if (r.matchesByRule) {
       for (const m of r.matchesByRule) {
         const id = m.rule.id;
-        if (!ruleCounts[id]) ruleCounts[id] = { id, name: m.rule.name, category: m.rule.category, count: 0, score: m.rule.score };
-        ruleCounts[id].count += m.matches.length;
+        if (!ruleCounts[id]) ruleCounts[id] = { id, name: m.rule.name, category: m.rule.category, count: 0, objectCount: 0, score: m.rule.score };
+        ruleCounts[id].count += m.matches.length;  // total match occurrences (used for density)
+        ruleCounts[id].objectCount++;               // objects where rule fires (used for scoring)
       }
     }
   }
@@ -3441,7 +3442,9 @@ function computeCodeScore(m, target) {
       if (rc.category === 'ansi_good') continue;
       const override    = RULE_TARGET_SCORE_OVERRIDE[rc.id];
       const targetScore = (override && override[tgt] != null) ? override[tgt] : rc.score;
-      adjRuleScoreSum += rc.count * targetScore;
+      // objectCount: how many objects the rule fires in — matches original per-object scoring
+      adjRuleScoreSum += (rc.objectCount || rc.count) * targetScore;
+      // count: total match occurrences — used for density signal
       if (targetScore > 0) adjMatchCount += rc.count;
     }
   } else if (state.codeResults) {
@@ -3452,7 +3455,7 @@ function computeCodeScore(m, target) {
         if (mb.rule.category === 'ansi_good') continue;
         const override    = RULE_TARGET_SCORE_OVERRIDE[mb.rule.id];
         const targetScore = (override && override[tgt] != null) ? override[tgt] : mb.rule.score;
-        adjRuleScoreSum += mb.matches.length * targetScore;
+        adjRuleScoreSum += targetScore;             // once per (object, rule) firing
         if (targetScore > 0) adjMatchCount += mb.matches.length;
       }
     }
