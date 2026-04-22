@@ -2509,6 +2509,7 @@ function setTargetDialect(t) {
     const results = state.codeResults;
     if (typeof renderHeatMap === 'function') renderHeatMap(results);
     if (typeof renderDetails === 'function') renderDetails(results);
+    updateBannerForTarget(results, t);
   }
   // Recompute target-adjusted Code Complexity and Composite Risk
   if (state.codeMetrics) {
@@ -3535,6 +3536,33 @@ function renderSummary(results, sql) {
 
 function stat(val, label) {
   return `<div class="stat-item"><div class="stat-value">${val}</div><div class="stat-label">${label}</div></div>`;
+}
+
+// Recompute Est. Days and bucket pill counts using target-adjusted buckets.
+// Called by setTargetDialect so the banner stays in sync with the heatmap.
+function updateBannerForTarget(results, tgt) {
+  if (!results || !results.length) return;
+  const bucketCounts = { Low:0, Medium:0, High:0, 'Very High':0 };
+  let totalDays = 0;
+  for (const r of results) {
+    const adj = r.matchesByRule ? computeTargetObjectScore(r.matchesByRule, r.lines, tgt) : { bucket: r.bucket };
+    bucketCounts[adj.bucket.name]++;
+    totalDays += adj.bucket.days;
+  }
+  // Update just the Est. Days stat item (last one in banner-stats)
+  const statsEl = document.getElementById('banner-stats');
+  if (statsEl) {
+    const items = statsEl.querySelectorAll('.stat-item');
+    if (items.length) items[items.length - 1].querySelector('.stat-value').textContent = totalDays.toFixed(1);
+  }
+  // Update bucket pills
+  const pillsEl = document.getElementById('bucket-pills');
+  if (pillsEl) {
+    const colors = { 'Low':'#66BB6A', 'Medium':'#FFD54F', 'High':'#FFA726', 'Very High':'#EF5350' };
+    pillsEl.innerHTML = Object.entries(bucketCounts).map(([name, cnt]) =>
+      `<div class="bucket-pill"><div class="bucket-dot" style="background:${colors[name]}"></div><span>${name}: <strong>${cnt}</strong></span></div>`
+    ).join('');
+  }
 }
 
 // ============================================================
