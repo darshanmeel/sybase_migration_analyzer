@@ -3545,15 +3545,15 @@ function stat(val, label) {
 // Bucket pills use per-rule adjusted buckets for accurate per-object complexity display.
 function updateBannerForTarget(results, tgt) {
   if (!results || !results.length) return;
-  // Bucket pills: use per-rule adjusted buckets (visual complexity per object)
+  // Bucket pills and Est. Days: both use per-rule adjusted buckets per object.
+  // This keeps the banner consistent with the individual row Est. Days values in the heatmap.
   const bucketCounts = { Low:0, Medium:0, High:0, 'Very High':0 };
+  let totalDays = 0;
   for (const r of results) {
     const adj = r.matchesByRule ? computeTargetObjectScore(r.matchesByRule, r.lines, tgt) : { bucket: r.bucket };
     bucketCounts[adj.bucket.name]++;
+    totalDays += adj.bucket.days;
   }
-  // Est. Days: original bucket-days sum × target multiplier (matches Reports formula)
-  const originalDays = results.reduce((s, r) => s + r.bucket.days, 0);
-  const totalDays = originalDays * (TARGET_CODE_MULTIPLIER[tgt] || 1.0);
   // Update Est. Days value via its dedicated ID
   const estDaysEl = document.getElementById('banner-est-days');
   if (estDaysEl) estDaysEl.textContent = totalDays.toFixed(1);
