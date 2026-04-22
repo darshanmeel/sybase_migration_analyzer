@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sybase T-SQL Migration Analyzer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1A237E;
+    --navy-dark: #121858;
+    --navy-light: #283593;
+    --accent: #3949AB;
+    --accent-hover: #303F9F;
+    --bg: #F5F5F5;
+    --surface: #FFFFFF;
+    --border: #DCDFE4;
+    --text: #212121;
+    --text-muted: #616161;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --color-low: #2E7D32;
+    --color-medium: #F57F17;
+    --color-high: #E65100;
+    --color-veryhigh: #B71C1C;
+
+    --bg-low: #E8F5E9;
+    --bg-medium: #FFF9C4;
+    --bg-high: #FFE0B2;
+    --bg-veryhigh: #FFCDD2;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  /* ---- HEADER ---- */
+  #app-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  #app-header .title-block h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  #app-header .title-block p {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 2px;
+  }
+  #btn-help {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.15s;
+  }
+  #btn-help:hover { background: rgba(255,255,255,0.25); }
+
+  /* ---- MAIN LAYOUT ---- */
+  #main-wrap {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 24px 24px 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  /* ---- INPUT PANEL ---- */
+  #input-panel textarea {
+    width: 100%;
+    height: 220px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px;
+    resize: vertical;
+    outline: none;
+    background: #FAFAFA;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  #input-panel textarea:focus { border-color: var(--accent); background: #fff; }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  #drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  #drop-zone:hover, #drop-zone.drag-over {
+    border-color: var(--accent);
+    background: #EEF1FF;
+    color: var(--accent);
+  }
+  #file-input { display: none; }
+  #file-name-display {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  .btn {
+    padding: 9px 22px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-primary:hover { background: var(--navy-light); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: #F0F2FF; }
+  .btn-export {
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 7px 16px;
+  }
+  .btn-export:hover { background: var(--accent-hover); }
+
+  /* ---- HELP PANEL ---- */
+  #help-panel {
+    display: none;
+    background: #E8EAF6;
+    border: 1px solid #9FA8DA;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--navy-dark);
+  }
+  #help-panel h3 { font-size: 0.9rem; margin-bottom: 8px; }
+  #help-panel ul { padding-left: 20px; }
+  #help-panel li { margin-bottom: 4px; }
+  #help-panel.visible { display: block; }
+
+  /* ---- SUMMARY BANNER ---- */
+  #summary-banner {
+    display: none;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  #summary-banner.visible { display: block; }
+  #summary-banner .banner-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  #summary-banner .banner-source {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+  #summary-banner h2 { font-size: 1.1rem; }
+  .banner-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.7); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .bucket-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+  .bucket-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  .bucket-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* ---- HEAT MAP ---- */
+  #heatmap-section { display: none; }
+  #heatmap-section.visible { display: block; }
+
+  .sort-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .sort-controls span { font-weight: 600; }
+
+  #heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  #heatmap-table th {
+    background: var(--navy);
+    color: #fff;
+    padding: 9px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  #heatmap-table th:hover { background: var(--navy-light); }
+  #heatmap-table th .sort-arrow { margin-left: 4px; opacity: 0.5; font-size: 0.7rem; }
+  #heatmap-table th.active-sort .sort-arrow { opacity: 1; }
+  #heatmap-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  #heatmap-table tr:hover td { background: #F0F2FF; cursor: pointer; }
+  #heatmap-table tr:last-child td { border-bottom: none; }
+
+  .obj-name-cell {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .type-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .type-proc { background: #E3F2FD; color: #1565C0; }
+  .type-view { background: #F3E5F5; color: #6A1B9A; }
+  .type-function { background: #E8F5E9; color: #2E7D32; }
+  .type-trigger { background: #FBE9E7; color: #BF360C; }
+  .type-block { background: #F5F5F5; color: #424242; }
+
+  .flag-yes { color: #B71C1C; font-weight: 700; }
+  .flag-no { color: #9E9E9E; }
+
+  .bucket-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .bucket-low { background: var(--bg-low); color: var(--color-low); }
+  .bucket-medium { background: var(--bg-medium); color: var(--color-medium); }
+  .bucket-high { background: var(--bg-high); color: var(--color-high); }
+  .bucket-veryhigh { background: var(--bg-veryhigh); color: var(--color-veryhigh); }
+
+  /* ---- OBJECT DETAILS ---- */
+  #details-section { display: none; }
+  #details-section.visible { display: block; }
+
+  .obj-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .obj-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #F8F9FF;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .obj-detail-header:hover { background: #ECEEFF; }
+  .obj-detail-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .obj-detail-name {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .obj-detail-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .obj-detail-body { display: none; padding: 16px; }
+  .obj-detail-body.open { display: block; }
+  .obj-detail.target-highlight .obj-detail-header { background: #E8EAF6; }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s;
+  }
+  .tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); }
+  .tab-btn:hover { color: var(--accent); }
+
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Summary tab */
+  .issue-category-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #F0F0F0;
+    font-size: 0.82rem;
+  }
+  .issue-category-row:last-child { border-bottom: none; }
+  .cat-count {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+  .cat-name {
+    font-weight: 600;
+    min-width: 160px;
+    flex-shrink: 0;
+  }
+  .cat-note { color: var(--text-muted); font-size: 0.78rem; }
+  .cat-pg { color: #1565C0; font-size: 0.78rem; font-family: var(--mono); }
+
+  /* Code annotation tab */
+  .code-pre {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.6;
+    background: #FAFAFA;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    overflow-x: auto;
+    white-space: pre;
+    position: relative;
+  }
+
+  /* Highlight spans */
+  .hl { border-radius: 2px; padding: 1px 0; cursor: help; position: relative; }
+  .hl-sybase_function { background: #FFF3E0; }
+  .hl-sybase_global { background: #FFEBEE; }
+  .hl-dynamic_sql { background: #FFEBEE; font-weight: 700; }
+  .hl-cross_database { background: #F3E5F5; }
+  .hl-temp_table { background: #FFFDE7; }
+  .hl-locking_hint { background: #FFEBEE; }
+  .hl-cursor { background: #FBE9E7; }
+  .hl-control_flow { background: #FFFDE7; }
+  .hl-error_handling { background: #E3F2FD; }
+  .hl-data_type { background: #EDE7F6; }
+  .hl-syntax { background: #F9FBE7; }
+  .hl-identity { background: #FCE4EC; }
+  .hl-ansi_good { background: #E8F5E9; }
+
+  /* Tooltip */
+  .hl-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    bottom: calc(100% + 6px);
+    left: 0;
+    min-width: 240px;
+    max-width: 320px;
+    background: var(--navy-dark);
+    color: #fff;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    pointer-events: none;
+    white-space: normal;
+    font-weight: normal;
+  }
+  .hl:hover .hl-tooltip { display: block; }
+  .hl-tooltip .tt-cat { font-size: 0.68rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+  .hl-tooltip .tt-note { margin-bottom: 4px; }
+  .hl-tooltip .tt-pg { color: #90CAF9; font-family: var(--mono); font-size: 0.72rem; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ---- FOOTER ---- */
+  #app-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+    padding: 20px 32px;
+  }
+  .footer-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  .limitations-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--navy);
+    margin-bottom: 0;
+  }
+  .limitations-toggle .chevron { transition: transform 0.2s; font-size: 0.75rem; }
+  .limitations-toggle.open .chevron { transform: rotate(180deg); }
+  #limitations-body {
+    display: none;
+    margin-top: 12px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    padding-left: 4px;
+  }
+  #limitations-body.open { display: block; }
+  #limitations-body ol { padding-left: 20px; }
+  #limitations-body li { margin-bottom: 6px; line-height: 1.5; }
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .footer-version { font-size: 0.75rem; color: var(--text-muted); }
+  .export-buttons { display: none; gap: 10px; }
+  .export-buttons.visible { display: flex; }
+
+  /* ---- MISC ---- */
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .scrollable-table { overflow-x: auto; }
+
+  @media (max-width: 700px) {
+    #main-wrap { padding: 12px 12px 0; }
+    #app-header { padding: 14px 16px; }
+    .banner-stats { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="app-header">
+  <div class="title-block">
+    <h1>Sybase T-SQL Migration Analyzer</h1>
+    <p>Analyze Sybase stored procedures, views, functions, and triggers for PostgreSQL migration complexity</p>
+  </div>
+  <button id="btn-help" title="Help" onclick="toggleHelp()">?</button>
+</header>
+
+<!-- MAIN -->
+<div id="main-wrap">
+
+  <!-- HELP PANEL -->
+  <div id="help-panel">
+    <h3>Quick Help</h3>
+    <ul>
+      <li>Paste Sybase T-SQL code into the textarea, or upload a <code>.sql</code> / <code>.txt</code> file.</li>
+      <li>Click <strong>Analyze</strong> to run the complexity analysis.</li>
+      <li>The tool splits the input into individual database objects using <code>CREATE</code> keywords and <code>GO</code> batch terminators.</li>
+      <li>Each object is scored against Sybase-specific patterns; the heat map shows complexity buckets.</li>
+      <li>Click any row in the heat map to jump to the object's detail section.</li>
+      <li>Use the <strong>Full Annotation</strong> tab to see color-highlighted source with tooltips explaining each issue.</li>
+      <li>Download the report as HTML or Markdown using the buttons at the bottom after analysis.</li>
+      <li><strong>Input should be clean, well-formatted Sybase T-SQL.</strong> SQL embedded in application code or messy script dumps may produce inaccurate results.</li>
+    </ul>
+  </div>
+
+  <!-- INPUT PANEL -->
+  <div class="card" id="input-panel">
+    <div class="card-title">Input — Paste Sybase T-SQL or Upload a File</div>
+    <textarea id="sql-input" placeholder="Paste your Sybase T-SQL here...
+Example:
+CREATE PROCEDURE dbo.GetOrders (@custid INT) AS
+BEGIN
+  SELECT TOP 10 * FROM orders WHERE cust_id = @custid
+  IF @@error != 0 RAISERROR('Error', 16, 1)
+END
+GO"></textarea>
+    <div class="input-row">
+      <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        Drop .sql / .txt file here or click to browse
+      </div>
+      <input type="file" id="file-input" accept=".sql,.txt" onchange="handleFileSelect(event)">
+      <span id="file-name-display"></span>
+      <button class="btn btn-primary" onclick="runAnalysis()">Analyze</button>
+      <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY BANNER -->
+  <div id="summary-banner">
+    <div class="banner-top">
+      <div>
+        <h2 id="banner-title">Analysis Results</h2>
+        <div class="banner-source" id="banner-source"></div>
+      </div>
+      <div class="banner-stats" id="banner-stats"></div>
+    </div>
+    <div class="bucket-pills" id="bucket-pills"></div>
+  </div>
+
+  <!-- HEAT MAP -->
+  <div class="card" id="heatmap-section">
+    <div class="card-title">Object Heat Map — Click any row to jump to details</div>
+    <div class="scrollable-table">
+      <table id="heatmap-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" data-col="0">Object Name <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(1)" data-col="1">Type <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(2)" data-col="2">LOC <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(3)" data-col="3">Issues <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(4)" data-col="4">Sybase-Specific <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(5)" data-col="5">Dynamic SQL <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(6)" data-col="6">Cross-DB Refs <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(7)" data-col="7">Cursors <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(8)" data-col="8">Score <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(9)" data-col="9">Bucket <span class="sort-arrow">&#9650;</span></th>
+            <th onclick="sortTable(10)" data-col="10">Est. Days <span class="sort-arrow">&#9650;</span></th>
+          </tr>
+        </thead>
+        <tbody id="heatmap-tbody"></tbody>
+      </table>
+    </div>
+    <div class="legend" id="category-legend"></div>
+  </div>
+
+  <!-- OBJECT DETAILS -->
+  <div id="details-section">
+    <div class="card-title" style="padding: 0 0 12px 0;">Per-Object Detail (click header to expand/collapse)</div>
+    <div id="details-container"></div>
+  </div>
+
+</div><!-- /main-wrap -->
+
+<!-- FOOTER -->
+<footer id="app-footer">
+  <div class="footer-inner">
+    <div class="limitations-toggle" onclick="toggleLimitations()" id="lim-toggle">
+      <span>About &amp; Limitations</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div id="limitations-body">
+      <ol>
+        <li>This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.</li>
+        <li>Scoring is rubric-based. Two objects with identical scores may take very different times to rewrite in practice.</li>
+        <li>Business logic complexity is not captured — the tool only analyzes syntax, not semantics.</li>
+        <li>No data leaves your browser. Nothing is uploaded, logged, or stored.</li>
+        <li>Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.</li>
+      </ol>
+    </div>
+    <div class="footer-row">
+      <span class="footer-version">Sybase T-SQL Migration Analyzer v1.0 — Offline, no external dependencies</span>
+      <div class="export-buttons" id="export-buttons">
+        <button class="btn btn-export" onclick="downloadHTML()">Download Report as HTML</button>
+        <button class="btn btn-export" onclick="downloadMarkdown()">Download Report as Markdown</button>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+// ============================================================
+// RULE ENGINE
+// ============================================================
+const RULES = [
+  // sybase_function
+  { id:'SYB-001', name:'ISNULL function',      category:'sybase_function',  severity:'low',    score:1, pattern:/\bisnull\s*\(/gi,                   postgres:'coalesce(...)',             note:'ISNULL is Sybase-specific. Use ANSI COALESCE for portability.' },
+  { id:'SYB-002', name:'GETDATE function',     category:'sybase_function',  severity:'low',    score:1, pattern:/\bgetdate\s*\(\s*\)/gi,              postgres:'now() or current_timestamp', note:'GETDATE() is Sybase/SQL Server-specific.' },
+  { id:'SYB-003', name:'CONVERT function',     category:'sybase_function',  severity:'medium', score:2, pattern:/\bconvert\s*\(/gi,                   postgres:'cast(... as ...) or to_char(...)', note:'CONVERT syntax differs. Verify data type and style codes.' },
+  { id:'SYB-004', name:'DATEPART function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bdatepart\s*\(/gi,                  postgres:"extract(... from ...)",    note:'DATEPART maps to extract() or date_part() in PostgreSQL.' },
+  { id:'SYB-005', name:'DATEADD function',     category:'sybase_function',  severity:'medium', score:2, pattern:/\bdateadd\s*\(/gi,                   postgres:"timestamp + interval '...'", note:'DATEADD has no direct equivalent; use interval arithmetic.' },
+  { id:'SYB-006', name:'DATEDIFF function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bdatediff\s*\(/gi,                  postgres:'age(...) or subtract timestamps', note:'DATEDIFF semantics differ in PostgreSQL.' },
+  { id:'SYB-007', name:'CHARINDEX function',   category:'sybase_function',  severity:'low',    score:1, pattern:/\bcharindex\s*\(/gi,                 postgres:"position(... in ...) or strpos", note:'CHARINDEX maps to strpos() or position().' },
+  { id:'SYB-008', name:'PATINDEX function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bpatindex\s*\(/gi,                  postgres:'regex functions (~ operator)', note:'PATINDEX has no direct equivalent; use regexp_match or similar.' },
+  { id:'SYB-009', name:'STUFF function',       category:'sybase_function',  severity:'medium', score:2, pattern:/\bstuff\s*\(/gi,                     postgres:'overlay(...)',              note:'STUFF maps to overlay() in PostgreSQL.' },
+  { id:'SYB-010', name:'STR function',         category:'sybase_function',  severity:'low',    score:1, pattern:/\bstr\s*\(/gi,                       postgres:'to_char(...)',              note:'STR() for numeric-to-string; use to_char() in PostgreSQL.' },
+  // sybase_global
+  { id:'SYB-020', name:'@@identity',           category:'sybase_global',    severity:'high',   score:3, pattern:/@@identity\b/gi,                     postgres:"currval(seq) or RETURNING clause", note:'@@IDENTITY is unreliable in triggers. Use RETURNING or sequences.' },
+  { id:'SYB-021', name:'@@rowcount',           category:'sybase_global',    severity:'medium', score:2, pattern:/@@rowcount\b/gi,                     postgres:'GET DIAGNOSTICS n = ROW_COUNT', note:'Use GET DIAGNOSTICS in PL/pgSQL.' },
+  { id:'SYB-022', name:'@@error',              category:'sybase_global',    severity:'high',   score:3, pattern:/@@error\b/gi,                        postgres:'EXCEPTION blocks in PL/pgSQL', note:'Replace @@ERROR-based error handling with proper EXCEPTION handling.' },
+  { id:'SYB-023', name:'@@trancount',          category:'sybase_global',    severity:'high',   score:3, pattern:/@@trancount\b/gi,                    postgres:'No direct equivalent — redesign transaction logic', note:'@@TRANCOUNT has no PostgreSQL equivalent; redesign transaction management.' },
+  { id:'SYB-024', name:'@@servername',         category:'sybase_global',    severity:'low',    score:1, pattern:/@@servername\b/gi,                   postgres:'inet_server_addr()',        note:'@@SERVERNAME has limited equivalent; consider current_database().' },
+  // dynamic_sql
+  { id:'SYB-030', name:'EXEC dynamic SQL',     category:'dynamic_sql',      severity:'high',   score:5, pattern:/\bexec(?:ute)?\s*\(/gi,              postgres:'EXECUTE ... in PL/pgSQL',  note:'Dynamic SQL requires careful rewrite; review all dynamic strings for SQL injection.' },
+  { id:'SYB-031', name:'sp_executesql',        category:'dynamic_sql',      severity:'high',   score:5, pattern:/\bsp_executesql\b/gi,                postgres:'EXECUTE ... USING in PL/pgSQL', note:'sp_executesql parameterized dynamic SQL maps to EXECUTE ... USING.' },
+  // cross_database
+  { id:'SYB-040', name:'Cross-database ref',   category:'cross_database',   severity:'high',   score:3, pattern:/\b\w+\s*\.\.\s*\w+\b/g,             postgres:'FDW or schema consolidation', note:'Sybase three-part db..table references require FDW or schema redesign in PostgreSQL.' },
+  // temp_table
+  { id:'SYB-050', name:'Temp table (#name)',   category:'temp_table',       severity:'medium', score:1, pattern:/#\w+\b/g,                            postgres:'CREATE TEMP TABLE ...',    note:'Local temp tables (#name) map to PostgreSQL TEMP tables or CTEs.' },
+  // locking_hint
+  { id:'SYB-060', name:'HOLDLOCK hint',        category:'locking_hint',     severity:'medium', score:2, pattern:/\bholdlock\b/gi,                     postgres:'SELECT ... FOR UPDATE',    note:'HOLDLOCK is Sybase-specific; use SELECT FOR UPDATE or transaction isolation.' },
+  { id:'SYB-061', name:'NOHOLDLOCK hint',      category:'locking_hint',     severity:'medium', score:2, pattern:/\bnoholdlock\b/gi,                   postgres:'Default PostgreSQL MVCC',  note:'NOHOLDLOCK hint has no PostgreSQL equivalent (MVCC handles this).' },
+  { id:'SYB-062', name:'READPAST hint',        category:'locking_hint',     severity:'high',   score:2, pattern:/\breadpast\b/gi,                     postgres:'SKIP LOCKED',              note:'READPAST maps to SKIP LOCKED in PostgreSQL 9.5+.' },
+  { id:'SYB-063', name:'WITH (NOLOCK) hint',   category:'locking_hint',     severity:'high',   score:2, pattern:/\bwith\s*\(\s*nolock\s*\)/gi,        postgres:'No equivalent; use READ COMMITTED isolation', note:'NOLOCK has no PostgreSQL equivalent; READ COMMITTED isolation is the default.' },
+  // cursor
+  { id:'SYB-070', name:'Cursor declaration',   category:'cursor',           severity:'high',   score:3, pattern:/\bdeclare\s+\w+\s+cursor\b/gi,       postgres:'PL/pgSQL cursors',         note:'Cursor syntax differs significantly; consider set-based rewrites where possible.' },
+  // control_flow
+  { id:'SYB-080', name:'GOTO statement',       category:'control_flow',     severity:'high',   score:3, pattern:/\bgoto\s+\w+/gi,                    postgres:'PL/pgSQL has no GOTO — redesign', note:'GOTO has no equivalent in PL/pgSQL; restructure as loops or exceptions.' },
+  // error_handling
+  { id:'SYB-081', name:'RAISERROR',            category:'error_handling',   severity:'medium', score:1, pattern:/\braiserror\b/gi,                    postgres:'RAISE EXCEPTION',          note:'RAISERROR maps to RAISE EXCEPTION in PL/pgSQL; syntax differs.' },
+  { id:'SYB-082', name:'PRINT statement',      category:'error_handling',   severity:'low',    score:1, pattern:/\bprint\b/gi,                        postgres:'RAISE NOTICE',             note:'PRINT maps to RAISE NOTICE in PL/pgSQL.' },
+  // data_type
+  { id:'SYB-090', name:'MONEY / SMALLMONEY type', category:'data_type',    severity:'medium', score:1, pattern:/\b(?:small)?money\b/gi,              postgres:'numeric(19,4)',            note:'MONEY/SMALLMONEY types map to numeric(19,4) in PostgreSQL.' },
+  { id:'SYB-091', name:'TEXT / IMAGE type',    category:'data_type',        severity:'medium', score:2, pattern:/\b(?:text|image)\b(?!\s*=)/gi,       postgres:'text / bytea',             note:'TEXT/IMAGE are legacy types; use text and bytea in PostgreSQL.' },
+  { id:'SYB-092', name:'TINYINT type',         category:'data_type',        severity:'low',    score:1, pattern:/\btinyint\b/gi,                      postgres:'smallint',                 note:'TINYINT maps to smallint in PostgreSQL.' },
+  { id:'SYB-093', name:'UNITEXT type',         category:'data_type',        severity:'medium', score:1, pattern:/\bunitext\b/gi,                      postgres:'text (UTF-8)',             note:'UNITEXT maps to text in PostgreSQL (UTF-8 native).' },
+  { id:'SYB-094', name:'TIMESTAMP type',       category:'data_type',        severity:'medium', score:2, pattern:/\btimestamp\b/gi,                    postgres:'Redesign (semantics differ)', note:'Sybase TIMESTAMP is a row version, not a datetime; PostgreSQL TIMESTAMP is datetime.' },
+  // syntax
+  { id:'SYB-100', name:'TOP N syntax',         category:'syntax',           severity:'low',    score:1, pattern:/\btop\s+\d+/gi,                      postgres:'LIMIT n',                  note:'TOP N maps to LIMIT n in PostgreSQL.' },
+  { id:'SYB-101', name:'SELECT INTO #temp',    category:'syntax',           severity:'medium', score:2, pattern:/\bselect\s+[\s\S]{0,200}?\binto\s+#\w+/gi, postgres:'CREATE TEMP TABLE ... AS SELECT', note:'SELECT INTO #temp maps to CREATE TEMP TABLE ... AS SELECT.' },
+  { id:'SYB-102', name:'INSERT ... EXEC',      category:'syntax',           severity:'high',   score:3, pattern:/\binsert\s+[\s\S]{0,100}?\bexec\b/gi, postgres:'Rewrite using CTE or table function', note:'INSERT...EXEC has no direct PostgreSQL equivalent; redesign required.' },
+  // identity
+  { id:'SYB-110', name:'IDENTITY column',      category:'identity',         severity:'medium', score:2, pattern:/\bidentity\b/gi,                     postgres:'GENERATED ... AS IDENTITY', note:'IDENTITY column property maps to GENERATED AS IDENTITY or SERIAL in PostgreSQL.' },
+  { id:'SYB-111', name:'SET IDENTITY_INSERT',  category:'identity',         severity:'high',   score:3, pattern:/\bset\s+identity_insert\b/gi,        postgres:'OVERRIDING SYSTEM VALUE',  note:'SET IDENTITY_INSERT maps to INSERT ... OVERRIDING SYSTEM VALUE.' },
+  // ansi_good (zero score)
+  { id:'ANSI-001', name:'COALESCE (ANSI)',     category:'ansi_good',        severity:'low',    score:0, pattern:/\bcoalesce\s*\(/gi,                  postgres:'COALESCE - portable as-is', note:'ANSI-standard; no migration needed.' },
+  { id:'ANSI-002', name:'CASE WHEN (ANSI)',    category:'ansi_good',        severity:'low',    score:0, pattern:/\bcase\s+when\b/gi,                  postgres:'CASE WHEN - portable as-is', note:'ANSI-standard; no migration needed.' },
+  { id:'ANSI-003', name:'CAST (ANSI)',         category:'ansi_good',        severity:'low',    score:0, pattern:/\bcast\s*\([\s\S]{0,60}?\bas\b/gi,   postgres:'CAST - portable as-is',    note:'ANSI-standard; no migration needed.' },
+  { id:'ANSI-004', name:'Standard JOINs',     category:'ansi_good',        severity:'low',    score:0, pattern:/\b(?:inner|left|right|full)\s+(?:outer\s+)?join\b/gi, postgres:'Standard JOINs - portable as-is', note:'ANSI-standard join syntax; no migration needed.' },
+];
+
+const CATEGORY_COLORS = {
+  sybase_function: '#FFF3E0',
+  sybase_global:   '#FFEBEE',
+  dynamic_sql:     '#FFEBEE',
+  cross_database:  '#F3E5F5',
+  temp_table:      '#FFFDE7',
+  locking_hint:    '#FFEBEE',
+  cursor:          '#FBE9E7',
+  control_flow:    '#FFFDE7',
+  error_handling:  '#E3F2FD',
+  data_type:       '#EDE7F6',
+  syntax:          '#F9FBE7',
+  identity:        '#FCE4EC',
+  ansi_good:       '#E8F5E9',
+};
+
+const CATEGORY_LABELS = {
+  sybase_function: 'Sybase Function',
+  sybase_global:   'Sybase Global Variable',
+  dynamic_sql:     'Dynamic SQL',
+  cross_database:  'Cross-Database Reference',
+  temp_table:      'Temp Table',
+  locking_hint:    'Locking Hint',
+  cursor:          'Cursor',
+  control_flow:    'Control Flow (GOTO)',
+  error_handling:  'Error Handling',
+  data_type:       'Data Type',
+  syntax:          'Syntax',
+  identity:        'Identity',
+  ansi_good:       'ANSI (Portable)',
+};
+
+// ============================================================
+// SCORING
+// ============================================================
+function locScore(lines) {
+  if (lines < 50)   return 0;
+  if (lines < 200)  return 2;
+  if (lines < 500)  return 4;
+  if (lines < 1500) return 7;
+  return 12;
+}
+
+function bucket(score) {
+  if (score <= 3)  return { name:'Low',       effort:'0.5 day',     days:0.5, cls:'bucket-low',      color:'#2E7D32' };
+  if (score <= 8)  return { name:'Medium',    effort:'1-2 days',    days:1.5, cls:'bucket-medium',   color:'#F57F17' };
+  if (score <= 15) return { name:'High',      effort:'3-5 days',    days:4,   cls:'bucket-high',     color:'#E65100' };
+  return               { name:'Very High', effort:'5-10+ days',  days:7.5, cls:'bucket-veryhigh', color:'#B71C1C' };
+}
+
+// ============================================================
+// OBJECT SPLITTER
+// ============================================================
+function splitObjects(sql) {
+  // Normalize line endings
+  sql = sql.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  const lines = sql.split('\n');
+  const objects = [];
+
+  // We scan for CREATE boundaries and GO/slash terminators
+  // Strategy: find positions of all CREATE ... declarations and GO lines,
+  // then slice text between them
+
+  const createPattern = /^\s*(?:create\s+(?:or\s+replace\s+)?(?:procedure|proc|view|function|trigger))\b/i;
+  const goPattern     = /^\s*go\s*$/i;
+  const slashPattern  = /^\s*\/\s*$/;
+
+  // Determine object type from the CREATE line
+  function detectType(line) {
+    const l = line.trim().toLowerCase();
+    if (/create\s+(?:or\s+replace\s+)?(?:procedure|proc)\b/.test(l)) return 'proc';
+    if (/create\s+(?:or\s+replace\s+)?view\b/.test(l))               return 'view';
+    if (/create\s+(?:or\s+replace\s+)?function\b/.test(l))           return 'function';
+    if (/create\s+(?:or\s+replace\s+)?trigger\b/.test(l))            return 'trigger';
+    return 'block';
+  }
+
+  // Extract object name from create line
+  function detectName(createLine, type) {
+    // Try to find the name after the type keyword
+    const patterns = {
+      proc:     /create\s+(?:or\s+replace\s+)?proc(?:edure)?\s+([\w#.\[\]"]+)/i,
+      view:     /create\s+(?:or\s+replace\s+)?view\s+([\w#.\[\]"]+)/i,
+      function: /create\s+(?:or\s+replace\s+)?function\s+([\w#.\[\]"]+)/i,
+      trigger:  /create\s+(?:or\s+replace\s+)?trigger\s+([\w#.\[\]"]+)/i,
+    };
+    const p = patterns[type];
+    if (p) {
+      const m = createLine.match(p);
+      if (m) return m[1];
+    }
+    return '(unnamed)';
+  }
+
+  // Find segments separated by GO or slash terminators
+  let segments = [];
+  let segStart = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (goPattern.test(lines[i]) || slashPattern.test(lines[i])) {
+      if (i > segStart) {
+        segments.push({ startLine: segStart, endLine: i - 1, lines: lines.slice(segStart, i) });
+      }
+      segStart = i + 1;
+    }
+  }
+  // last segment after final GO
+  if (segStart < lines.length) {
+    segments.push({ startLine: segStart, endLine: lines.length - 1, lines: lines.slice(segStart) });
+  }
+
+  // Within each segment, look for CREATE objects
+  // A segment might have: pre-amble (DROP IF EXISTS etc.), then CREATE ...
+  for (const seg of segments) {
+    const segText = seg.lines.join('\n').trim();
+    if (!segText) continue;
+
+    // Find the first CREATE line in this segment
+    let createIdx = -1;
+    for (let i = 0; i < seg.lines.length; i++) {
+      if (createPattern.test(seg.lines[i])) {
+        createIdx = i;
+        break;
+      }
+    }
+
+    if (createIdx >= 0) {
+      const createLine = seg.lines[createIdx];
+      const type = detectType(createLine);
+      const name = detectName(createLine, type);
+      const body = seg.lines.slice(createIdx).join('\n');
+      objects.push({ name, type, source: body });
+    } else {
+      // Check if there's any meaningful SQL here
+      if (/\S/.test(segText)) {
+        objects.push({ name: '(anonymous block)', type: 'block', source: segText });
+      }
+    }
+  }
+
+  // If no GO separators found at all, try splitting on CREATE boundaries within a single segment
+  if (objects.length === 0 && segments.length === 1) {
+    const allLines = lines;
+    let currentStart = -1;
+    let currentType = 'block';
+    let currentName = '';
+
+    for (let i = 0; i < allLines.length; i++) {
+      if (createPattern.test(allLines[i])) {
+        if (currentStart >= 0) {
+          const body = allLines.slice(currentStart, i).join('\n').trim();
+          if (body) objects.push({ name: currentName, type: currentType, source: body });
+        }
+        currentStart = i;
+        currentType = detectType(allLines[i]);
+        currentName = detectName(allLines[i], currentType);
+      }
+    }
+    if (currentStart >= 0) {
+      const body = allLines.slice(currentStart).join('\n').trim();
+      if (body) objects.push({ name: currentName, type: currentType, source: body });
+    }
+  }
+
+  // Fallback: treat everything as one anonymous block
+  if (objects.length === 0) {
+    const trimmed = sql.trim();
+    if (trimmed) {
+      objects.push({ name: '(anonymous block)', type: 'block', source: trimmed });
+    }
+  }
+
+  return objects;
+}
+
+// ============================================================
+// RULE MATCHING
+// ============================================================
+function analyzeObject(obj) {
+  const src = obj.source;
+  const lines = src.split('\n').length;
+  const ls = locScore(lines);
+
+  // For each rule, find all matches with positions
+  const matchesByRule = [];
+  let totalRuleScore = 0;
+  const categoryMap = {}; // category -> [{rule, match, index}]
+
+  // We need match ranges for highlighting — collect all ranges
+  const allRanges = []; // {start, end, rule}
+
+  for (const rule of RULES) {
+    // Reset lastIndex for global patterns
+    rule.pattern.lastIndex = 0;
+    const localMatches = [];
+    let m;
+    while ((m = rule.pattern.exec(src)) !== null) {
+      localMatches.push({ index: m.index, length: m[0].length, text: m[0] });
+      allRanges.push({ start: m.index, end: m.index + m[0].length, rule });
+    }
+    if (localMatches.length > 0) {
+      matchesByRule.push({ rule, matches: localMatches });
+      totalRuleScore += rule.score;
+      if (!categoryMap[rule.category]) categoryMap[rule.category] = [];
+      categoryMap[rule.category].push({ rule, count: localMatches.length });
+    }
+  }
+
+  const totalScore = totalRuleScore + ls;
+  const bkt = bucket(totalScore);
+
+  const sybaseCount = matchesByRule
+    .filter(m => m.rule.category !== 'ansi_good')
+    .reduce((acc, m) => acc + m.matches.length, 0);
+
+  const hasDynamicSQL = matchesByRule.some(m => m.rule.category === 'dynamic_sql');
+  const hasCrossDB    = matchesByRule.some(m => m.rule.category === 'cross_database');
+  const hasCursor     = matchesByRule.some(m => m.rule.category === 'cursor');
+
+  const totalIssues = matchesByRule.reduce((acc, m) => acc + m.matches.length, 0);
+
+  return {
+    ...obj,
+    lines,
+    ls,
+    totalScore,
+    bucket: bkt,
+    matchesByRule,
+    categoryMap,
+    allRanges,
+    sybaseCount,
+    hasDynamicSQL,
+    hasCrossDB,
+    hasCursor,
+    totalIssues,
+  };
+}
+
+// ============================================================
+// HTML ESCAPING + ANNOTATION
+// ============================================================
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function buildAnnotatedHTML(src, allRanges) {
+  if (allRanges.length === 0) return escapeHtml(src);
+
+  // Sort ranges by start position; for overlaps keep the one that starts first
+  const sorted = [...allRanges].sort((a, b) => a.start - b.start || b.end - a.end);
+
+  // Merge overlapping ranges: keep the first-starting one, skip overlaps
+  const nonOverlapping = [];
+  let lastEnd = -1;
+  for (const r of sorted) {
+    if (r.start >= lastEnd) {
+      nonOverlapping.push(r);
+      lastEnd = r.end;
+    }
+    // If overlap, we just skip the inner range
+  }
+
+  let html = '';
+  let pos = 0;
+  for (const r of nonOverlapping) {
+    if (r.start > pos) {
+      html += escapeHtml(src.slice(pos, r.start));
+    }
+    const matchText = src.slice(r.start, r.end);
+    const rule = r.rule;
+    const tooltipHtml =
+      `<span class="hl-tooltip">` +
+      `<span class="tt-cat">${escapeHtml(rule.id)} — ${escapeHtml(CATEGORY_LABELS[rule.category] || rule.category)}</span>` +
+      `<span class="tt-note">${escapeHtml(rule.note)}</span>` +
+      `<span class="tt-pg">PG: ${escapeHtml(rule.postgres)}</span>` +
+      `</span>`;
+    html += `<span class="hl hl-${rule.category}" title="${escapeHtml(rule.note)}">${escapeHtml(matchText)}${tooltipHtml}</span>`;
+    pos = r.end;
+  }
+  if (pos < src.length) {
+    html += escapeHtml(src.slice(pos));
+  }
+  return html;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let analysisResults = null;
+let currentFileName = null;
+let sortState = { col: 8, asc: false }; // default sort by score desc
+
+// ============================================================
+// MAIN ANALYSIS
+// ============================================================
+function runAnalysis() {
+  const sql = document.getElementById('sql-input').value.trim();
+  if (!sql) {
+    alert('Please paste some SQL code or upload a file first.');
+    return;
+  }
+
+  const objects = splitObjects(sql);
+  const results = objects.map(analyzeObject);
+  analysisResults = results;
+
+  renderSummary(results, sql);
+  renderHeatMap(results);
+  renderDetails(results);
+
+  document.getElementById('summary-banner').classList.add('visible');
+  document.getElementById('heatmap-section').classList.add('visible');
+  document.getElementById('details-section').classList.add('visible');
+  document.getElementById('export-buttons').classList.add('visible');
+
+  // Scroll to summary
+  document.getElementById('summary-banner').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// RENDER SUMMARY BANNER
+// ============================================================
+function renderSummary(results, sql) {
+  const ts = new Date().toLocaleString();
+  const src = currentFileName ? currentFileName : 'Pasted input';
+  document.getElementById('banner-source').textContent = `Source: ${src}  |  Analyzed: ${ts}`;
+  document.getElementById('banner-title').textContent = 'Analysis Results';
+
+  const totalLOC = results.reduce((s, r) => s + r.lines, 0);
+  const procs     = results.filter(r => r.type === 'proc').length;
+  const views     = results.filter(r => r.type === 'view').length;
+  const functions = results.filter(r => r.type === 'function').length;
+  const triggers  = results.filter(r => r.type === 'trigger').length;
+  const blocks    = results.filter(r => r.type === 'block').length;
+
+  const bucketCounts = { Low:0, Medium:0, High:0, 'Very High':0 };
+  let totalDays = 0;
+  for (const r of results) {
+    bucketCounts[r.bucket.name]++;
+    totalDays += r.bucket.days;
+  }
+
+  const statsEl = document.getElementById('banner-stats');
+  statsEl.innerHTML = [
+    stat(results.length, 'Total Objects'),
+    stat(procs, 'Procedures'),
+    stat(views, 'Views'),
+    stat(functions, 'Functions'),
+    stat(triggers, 'Triggers'),
+    stat(totalLOC, 'Total LOC'),
+    stat(totalDays.toFixed(1), 'Est. Days'),
+  ].join('');
+
+  const pillsEl = document.getElementById('bucket-pills');
+  const colors = { 'Low':'#66BB6A', 'Medium':'#FFD54F', 'High':'#FFA726', 'Very High':'#EF5350' };
+  pillsEl.innerHTML = Object.entries(bucketCounts).map(([name, cnt]) =>
+    `<div class="bucket-pill"><div class="bucket-dot" style="background:${colors[name]}"></div><span>${name}: <strong>${cnt}</strong></span></div>`
+  ).join('');
+}
+
+function stat(val, label) {
+  return `<div class="stat-item"><div class="stat-value">${val}</div><div class="stat-label">${label}</div></div>`;
+}
+
+// ============================================================
+// RENDER HEAT MAP
+// ============================================================
+function renderHeatMap(results) {
+  renderTableRows(results);
+  buildLegend();
+  applySortIndicator();
+}
+
+function renderTableRows(results) {
+  const tbody = document.getElementById('heatmap-tbody');
+  tbody.innerHTML = '';
+  const sorted = sortResults([...results]);
+  for (let i = 0; i < sorted.length; i++) {
+    const r = sorted[i];
+    const tr = document.createElement('tr');
+    tr.dataset.objIndex = results.indexOf(r);
+    tr.innerHTML =
+      `<td class="obj-name-cell" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</td>` +
+      `<td><span class="type-badge type-${r.type}">${r.type}</span></td>` +
+      `<td>${r.lines}</td>` +
+      `<td>${r.totalIssues}</td>` +
+      `<td>${r.sybaseCount}</td>` +
+      `<td class="${r.hasDynamicSQL ? 'flag-yes' : 'flag-no'}">${r.hasDynamicSQL ? 'Yes' : 'No'}</td>` +
+      `<td class="${r.hasCrossDB ? 'flag-yes' : 'flag-no'}">${r.hasCrossDB ? 'Yes' : 'No'}</td>` +
+      `<td class="${r.hasCursor ? 'flag-yes' : 'flag-no'}">${r.hasCursor ? 'Yes' : 'No'}</td>` +
+      `<td><strong>${r.totalScore}</strong></td>` +
+      `<td><span class="bucket-badge ${r.bucket.cls}">${r.bucket.name}</span></td>` +
+      `<td>${r.bucket.days}</td>`;
+    tr.onclick = () => jumpToDetail(results.indexOf(r));
+    tbody.appendChild(tr);
+  }
+}
+
+function sortResults(arr) {
+  const col = sortState.col;
+  const asc = sortState.asc;
+  const colKeys = ['name','type','lines','totalIssues','sybaseCount','hasDynamicSQL','hasCrossDB','hasCursor','totalScore','bucket.name','bucket.days'];
+  arr.sort((a, b) => {
+    let va, vb;
+    if (col === 9) { va = a.bucket.name; vb = b.bucket.name; }
+    else if (col === 10) { va = a.bucket.days; vb = b.bucket.days; }
+    else {
+      const key = colKeys[col];
+      va = a[key]; vb = b[key];
+    }
+    if (typeof va === 'boolean') { va = va ? 1 : 0; vb = vb ? 1 : 0; }
+    if (typeof va === 'string') {
+      const cmp = va.localeCompare(vb);
+      return asc ? cmp : -cmp;
+    }
+    return asc ? va - vb : vb - va;
+  });
+  return arr;
+}
+
+function sortTable(col) {
+  if (sortState.col === col) {
+    sortState.asc = !sortState.asc;
+  } else {
+    sortState.col = col;
+    sortState.asc = false;
+  }
+  applySortIndicator();
+  if (analysisResults) renderTableRows(analysisResults);
+}
+
+function applySortIndicator() {
+  const ths = document.querySelectorAll('#heatmap-table th');
+  ths.forEach((th, i) => {
+    th.classList.remove('active-sort');
+    const arrow = th.querySelector('.sort-arrow');
+    if (i === sortState.col) {
+      th.classList.add('active-sort');
+      arrow.innerHTML = sortState.asc ? '&#9650;' : '&#9660;';
+    } else {
+      arrow.innerHTML = '&#9650;';
+    }
+  });
+}
+
+function buildLegend() {
+  const usedCats = new Set();
+  if (analysisResults) {
+    for (const r of analysisResults) {
+      for (const m of r.matchesByRule) {
+        usedCats.add(m.rule.category);
+      }
+    }
+  }
+  const el = document.getElementById('category-legend');
+  el.innerHTML = [...usedCats].map(cat =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${CATEGORY_COLORS[cat]};border:1px solid #ccc"></div><span>${CATEGORY_LABELS[cat] || cat}</span></div>`
+  ).join('');
+}
+
+// ============================================================
+// RENDER OBJECT DETAILS
+// ============================================================
+function renderDetails(results) {
+  const container = document.getElementById('details-container');
+  container.innerHTML = '';
+  results.forEach((r, idx) => {
+    const div = document.createElement('div');
+    div.className = 'obj-detail';
+    div.id = `obj-detail-${idx}`;
+
+    div.innerHTML =
+      `<div class="obj-detail-header" onclick="toggleDetail(${idx})">
+         <div class="obj-detail-title">
+           <span class="obj-detail-name">${escapeHtml(r.name)}</span>
+           <span class="type-badge type-${r.type}">${r.type}</span>
+           <span class="bucket-badge ${r.bucket.cls}">${r.bucket.name}</span>
+         </div>
+         <div class="obj-detail-meta">
+           <span>Score: <strong>${r.totalScore}</strong></span>
+           <span>LOC: ${r.lines}</span>
+           <span>Issues: ${r.totalIssues}</span>
+           <span>Est: ${r.bucket.effort}</span>
+         </div>
+       </div>
+       <div class="obj-detail-body" id="obj-body-${idx}">
+         <div class="tab-bar">
+           <button class="tab-btn active" onclick="switchTab(event, ${idx}, 'summary')">Summary</button>
+           <button class="tab-btn" onclick="switchTab(event, ${idx}, 'annotation')">Full Annotation</button>
+         </div>
+         <div class="tab-pane active" id="tab-summary-${idx}">${buildSummaryTab(r)}</div>
+         <div class="tab-pane" id="tab-annotation-${idx}">${buildAnnotationTab(r)}</div>
+       </div>`;
+
+    container.appendChild(div);
+  });
+}
+
+function buildSummaryTab(r) {
+  if (r.matchesByRule.length === 0) {
+    return '<p style="color:#666;font-style:italic;padding:12px 0">No migration issues detected. This object appears to use portable SQL.</p>';
+  }
+
+  // Group by category
+  const catOrder = ['dynamic_sql','sybase_global','cross_database','cursor','control_flow','locking_hint',
+    'sybase_function','identity','data_type','syntax','error_handling','temp_table','ansi_good'];
+
+  const grouped = {};
+  for (const m of r.matchesByRule) {
+    const cat = m.rule.category;
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(m);
+  }
+
+  let html = '<div>';
+  const orderedCats = catOrder.filter(c => grouped[c]).concat(
+    Object.keys(grouped).filter(c => !catOrder.includes(c))
+  );
+
+  for (const cat of orderedCats) {
+    const items = grouped[cat];
+    const totalMatches = items.reduce((s, m) => s + m.matches.length, 0);
+    const color = CATEGORY_COLORS[cat] || '#F5F5F5';
+    html += `<div class="issue-category-row">
+      <div class="cat-count">${totalMatches}</div>
+      <div>
+        <div class="cat-name" style="background:${color};padding:1px 6px;border-radius:3px;display:inline-block">${CATEGORY_LABELS[cat] || cat}</div>
+        <div style="margin-top:4px">`;
+    for (const m of items) {
+      html += `<div class="cat-note" style="margin-bottom:3px">
+        <strong>${escapeHtml(m.rule.id)}</strong> ${escapeHtml(m.rule.name)} (${m.matches.length}x) —
+        <span class="cat-pg">${escapeHtml(m.rule.postgres)}</span>
+        <span class="cat-note"> — ${escapeHtml(m.rule.note)}</span>
+      </div>`;
+    }
+    html += `</div></div></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function buildAnnotationTab(r) {
+  const annotated = buildAnnotatedHTML(r.source, r.allRanges);
+  return `<p style="font-size:0.78rem;color:#666;margin-bottom:8px">Hover over highlighted text to see migration notes.</p>
+<pre class="code-pre">${annotated}</pre>`;
+}
+
+function toggleDetail(idx) {
+  const body = document.getElementById(`obj-body-${idx}`);
+  body.classList.toggle('open');
+}
+
+function switchTab(e, idx, tab) {
+  e.stopPropagation();
+  const body = document.getElementById(`obj-body-${idx}`);
+  body.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  body.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(`tab-${tab}-${idx}`).classList.add('active');
+}
+
+function jumpToDetail(idx) {
+  const detailEl = document.getElementById(`obj-detail-${idx}`);
+  if (!detailEl) return;
+  detailEl.classList.add('target-highlight');
+  setTimeout(() => detailEl.classList.remove('target-highlight'), 1500);
+  // Open the detail body
+  const body = document.getElementById(`obj-body-${idx}`);
+  if (body && !body.classList.contains('open')) {
+    body.classList.add('open');
+  }
+  detailEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// FILE HANDLING
+// ============================================================
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (file) loadFile(file);
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  document.getElementById('drop-zone').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+}
+
+function loadFile(file) {
+  currentFileName = file.name;
+  document.getElementById('file-name-display').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('sql-input').value = e.target.result;
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// CLEAR
+// ============================================================
+function clearAll() {
+  document.getElementById('sql-input').value = '';
+  document.getElementById('file-name-display').textContent = '';
+  document.getElementById('file-input').value = '';
+  document.getElementById('summary-banner').classList.remove('visible');
+  document.getElementById('heatmap-section').classList.remove('visible');
+  document.getElementById('details-section').classList.remove('visible');
+  document.getElementById('export-buttons').classList.remove('visible');
+  document.getElementById('heatmap-tbody').innerHTML = '';
+  document.getElementById('details-container').innerHTML = '';
+  document.getElementById('banner-stats').innerHTML = '';
+  document.getElementById('bucket-pills').innerHTML = '';
+  currentFileName = null;
+  analysisResults = null;
+  sortState = { col: 8, asc: false };
+  applySortIndicator();
+}
+
+// ============================================================
+// HELP / LIMITATIONS TOGGLES
+// ============================================================
+function toggleHelp() {
+  document.getElementById('help-panel').classList.toggle('visible');
+}
+
+function toggleLimitations() {
+  const body = document.getElementById('limitations-body');
+  const toggle = document.getElementById('lim-toggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+// ============================================================
+// EXPORT — DOWNLOAD HTML
+// ============================================================
+function downloadHTML() {
+  if (!analysisResults) return;
+  const ts = new Date();
+  const fname = `sybase_analysis_${formatDatetime(ts)}.html`;
+
+  const src = currentFileName || 'Pasted input';
+  const rows = buildHtmlTableRows(analysisResults);
+  const details = buildHtmlDetails(analysisResults);
+  const summary = buildHtmlSummaryBlock(analysisResults, src, ts);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sybase Migration Analysis — ${escapeHtml(src)}</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#F5F5F5;color:#212121;font-size:14px}
+#wrap{max-width:1200px;margin:0 auto;padding:24px}
+h1{background:#1A237E;color:#fff;padding:16px 24px;margin:-24px -24px 24px;font-size:1.2rem}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:0.82rem;margin-bottom:24px}
+th{background:#1A237E;color:#fff;padding:8px 10px;text-align:left;font-size:0.78rem;text-transform:uppercase}
+td{padding:7px 10px;border-bottom:1px solid #eee}
+.bucket-low{background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
+.bucket-medium{background:#FFF9C4;color:#F57F17;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
+.bucket-high{background:#FFE0B2;color:#E65100;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
+.bucket-veryhigh{background:#FFCDD2;color:#B71C1C;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
+.obj-block{background:#fff;border:1px solid #ddd;border-radius:6px;margin-bottom:16px;padding:16px}
+.obj-block h3{margin:0 0 8px;font-size:0.95rem;color:#1A237E}
+.issue-row{margin-bottom:6px;font-size:0.82rem}
+.issue-id{font-weight:700;color:#283593}
+pre{background:#FAFAFA;border:1px solid #ddd;padding:12px;font-size:11px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.meta{background:#1A237E;color:#fff;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.85rem}
+.meta-row{margin-bottom:4px}
+footer{margin-top:32px;font-size:0.78rem;color:#757575;border-top:1px solid #ddd;padding-top:16px}
+</style>
+</head>
+<body>
+<div id="wrap">
+<h1>Sybase T-SQL Migration Analysis Report</h1>
+${summary}
+<h2 style="font-size:1rem;margin-bottom:12px">Object Heat Map</h2>
+<table>
+<thead><tr>
+<th>Object Name</th><th>Type</th><th>LOC</th><th>Issues</th><th>Sybase-Specific</th>
+<th>Dynamic SQL</th><th>Cross-DB</th><th>Cursors</th><th>Score</th><th>Bucket</th><th>Est. Days</th>
+</tr></thead>
+<tbody>${rows}</tbody>
+</table>
+<h2 style="font-size:1rem;margin-bottom:12px">Per-Object Findings</h2>
+${details}
+<footer>
+<p>Generated by Sybase T-SQL Migration Analyzer v1.0 — Offline tool, regex-based pattern matching only.</p>
+<p>This report is a triage aid. Results are not a substitute for manual review. No data was uploaded or stored.</p>
+</footer>
+</div>
+</body>
+</html>`;
+
+  downloadBlob(html, fname, 'text/html');
+}
+
+function buildHtmlSummaryBlock(results, src, ts) {
+  const totalLOC = results.reduce((s,r) => s+r.lines, 0);
+  const buckets = countBuckets(results);
+  const totalDays = results.reduce((s,r) => s+r.bucket.days, 0);
+  return `<div class="meta">
+<div class="meta-row"><strong>Source:</strong> ${escapeHtml(src)}</div>
+<div class="meta-row"><strong>Analyzed:</strong> ${ts.toLocaleString()}</div>
+<div class="meta-row"><strong>Objects:</strong> ${results.length} (procs: ${results.filter(r=>r.type==='proc').length}, views: ${results.filter(r=>r.type==='view').length}, functions: ${results.filter(r=>r.type==='function').length}, triggers: ${results.filter(r=>r.type==='trigger').length})</div>
+<div class="meta-row"><strong>Total LOC:</strong> ${totalLOC} | <strong>Est. Total Days:</strong> ${totalDays.toFixed(1)}</div>
+<div class="meta-row"><strong>Buckets:</strong> Low: ${buckets.Low}, Medium: ${buckets.Medium}, High: ${buckets.High}, Very High: ${buckets['Very High']}</div>
+</div>`;
+}
+
+function buildHtmlTableRows(results) {
+  return results.map(r =>
+    `<tr>
+    <td><strong>${escapeHtml(r.name)}</strong></td>
+    <td>${r.type}</td>
+    <td>${r.lines}</td>
+    <td>${r.totalIssues}</td>
+    <td>${r.sybaseCount}</td>
+    <td>${r.hasDynamicSQL ? 'Yes' : 'No'}</td>
+    <td>${r.hasCrossDB ? 'Yes' : 'No'}</td>
+    <td>${r.hasCursor ? 'Yes' : 'No'}</td>
+    <td><strong>${r.totalScore}</strong></td>
+    <td><span class="${r.bucket.cls}">${r.bucket.name}</span></td>
+    <td>${r.bucket.days}</td>
+    </tr>`
+  ).join('');
+}
+
+function buildHtmlDetails(results) {
+  return results.map(r => {
+    const issuesHtml = r.matchesByRule.length === 0
+      ? '<p style="color:#666;font-style:italic">No migration issues detected.</p>'
+      : r.matchesByRule.map(m =>
+          `<div class="issue-row"><span class="issue-id">${escapeHtml(m.rule.id)}</span> ${escapeHtml(m.rule.name)} — ${m.matches.length}x — PG: <em>${escapeHtml(m.rule.postgres)}</em> — ${escapeHtml(m.rule.note)}</div>`
+        ).join('');
+    const annotated = buildAnnotatedHTML(r.source, r.allRanges);
+    return `<div class="obj-block">
+<h3>${escapeHtml(r.name)} <span style="font-weight:normal;font-size:0.8rem">(${r.type})</span> — <span class="${r.bucket.cls}">${r.bucket.name}</span> — Score: ${r.totalScore} — ${r.lines} LOC</h3>
+<h4 style="font-size:0.82rem;margin:0 0 8px;color:#555">Findings:</h4>
+${issuesHtml}
+<h4 style="font-size:0.82rem;margin:12px 0 6px;color:#555">Annotated Source:</h4>
+<pre>${annotated}</pre>
+</div>`;
+  }).join('');
+}
+
+// ============================================================
+// EXPORT — DOWNLOAD MARKDOWN
+// ============================================================
+function downloadMarkdown() {
+  if (!analysisResults) return;
+  const ts = new Date();
+  const fname = `sybase_analysis_${formatDatetime(ts)}.md`;
+  const src = currentFileName || 'Pasted input';
+
+  const totalLOC = analysisResults.reduce((s,r) => s+r.lines, 0);
+  const totalDays = analysisResults.reduce((s,r) => s+r.bucket.days, 0);
+  const buckets = countBuckets(analysisResults);
+
+  let md = `# Sybase T-SQL Migration Analysis\n\n`;
+  md += `**Source:** ${src}  \n`;
+  md += `**Analyzed:** ${ts.toLocaleString()}  \n`;
+  md += `**Objects:** ${analysisResults.length} (procs: ${analysisResults.filter(r=>r.type==='proc').length}, views: ${analysisResults.filter(r=>r.type==='view').length}, functions: ${analysisResults.filter(r=>r.type==='function').length}, triggers: ${analysisResults.filter(r=>r.type==='trigger').length})  \n`;
+  md += `**Total LOC:** ${totalLOC} | **Est. Total Days:** ${totalDays.toFixed(1)}  \n`;
+  md += `**Buckets:** Low: ${buckets.Low}, Medium: ${buckets.Medium}, High: ${buckets.High}, Very High: ${buckets['Very High']}  \n\n`;
+
+  md += `---\n\n## Object Heat Map\n\n`;
+  md += `| Object Name | Type | LOC | Issues | Sybase-Specific | Dynamic SQL | Cross-DB | Cursors | Score | Bucket | Est. Days |\n`;
+  md += `|---|---|---|---|---|---|---|---|---|---|---|\n`;
+  for (const r of analysisResults) {
+    md += `| ${mdEsc(r.name)} | ${r.type} | ${r.lines} | ${r.totalIssues} | ${r.sybaseCount} | ${r.hasDynamicSQL?'Yes':'No'} | ${r.hasCrossDB?'Yes':'No'} | ${r.hasCursor?'Yes':'No'} | ${r.totalScore} | ${r.bucket.name} | ${r.bucket.days} |\n`;
+  }
+
+  md += `\n---\n\n## Per-Object Findings\n\n`;
+  for (const r of analysisResults) {
+    md += `### ${mdEsc(r.name)}\n\n`;
+    md += `- **Type:** ${r.type}\n`;
+    md += `- **LOC:** ${r.lines}\n`;
+    md += `- **Score:** ${r.totalScore}\n`;
+    md += `- **Bucket:** ${r.bucket.name} (${r.bucket.effort})\n`;
+    md += `- **Total Issues:** ${r.totalIssues}\n`;
+    md += `- **Dynamic SQL:** ${r.hasDynamicSQL ? 'Yes' : 'No'}\n`;
+    md += `- **Cross-DB References:** ${r.hasCrossDB ? 'Yes' : 'No'}\n`;
+    md += `- **Cursors:** ${r.hasCursor ? 'Yes' : 'No'}\n\n`;
+
+    if (r.matchesByRule.length === 0) {
+      md += `_No migration issues detected._\n\n`;
+    } else {
+      md += `| Rule | Name | Count | PostgreSQL Equivalent | Note |\n`;
+      md += `|---|---|---|---|---|\n`;
+      for (const m of r.matchesByRule) {
+        md += `| ${m.rule.id} | ${mdEsc(m.rule.name)} | ${m.matches.length} | \`${mdEsc(m.rule.postgres)}\` | ${mdEsc(m.rule.note)} |\n`;
+      }
+      md += `\n`;
+    }
+  }
+
+  md += `---\n\n## Limitations\n\n`;
+  md += `1. This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.\n`;
+  md += `2. Scoring is rubric-based. Two objects with identical scores may take very different times to rewrite in practice.\n`;
+  md += `3. Business logic complexity is not captured — the tool only analyzes syntax, not semantics.\n`;
+  md += `4. No data leaves your browser. Nothing is uploaded, logged, or stored.\n`;
+  md += `5. Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.\n`;
+
+  downloadBlob(md, fname, 'text/markdown');
+}
+
+function mdEsc(str) {
+  return String(str).replace(/\|/g, '\\|').replace(/\n/g, ' ');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function countBuckets(results) {
+  const c = { Low:0, Medium:0, High:0, 'Very High':0 };
+  for (const r of results) c[r.bucket.name]++;
+  return c;
+}
+
+function formatDatetime(d) {
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+function downloadBlob(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Open limitations panel by default on first load
+document.addEventListener('DOMContentLoaded', () => {
+  // keep limitations closed by default for cleaner UX
+});
+</script>
+</body>
+</html>
