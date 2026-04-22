@@ -1159,46 +1159,109 @@
     transition: width 0.3s ease;
   }
 
-  /* ---- CAROUSEL ---- */
+  /* ---- CAROUSEL (presentation-style slides in the middle of the page) ---- */
   .carousel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 24px;
-    overflow: hidden;
+    position: relative;
+    margin: 0 auto 28px;
+    padding: 0 64px;
+    max-width: 100%;
   }
   .carousel-head {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 18px;
-    background: var(--surface-raised);
-    border-bottom: 1px solid var(--border);
+    padding: 6px 4px 12px;
     font-family: var(--mono);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: var(--text-dim);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
   }
-  .carousel-controls { display: flex; gap: 6px; align-items: center; }
+  .carousel-head > div:first-child::before {
+    content: "\25C6";
+    color: var(--accent);
+    margin-right: 10px;
+  }
+  .carousel-controls { display: flex; gap: 8px; align-items: center; }
+  .carousel-counter {
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    min-width: 52px; text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+  .carousel-counter .cc-cur { color: var(--accent); }
+  .carousel-counter .cc-sep { margin: 0 4px; color: var(--text-dim); }
+
+  /* side nav buttons — vertically centered outside the slide */
   .carousel-btn {
-    background: transparent; border: 1px solid var(--border);
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     color: var(--text-muted);
-    width: 28px; height: 28px;
-    border-radius: 3px; cursor: pointer;
+    width: 44px; height: 44px;
+    border-radius: 50%; cursor: pointer;
     font-family: var(--mono);
-    font-size: 0.85rem;
+    font-size: 1.3rem; line-height: 1;
+    z-index: 2;
+    box-shadow: var(--shadow-raised);
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
   }
-  .carousel-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent-dim); }
-  .carousel-btn:disabled { opacity: 0.3; cursor: default; }
-  .carousel-counter { font-variant-numeric: tabular-nums; color: var(--text); min-width: 50px; text-align: center; }
+  .carousel-btn#car-prev { left: 8px; }
+  .carousel-btn#car-next { right: 8px; }
+  .carousel-btn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--surface-hover);
+    transform: translateY(-50%) scale(1.06);
+  }
+  .carousel-btn:disabled { opacity: 0.25; cursor: default; }
+
+  /* the slide itself — white-on-dark card that reads as a presentation slide */
   .carousel-body {
-    min-height: 320px;
-    padding: 30px 40px;
     position: relative;
+    background: linear-gradient(145deg, #1C2530 0%, #151B23 55%, #10161E 100%);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-height: 460px;
+    padding: 48px 56px 56px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.04) inset,
+      0 0 0 1px rgba(245,158,11,0.05) inset,
+      0 14px 40px rgba(0,0,0,0.55);
+    overflow: hidden;
   }
+  .carousel-body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+    opacity: 0.7;
+  }
+  .carousel-body::after {
+    content: "";
+    position: absolute;
+    bottom: 18px; right: 24px;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.24em;
+    opacity: 0.5;
+  }
+
   .slide { display: none; }
-  .slide.active { display: block; animation: slideIn 0.18s ease; }
-  @keyframes slideIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .slide.active { display: block; animation: slideIn 0.28s cubic-bezier(0.22, 0.8, 0.36, 1); }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(14px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 700px) {
+    .carousel { padding: 0 52px; }
+    .carousel-body { padding: 32px 24px 40px; min-height: 420px; }
+    .carousel-btn { width: 36px; height: 36px; font-size: 1.1rem; }
+  }
   .slide h3 {
     font-size: 0.74rem; font-weight: 600;
     letter-spacing: 0.2em; text-transform: uppercase;
@@ -4280,12 +4343,10 @@ function renderCarousel() {
   container.innerHTML = `
     <div class="carousel-head">
       <div>Migration Evaluation Deck</div>
-      <div class="carousel-controls">
-        <button class="carousel-btn" onclick="carouselPrev()" id="car-prev" ${state.carousel.idx === 0 ? 'disabled' : ''}>&lsaquo;</button>
-        <span class="carousel-counter"><span id="car-cur">${state.carousel.idx + 1}</span> / <span id="car-total">${total}</span></span>
-        <button class="carousel-btn" onclick="carouselNext()" id="car-next" ${state.carousel.idx === total - 1 ? 'disabled' : ''}>&rsaquo;</button>
-      </div>
+      <span class="carousel-counter"><span class="cc-cur" id="car-cur">${state.carousel.idx + 1}</span><span class="cc-sep">/</span><span id="car-total">${total}</span></span>
     </div>
+    <button class="carousel-btn" onclick="carouselPrev()" id="car-prev" ${state.carousel.idx === 0 ? 'disabled' : ''} aria-label="Previous slide">&lsaquo;</button>
+    <button class="carousel-btn" onclick="carouselNext()" id="car-next" ${state.carousel.idx === total - 1 ? 'disabled' : ''} aria-label="Next slide">&rsaquo;</button>
     <div class="carousel-body" id="carousel-body">
       ${slidesHTML}
     </div>`;
@@ -4404,28 +4465,124 @@ function computeEffortBand() {
 
 // ---- Export helpers ----
 function _exportCSSBase() {
-  return `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#fff;color:#111827;font-size:14px;line-height:1.6}
-h1{font-size:1.6rem;margin:0 0 6px}h2{font-size:1.2rem;margin:24px 0 8px;color:#111827;border-bottom:2px solid #F59E0B;padding-bottom:4px}h3{font-size:1rem;margin:16px 0 6px;color:#111827}
-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88rem}th{text-align:left;padding:8px 10px;background:#F3F4F6;color:#374151;font-weight:600;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #D1D5DB}td{padding:7px 10px;border-bottom:1px solid #eee}
-.score-row{display:flex;gap:24px;flex-wrap:wrap;margin:16px 0}.score-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:4px;padding:16px 20px;min-width:160px}
-.score-num{font-size:2.4rem;font-weight:300;color:#111827}.score-label{font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.1em}.score-tier{font-size:0.8rem;font-weight:600;margin-top:4px}
-.t-low{color:#2da44e}.t-medium{color:#bf8700}.t-high{color:#d1400d}.t-veryhigh{color:#cf222e}
-.risk-block{border-left:3px solid #ddd;padding:8px 12px;margin:8px 0;border-radius:0 3px 3px 0}
-.risk-block.red{border-color:#cf222e;background:#fff0f0}.risk-block.amber{border-color:#bf8700;background:#fffbf0}.risk-block.green{border-color:#2da44e;background:#f0fff4}
-.conf-note{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:4px;padding:12px;font-size:0.82rem;color:#666;margin-top:24px}
-.meta{background:#F9FAFB;color:#374151;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.85rem;border:1px solid #E5E7EB}
-.meta-row{font-size:0.82rem;color:#888;margin-bottom:4px}
-ul,ol{padding-left:24px;margin:8px 0}li{margin-bottom:4px}
-.doc-header{background:linear-gradient(180deg,#1A2029 0%,#151B23 100%);color:#E6EDF3;padding:22px 28px;border-bottom:2px solid #F59E0B;margin:-24px -24px 24px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-.doc-header .dh-title{font-size:0.9rem;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:4px}
-.doc-header .dh-title::before{content:"\\25C6";color:#F59E0B;margin-right:10px}
-.doc-header .dh-sub{font-size:0.78rem;color:#8B949E;letter-spacing:0.04em}
-.doc-header .dh-meta{margin-top:10px;font-size:0.78rem;color:#8B949E;display:flex;flex-wrap:wrap;gap:14px}
-.doc-header .dh-meta b{color:#E6EDF3;font-weight:500}
-.doc-subnote{color:#8B949E;background:#FFF;border:1px solid #E5E7EB;border-left:3px solid #F59E0B;padding:8px 14px;font-size:0.78rem;margin-bottom:16px;border-radius:3px}
-.doc-subnote a{color:#B67508;text-decoration:underline}
-.lim-footer{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:0.76rem;color:#555;text-align:center}
-@media print{body{font-size:12px}h1{font-size:1.3rem}h2{font-size:1rem}}`;
+  return `
+/* reset */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#F8FAFC;color:#0F172A;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+/* page container */
+.page{max-width:960px;margin:0 auto;background:#FFFFFF;min-height:100vh;box-shadow:0 0 0 1px #E2E8F0,0 1px 3px rgba(15,23,42,0.04);padding-bottom:60px}
+.page-inner{padding:0 48px}
+
+/* dark branded header */
+.doc-header{background:linear-gradient(180deg,#1A2029 0%,#0F1419 100%);color:#E6EDF3;padding:28px 48px 24px;border-bottom:3px solid #F59E0B;font-family:'Inter',ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;position:relative;overflow:hidden}
+.doc-header::after{content:"";position:absolute;top:0;right:0;width:220px;height:100%;background:radial-gradient(circle at 100% 50%,rgba(245,158,11,0.10) 0%,transparent 70%);pointer-events:none}
+.doc-header .dh-title{font-size:0.92rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;color:#E6EDF3}
+.doc-header .dh-title::before{content:"\\25C6";color:#F59E0B;margin-right:12px;font-size:0.85em}
+.doc-header .dh-sub{font-size:0.78rem;color:#94A3B8;letter-spacing:0.06em;margin-bottom:14px}
+.doc-header .dh-meta{font-size:0.76rem;color:#8B949E;display:flex;flex-wrap:wrap;gap:18px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)}
+.doc-header .dh-meta b{color:#F1F5F9;font-weight:500}
+
+/* muted subnote just below the header */
+.doc-subnote{color:#475569;background:#FFFBEB;border-left:3px solid #F59E0B;padding:11px 48px;font-size:0.8rem;border-top:1px solid #FDE68A;border-bottom:1px solid #FDE68A}
+.doc-subnote a{color:#B45309;text-decoration:underline;font-weight:500}
+.doc-subnote strong{color:#78350F}
+
+/* headings */
+h1{font-size:1.8rem;font-weight:600;margin:28px 0 8px;color:#0F172A;letter-spacing:-0.01em}
+h1 + .subtitle{color:#64748B;font-size:0.95rem;margin-bottom:24px}
+h2{font-size:1.15rem;font-weight:600;margin:32px 0 12px;color:#0F172A;letter-spacing:0.02em;padding-bottom:8px;border-bottom:1px solid #E2E8F0;position:relative}
+h2::before{content:"";position:absolute;left:0;bottom:-1px;width:44px;height:2px;background:#F59E0B}
+h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:#1E293B}
+
+p{margin-bottom:10px;color:#334155}
+
+/* tables */
+table{width:100%;border-collapse:collapse;margin:14px 0 20px;font-size:0.86rem;background:#FFF;border:1px solid #E2E8F0;border-radius:4px;overflow:hidden}
+th{text-align:left;padding:10px 12px;background:#F1F5F9;color:#475569;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #CBD5E1}
+td{padding:9px 12px;border-bottom:1px solid #F1F5F9;color:#1E293B;vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:#FAFAF9}
+
+/* score cards — premium rectangular cards with tier coloring */
+.score-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:20px 0 28px}
+.score-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:6px;padding:18px 22px;position:relative;overflow:hidden}
+.score-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#CBD5E1}
+.score-card.t-low::before{background:#10B981}
+.score-card.t-medium::before{background:#F59E0B}
+.score-card.t-high::before{background:#EA580C}
+.score-card.t-veryhigh::before{background:#DC2626}
+.score-label{font-size:0.68rem;color:#64748B;text-transform:uppercase;letter-spacing:0.14em;font-weight:600;margin-bottom:10px}
+.score-num{font-size:2.6rem;font-weight:300;color:#0F172A;line-height:1;letter-spacing:-0.03em}
+.score-num .sn-max{font-size:1rem;color:#94A3B8;font-weight:400}
+.score-tier{font-size:0.76rem;font-weight:700;margin-top:8px;text-transform:uppercase;letter-spacing:0.1em}
+.t-low,.score-tier.low{color:#047857}
+.t-medium,.score-tier.medium{color:#B45309}
+.t-high,.score-tier.high{color:#C2410C}
+.t-veryhigh,.score-tier.veryhigh{color:#B91C1C}
+
+/* risk blocks with severity coloring */
+.risk-block{border:1px solid #E2E8F0;border-left:3px solid #CBD5E1;padding:12px 16px;margin:10px 0;border-radius:0 4px 4px 0;background:#FFFFFF}
+.risk-block strong{color:#0F172A;font-weight:600;font-size:0.9rem;display:block;margin-bottom:4px}
+.risk-block.red{border-color:#FECACA;border-left-color:#DC2626;background:#FEF2F2}
+.risk-block.red strong{color:#991B1B}
+.risk-block.amber{border-color:#FDE68A;border-left-color:#F59E0B;background:#FFFBEB}
+.risk-block.amber strong{color:#92400E}
+.risk-block.green{border-color:#A7F3D0;border-left-color:#10B981;background:#F0FDF4}
+.risk-block.green strong{color:#065F46}
+
+/* meta/context block */
+.meta{background:#F8FAFC;color:#334155;padding:14px 18px;border-radius:4px;margin:18px 0;font-size:0.86rem;border:1px solid #E2E8F0;border-left:3px solid #64748B}
+.meta-row{font-size:0.8rem;color:#64748B;margin-bottom:4px}
+.meta-row b{color:#0F172A;font-weight:500}
+
+/* confidence note */
+.conf-note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:14px 18px;font-size:0.82rem;color:#78350F;margin-top:32px;border-left:3px solid #F59E0B}
+.conf-note strong{color:#92400E}
+
+/* lists */
+ul,ol{padding-left:26px;margin:10px 0 14px}
+li{margin-bottom:6px;color:#334155}
+li strong{color:#0F172A}
+
+/* code / mono */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#F1F5F9;padding:1px 6px;border-radius:3px;font-size:0.85em;color:#0F172A}
+
+/* section styling */
+.section{margin-bottom:28px}
+.section-intro{color:#64748B;font-size:0.9rem;margin-bottom:12px}
+
+/* key-value chips (used in summary sections) */
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}
+.kv-chip{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:4px;padding:10px 14px}
+.kv-chip .k{font-size:0.68rem;color:#64748B;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:4px}
+.kv-chip .v{font-size:1.1rem;color:#0F172A;font-weight:600}
+
+/* callouts */
+.callout{background:#EFF6FF;border:1px solid #BFDBFE;border-left:3px solid #3B82F6;padding:12px 16px;border-radius:0 4px 4px 0;font-size:0.88rem;color:#1E3A8A;margin:14px 0}
+.callout strong{color:#1E40AF}
+
+/* recommendation block */
+.recommendation{background:linear-gradient(135deg,#F0FDF4 0%,#ECFEFF 100%);border:1px solid #A7F3D0;border-radius:6px;padding:18px 22px;margin:18px 0;color:#064E3B}
+.recommendation h3{margin-top:0;color:#047857;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.14em;font-weight:600}
+.recommendation p{color:#064E3B;margin-top:8px}
+
+/* footer */
+.lim-footer{margin:40px 48px 0;padding:18px 20px 0;border-top:1px solid #E2E8F0;font-size:0.74rem;color:#64748B;text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:0.04em}
+.lim-footer a{color:#B45309;text-decoration:none}
+
+@media print{
+  body{background:#FFF;font-size:11px}
+  .page{box-shadow:none;max-width:none}
+  .page-inner{padding:0 32px}
+  h1{font-size:1.3rem}
+  h2{font-size:1rem}
+  .doc-header{padding:20px 32px}
+  .doc-subnote{padding:10px 32px}
+  .lim-footer{margin:28px 32px 0}
+  .score-row{gap:8px}
+  .score-num{font-size:1.9rem}
+}`;
 }
 
 function _scoreSection(label, score, tiers, tcls) {
@@ -4433,7 +4590,7 @@ function _scoreSection(label, score, tiers, tcls) {
   const num = score != null ? score : '—';
   const tLabel = tier ? tier.label : 'N/A';
   const cls = tier ? 't-' + tier.cls : '';
-  return `<div class="score-card"><div class="score-label">${label}</div><div class="score-num">${num}<span style="font-size:1rem;color:#aaa"> / 100</span></div><div class="score-tier ${cls}">${tLabel}</div></div>`;
+  return `<div class="score-card ${cls}"><div class="score-label">${label}</div><div class="score-num">${num}<span class="sn-max"> / 100</span></div><div class="score-tier ${tier ? tier.cls : ''}">${tLabel}</div></div>`;
 }
 
 function _headerBlock(title, subtitle) {
@@ -4442,7 +4599,7 @@ function _headerBlock(title, subtitle) {
   const client = escapeHtml(state.meta.client || 'Organization');
   const analyst = state.meta.analyst ? escapeHtml(state.meta.analyst) : '';
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  return `<div style="padding:24px 32px 0">
+  return `<div class="page">
 <div class="doc-header">
   <div class="dh-title">Sybase &middot; Migration Evaluator</div>
   <div class="dh-sub">Migration evaluation &middot; Sybase &rarr; PostgreSQL &middot; regex + structured checklist &middot; offline</div>
@@ -4457,8 +4614,13 @@ function _headerBlock(title, subtitle) {
   </div>
 </div>
 <div class="doc-subnote">
-  This report is produced by a regex-based triage tool with approximately 90&ndash;95% confidence on well-formed input. Not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive &mdash; document cases the tool missed and share feedback at <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a>.
-</div>`;
+  <strong>&#9888; Limitations apply.</strong> Produced by a regex-based triage tool (~90&ndash;95% confidence on well-formed input). Not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive &mdash; <a href="mailto:darshan.meel@gmail.com">send feedback</a>.
+</div>
+<div class="page-inner">`;
+}
+
+function _closePage() {
+  return '</div></div>';
 }
 
 function _checklistSectionHTML() {
@@ -4587,14 +4749,15 @@ ${_checklistSectionHTML()}
 <h2>Top Delay Factors</h2>
 ${_delayFactorsHTML(factors)}
 <h2>Effort Estimate</h2>
-<div class="score-row">
-  <div class="score-card"><div class="score-label">Low</div><div class="score-num">${effort.low}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
-  <div class="score-card"><div class="score-label">Central</div><div class="score-num">${effort.central}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
-  <div class="score-card"><div class="score-label">High</div><div class="score-num">${effort.high}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
-  <div class="score-card"><div class="score-label">Calendar (2 FTE)</div><div class="score-num">~${effort.cal}</div><div style="font-size:0.8rem;color:#888">months</div></div>
+<div class="kv-grid">
+  <div class="kv-chip"><div class="k">Low</div><div class="v">${effort.low} <span style="font-size:0.7rem;color:#64748B;font-weight:400">PM</span></div></div>
+  <div class="kv-chip"><div class="k">Central</div><div class="v">${effort.central} <span style="font-size:0.7rem;color:#64748B;font-weight:400">PM</span></div></div>
+  <div class="kv-chip"><div class="k">High</div><div class="v">${effort.high} <span style="font-size:0.7rem;color:#64748B;font-weight:400">PM</span></div></div>
+  <div class="kv-chip"><div class="k">Calendar (2 FTE)</div><div class="v">~${effort.cal} <span style="font-size:0.7rem;color:#64748B;font-weight:400">mo</span></div></div>
 </div>
 <div class="conf-note"><strong>Confidence &amp; Limitations:</strong> Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review or manual code inspection. No data leaves your browser.</div>
-<div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: darshan.meel@gmail.com</div>
+</div>
+<div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a></div>
 </div></body></html>`;
   downloadBlob(html, `sybase_tech_report_${formatDatetime(ts)}.html`, 'text/html');
   showToast('Technical report (HTML) exported.');
@@ -4702,9 +4865,10 @@ function downloadExecBriefHTML() {
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation — Executive Summary</title>
 <style>${_exportCSSBase()}</style></head><body>
 ${_headerBlock('Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary')}
-<div style="background:${ragColor};color:#fff;border-radius:4px;padding:20px 24px;margin-bottom:24px">
-  <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.8;margin-bottom:6px">Overall Recommendation</div>
-  <div style="font-size:1.1rem;line-height:1.6">${overallRec}</div>
+<div style="background:linear-gradient(135deg,${ragColor} 0%,${ragColor}DD 100%);color:#fff;border-radius:6px;padding:22px 28px;margin:8px 0 28px;box-shadow:0 4px 12px rgba(0,0,0,0.08);position:relative;overflow:hidden">
+  <div style="position:absolute;top:0;right:0;width:140px;height:100%;background:radial-gradient(circle at 100% 50%,rgba(255,255,255,0.08) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.85;margin-bottom:8px;font-weight:600">&#9733; Overall Recommendation</div>
+  <div style="font-size:1.08rem;line-height:1.6;font-weight:400">${overallRec}</div>
 </div>
 <h2>Risk Scores</h2>
 <div class="score-row">
@@ -4715,16 +4879,19 @@ ${_headerBlock('Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary
 <h2>Top 3 Macro Risks</h2>
 ${top3risks.length ? top3risks : '<p style="color:#888;font-style:italic">No significant risks identified or insufficient data.</p>'}
 <h2>Effort Estimate</h2>
-<div class="score-row">
-  <div class="score-card"><div class="score-label">Range</div><div class="score-num" style="font-size:1.8rem">${effort.low}–${effort.high}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
-  <div class="score-card"><div class="score-label">Calendar (2 FTE)</div><div class="score-num" style="font-size:1.8rem">~${effort.cal}</div><div style="font-size:0.8rem;color:#888">months</div></div>
+<div class="kv-grid">
+  <div class="kv-chip"><div class="k">Effort range</div><div class="v">${effort.low}&ndash;${effort.high} <span style="font-size:0.72rem;color:#64748B;font-weight:400">person-months</span></div></div>
+  <div class="kv-chip"><div class="k">Central estimate</div><div class="v">${effort.central} <span style="font-size:0.72rem;color:#64748B;font-weight:400">PM</span></div></div>
+  <div class="kv-chip"><div class="k">Calendar (2 FTE)</div><div class="v">~${effort.cal} <span style="font-size:0.72rem;color:#64748B;font-weight:400">months</span></div></div>
+  <div class="kv-chip"><div class="k">Confidence</div><div class="v">~${conf}<span style="font-size:0.72rem;color:#64748B;font-weight:400">%</span></div></div>
 </div>
 <h2>Approach Recommendation</h2>
-<div style="background:#F9F9F9;border-left:3px solid ${ragColor};padding:14px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:0.92rem;line-height:1.6">${escapeHtml(approachRec)}</div>
+<div class="callout" style="border-left-color:${ragColor};background:#FFFFFF;color:#1E293B">${escapeHtml(approachRec)}</div>
 <h2>Recommended Engagement Conditions</h2>
 <ul>${conditionsList.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
 <div class="conf-note"><strong>Confidence note:</strong> This summary is generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. It is a triage aid based on regex analysis and a structured checklist — not a substitute for on-site review.</div>
-<div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: darshan.meel@gmail.com</div>
+</div>
+<div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a></div>
 </div></body></html>`;
   downloadBlob(html, `sybase_exec_brief_${formatDatetime(ts)}.html`, 'text/html');
   showToast('Executive brief (HTML) exported.');
