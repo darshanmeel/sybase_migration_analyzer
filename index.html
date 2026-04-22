@@ -5599,6 +5599,7 @@ function downloadRawJSON() {
     schemaVersion: 1,
     generatedAt: ts.toISOString(),
     source: state.sourceDialect,
+    target: state.targetDialect,
     confidence: computeConfidence(),
     meta: state.meta,
     scores: state.scores,
@@ -5667,6 +5668,7 @@ function importRawJSON(imported) {
   if (imported.codeMetrics) state.codeMetrics = imported.codeMetrics;
   if (imported.codeResults) state.codeResults = imported.codeResults;
   if (imported.source) state.sourceDialect = imported.source;
+  if (imported.target) state.targetDialect = imported.target;
 
   // Restore SQL input textarea
   if (imported.sqlInput) {
@@ -5695,6 +5697,15 @@ function importRawJSON(imported) {
 
   // Re-render UI elements
   updateDialectStrings();
+
+  // Sync target selector UI if target was imported
+  if (imported.target) {
+    document.querySelectorAll('#target-seg .tseg').forEach(b => {
+      b.classList.toggle('active', b.dataset.target === imported.target);
+    });
+    const hint = document.getElementById('target-hint');
+    if (hint) hint.textContent = TARGETS[imported.target]?.note || '';
+  }
 
   // Update checklist view if tab is active
   if (state.activeTab === 'checklist') {
