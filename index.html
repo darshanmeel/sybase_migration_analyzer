@@ -3538,18 +3538,22 @@ function stat(val, label) {
   return `<div class="stat-item"><div class="stat-value">${val}</div><div class="stat-label">${label}</div></div>`;
 }
 
-// Recompute Est. Days and bucket pill counts using target-adjusted buckets.
-// Called by setTargetDialect so the banner stays in sync with the heatmap.
+// Recompute Est. Days and bucket pill counts when target changes.
+// Est. Days uses the same multiplier approach as computeEffortBand() for consistency
+// with the Reports tab: originalBucketSum × TARGET_CODE_MULTIPLIER.
+// Bucket pills use per-rule adjusted buckets for accurate per-object complexity display.
 function updateBannerForTarget(results, tgt) {
   if (!results || !results.length) return;
+  // Bucket pills: use per-rule adjusted buckets (visual complexity per object)
   const bucketCounts = { Low:0, Medium:0, High:0, 'Very High':0 };
-  let totalDays = 0;
   for (const r of results) {
     const adj = r.matchesByRule ? computeTargetObjectScore(r.matchesByRule, r.lines, tgt) : { bucket: r.bucket };
     bucketCounts[adj.bucket.name]++;
-    totalDays += adj.bucket.days;
   }
-  // Update just the Est. Days stat item (last one in banner-stats)
+  // Est. Days: original bucket-days sum × target multiplier (matches Reports formula)
+  const originalDays = results.reduce((s, r) => s + r.bucket.days, 0);
+  const totalDays = originalDays * (TARGET_CODE_MULTIPLIER[tgt] || 1.0);
+  // Update Est. Days stat item (last one in banner-stats)
   const statsEl = document.getElementById('banner-stats');
   if (statsEl) {
     const items = statsEl.querySelectorAll('.stat-item');
