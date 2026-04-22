@@ -1363,6 +1363,69 @@
   .rule-catalog td.rc-id { color: var(--accent); }
   .rule-catalog td.rc-cat { color: var(--text-muted); font-size: 0.75rem; }
 
+  /* ---- ABOUT TAB — TOP NAV + LIMITATIONS ---- */
+  .about-top-nav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 700px) { .about-top-nav { grid-template-columns: 1fr; } }
+  .about-toplink {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.12s, border-color 0.12s, background 0.12s;
+    box-shadow: var(--shadow-card);
+  }
+  .about-toplink:hover { transform: translateY(-1px); border-color: var(--accent); }
+  .about-toplink .atl-tag {
+    font-family: var(--mono); font-size: 0.68rem;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 8px; color: var(--text-dim);
+  }
+  .about-toplink .atl-title {
+    font-size: 1.05rem; font-weight: 600; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .about-toplink .atl-desc {
+    font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
+  }
+  .about-toplink.danger {
+    background: linear-gradient(135deg, rgba(248,81,73,0.10), rgba(248,81,73,0.02));
+    border-color: rgba(248,81,73,0.45);
+    border-left: 3px solid var(--color-veryhigh);
+  }
+  .about-toplink.danger .atl-tag { color: var(--color-veryhigh); letter-spacing: 0.14em; }
+  .about-toplink.danger:hover {
+    background: linear-gradient(135deg, rgba(248,81,73,0.18), rgba(248,81,73,0.05));
+    border-color: var(--color-veryhigh);
+  }
+  .about-toplink.ok {
+    border-left: 3px solid var(--accent);
+  }
+  .about-toplink.ok .atl-tag { color: var(--accent); }
+
+  .limitations-banner {
+    background: rgba(248,81,73,0.07);
+    border: 1px solid rgba(248,81,73,0.35);
+    border-left: 3px solid var(--color-veryhigh);
+    border-radius: 4px;
+    padding: 12px 18px;
+    margin-bottom: 22px;
+    color: var(--text);
+    font-size: 0.85rem;
+  }
+  .limitations-banner strong { color: var(--color-veryhigh); letter-spacing: 0.04em; }
+
+  .about-limitations {
+    border-left: 3px solid var(--color-veryhigh) !important;
+    background: linear-gradient(135deg, rgba(248,81,73,0.06), rgba(248,81,73,0.01)) !important;
+  }
+  .about-limitations h3 { color: var(--color-veryhigh) !important; }
+
   /* ---- RED FLAGS on reports ---- */
   .risk-row {
     display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 0;
@@ -1410,7 +1473,7 @@
 <header id="app-header">
   <div class="title-block">
     <h1>Sybase · Migration Evaluator</h1>
-    <p>Pre-acquisition technical diligence · Sybase → PostgreSQL · regex + structured checklist · offline</p>
+    <p>Migration evaluation · Sybase → PostgreSQL · regex + structured checklist · offline</p>
   </div>
   <div class="header-right">
     <span class="credit-line" id="credit-line">Prepared by <strong>Darshan Singh</strong></span>
@@ -1483,6 +1546,13 @@
 
 <!-- MAIN -->
 <div id="main-wrap">
+
+<div class="limitations-banner">
+  <strong>&#9888; NOTE:</strong>
+  This is a regex-based triage tool with approximately 90–95% confidence on well-formed input. Results are not a substitute for reading the code or talking to the DBA.
+  <a href="#" onclick="switchTab('about'); setTimeout(function(){ var el = document.getElementById('limitations'); if (el) el.scrollIntoView({behavior:'smooth'}); }, 50); return false;"
+     style="color: var(--color-veryhigh); font-weight: 600; margin-left: 6px; text-decoration: underline;">Read limitations &rarr;</a>
+</div>
 
 <!-- ===== TAB: ANALYSIS ===== -->
 <section class="tab-panel active" id="tab-analysis">
@@ -1601,6 +1671,12 @@ GO"></textarea>
   <div id="reports-empty" class="report-empty">
     <div class="re-big">No data yet</div>
     <div>Run an analysis on the <b>Analysis</b> tab, and/or fill in the <b>Checklist</b> tab. Scores and report exports appear here once there is data to summarize.</div>
+    <div style="margin-top: 18px;">
+      <button class="report-action-btn" onclick="downloadMethodologyDeck()" style="display:inline-flex;">
+        <span class="rab-title">Methodology Deck · HTML</span>
+        <span class="rab-desc">You can download this now — it doesn't need any data</span>
+      </button>
+    </div>
   </div>
   <div id="reports-content" style="display:none;">
     <div class="report-scores" id="report-scores"></div>
@@ -1608,25 +1684,26 @@ GO"></textarea>
     <div class="report-narrative">
       <h3>Engagement Context</h3>
       <div class="narrative-row">
-        <label>Target company / platform name</label>
-        <input type="text" id="nv-target" placeholder="e.g., Beta Systems trading platform" oninput="setNarrative('target', this.value)">
+        <label>Organization being evaluated (client)</label>
+        <input type="text" id="nv-client" placeholder="e.g., Beta Systems trading platform" oninput="setNarrative('client', this.value)">
       </div>
       <div class="narrative-row">
-        <label>Acquirer name (optional)</label>
-        <input type="text" id="nv-acquirer" placeholder="e.g., Acme Capital Partners" oninput="setNarrative('acquirer', this.value)">
+        <label>Analysis performed by (consultant / firm / team)</label>
+        <input type="text" id="nv-analyst" placeholder="e.g., Darshan Singh / Acme Consulting" oninput="setNarrative('analyst', this.value)">
       </div>
       <div class="narrative-row">
-        <label>Bottom-line assessment (1–2 sentences). Appears on the executive brief cover.</label>
-        <textarea id="nv-bottomLine" rows="2" placeholder="e.g., The Sybase platform is recoverable but carries material risk. Recommend ..." oninput="setNarrative('bottomLine', this.value)"></textarea>
+        <label>Overall recommendation (1–2 sentences). Appears at the top of every report.</label>
+        <textarea id="nv-recommendation" rows="2" placeholder="e.g., The Sybase platform is recoverable but carries material risk. Recommend a phased migration approach ..." oninput="setNarrative('recommendation', this.value)"></textarea>
       </div>
     </div>
     <div class="report-actions">
       <h3>Export</h3>
       <div class="report-action-grid">
+        <button class="report-action-btn" onclick="downloadMethodologyDeck()"><span class="rab-title">Methodology Deck · HTML</span><span class="rab-desc">Pre-engagement: what's needed, what each phase covers, what you'll receive</span></button>
         <button class="report-action-btn" onclick="downloadTechReportHTML()"><span class="rab-title">Technical Report · HTML</span><span class="rab-desc">Full analyzer findings + checklist answers + scores</span></button>
         <button class="report-action-btn" onclick="downloadTechReportMD()"><span class="rab-title">Technical Report · Markdown</span><span class="rab-desc">Same content, plain-text for Notion / Confluence</span></button>
-        <button class="report-action-btn" onclick="downloadExecBriefHTML()"><span class="rab-title">Executive Brief · HTML</span><span class="rab-desc">2–3 page summary for acquirer co-founders</span></button>
-        <button class="report-action-btn" onclick="downloadExecBriefMD()"><span class="rab-title">Executive Brief · Markdown</span><span class="rab-desc">Same, Markdown format</span></button>
+        <button class="report-action-btn" onclick="downloadExecBriefHTML()"><span class="rab-title">Executive Summary · HTML</span><span class="rab-desc">2–3 page summary for sponsors and decision-makers</span></button>
+        <button class="report-action-btn" onclick="downloadExecBriefMD()"><span class="rab-title">Executive Summary · Markdown</span><span class="rab-desc">Same, Markdown format</span></button>
         <button class="report-action-btn" onclick="downloadSlideDeck()"><span class="rab-title">Slide Deck · HTML</span><span class="rab-desc">8 slides, keyboard nav, present on a call</span></button>
         <button class="report-action-btn" onclick="downloadRawJSON()"><span class="rab-title">Raw Data · JSON</span><span class="rab-desc">Full state dump for archival / downstream tools</span></button>
       </div>
@@ -1636,10 +1713,51 @@ GO"></textarea>
 
 <!-- ===== TAB: ABOUT ===== -->
 <section class="tab-panel" id="tab-about">
+
+  <div class="about-top-nav">
+    <a href="#what-it-does" class="about-toplink ok">
+      <div class="atl-tag">Tool / Evaluator</div>
+      <div class="atl-title">What it does &amp; doesn't do</div>
+      <div class="atl-desc">Capabilities, scoring model, what's in and out of scope.</div>
+    </a>
+    <a href="#limitations" class="about-toplink danger">
+      <div class="atl-tag">&#9888; READ THIS FIRST</div>
+      <div class="atl-title">Limitations</div>
+      <div class="atl-desc">Important caveats. A triage aid — not a real parser, not an on-site audit.</div>
+    </a>
+  </div>
+
   <div class="about-hero">
     <div class="hero-tag">Confidence · Methodology · Limitations</div>
     <h2>This tool produces estimates with approximately <span class="hero-num">90–95%</span> confidence for well-formed input.</h2>
     <p>The score is regex-based code analysis plus a structured checklist. <b>Confidence drops sharply</b> when SQL is malformed, when the checklist is partially filled, or when the underlying platform includes features outside the rule set (Sybase IQ specifics, custom extended stored procedures, Replication Server topology, undocumented thick-client dependencies). Results are a <b>triage aid</b>, not a substitute for on-site review, interviews with the engineering team, or reading the actual code.</p>
+  </div>
+
+  <div id="what-it-does"></div>
+  <div class="about-section" id="what-it-does-section">
+    <h3>What this tool does</h3>
+    <ul>
+      <li>Analyzes pasted Sybase T-SQL against 40 regex patterns to surface constructs that usually require rewrite for PostgreSQL.</li>
+      <li>Tracks a 70-item migration-readiness checklist across six phases. Each item has a weight and a notes field.</li>
+      <li>Produces three live scores — Code Complexity, Migration Readiness, Composite Risk — with transparent formulas.</li>
+      <li>Generates a pre-engagement methodology deck, a technical report, an executive summary, a filled slide deck, and a raw JSON dump.</li>
+      <li>Keeps a copy-ready SQL discovery library for platform, inventory, connections, performance, and schema-quality queries.</li>
+      <li>Runs entirely in the browser — no network, no storage, no telemetry.</li>
+    </ul>
+    <h3 style="margin-top: 18px;">What this tool does NOT do</h3>
+    <ul>
+      <li>Does not parse SQL. Regex-only. Unusual formatting can cause false positives or misses.</li>
+      <li>Does not execute SQL or connect to any database.</li>
+      <li>Does not save state between sessions. Refresh clears everything.</li>
+      <li>Does not capture business-logic complexity — only syntax and pattern counts.</li>
+      <li>Does not verify checklist answers. Self-reported, not cross-checked.</li>
+      <li>Does not generate production-ready PostgreSQL rewrites. PG equivalents shown are starting points.</li>
+      <li>Does not export to PDF directly. Use the browser's Print &rarr; Save as PDF.</li>
+    </ul>
+    <h3 style="margin-top: 18px;">Other databases</h3>
+    <p>
+      The same tool works for <b>any relational database</b> you want to evaluate for migration — Oracle, SQL Server, MySQL, DB2, Informix. The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase, so those specific suggestions will not be meaningful for other sources — but the <b>checklist, SQL Library, scoring model, reports, and slide decks</b> all translate directly. If you need rules tuned for another source database, send us feedback (below) and we can add rule packs.
+    </p>
   </div>
 
   <div class="about-section">
@@ -1653,11 +1771,12 @@ GO"></textarea>
       <li><b>Code Complexity (0–100):</b> derived from per-object rule matches and LOC tiers from the analyzer. Normalized across objects. Tiers: 0–30 LOW, 31–55 MEDIUM, 56–80 HIGH, 81–100 VERY HIGH.</li>
       <li><b>Migration Readiness (0–100, higher = more gap):</b> sum of weights of unchecked checklist items, normalized to percentage. Tiers: 0–25 READY, 26–50 MOSTLY READY, 51–75 MATERIAL GAPS, 76–100 SEVERE GAPS.</li>
       <li><b>Composite Risk (0–100):</b> <code>0.45 × CodeComplexity + 0.55 × Readiness</code>. Readiness is weighted slightly heavier because human/process risks are harder to recover from than code. If only one input exists, the composite equals that one (with a caveat).</li>
-      <li><b>Effort estimate (person-months):</b> calibrated to the playbook example (237 procs ≈ 9–14 PM) and inflated by the readiness gap. Range shown ±15% around the central estimate.</li>
+      <li><b>Effort estimate (person-months):</b> estimated from per-object scores and LOC, scaled by the readiness gap. Ranges are shown as ±15% around a central estimate. Treat the range as a planning starting point — actual effort varies significantly with team skill, tooling maturity, and scope.</li>
     </ul>
+    <p style="margin-top: 10px; font-size: 0.83rem; color: var(--text-muted);">The effort estimate is calibrated against a typical mid-sized Sybase engagement and scaled by the readiness gap. Actual effort will vary based on team skill, tooling maturity, and scope decisions — treat the range as a starting point for planning, not a commitment.</p>
   </div>
 
-  <div class="about-section">
+  <div class="about-section about-limitations" id="limitations">
     <h3>Known limitations</h3>
     <ol>
       <li>This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.</li>
@@ -1666,8 +1785,8 @@ GO"></textarea>
       <li>No data leaves your browser. Nothing is uploaded, logged, or stored.</li>
       <li>Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.</li>
       <li>Checklist answers are <b>self-reported</b>, not independently verified by the tool.</li>
-      <li>Scoring weights are opinionated — based on the playbook methodology. Other engagements may warrant different weights.</li>
-      <li>The effort formula is calibrated to one reference engagement and will vary significantly based on team skill, tooling maturity, and scope decisions.</li>
+      <li>Scoring weights are opinionated. Other engagements may warrant different weights.</li>
+      <li>The effort formula is calibrated against a typical mid-sized engagement and will vary significantly based on team skill, tooling maturity, and scope decisions.</li>
     </ol>
   </div>
 
@@ -1677,14 +1796,37 @@ GO"></textarea>
     <div class="rule-catalog" id="rule-catalog"></div>
   </div>
 
-  <div class="about-section">
-    <h3>Playbook attribution</h3>
-    <p>This tool operationalizes the methodology in <code>Sybase_MA_Playbook.md</code> — a pre-acquisition due-diligence playbook covering platform audit, technical-debt inventory, migration risk, integration mapping, and commercial framing (price adjustment / TSA / escrow / walk-away). The checklist items, SQL library, and report structure all map to specific playbook sections. Findings produced here are a triage aid, not a substitute for on-site review.</p>
+  <div class="about-section" id="feedback">
+    <h3>Feedback &amp; Suggestions</h3>
+    <p>This tool is actively maintained. If you hit a case that isn't covered — a Sybase construct that should have a rule, a checklist item that would have caught something the tool missed, a SQL query worth adding to the library, or an export that would be useful — please send it over.</p>
+    <p style="margin-top: 10px;"><b>The checklist is not exhaustive.</b> During a real evaluation you will encounter cases the tool didn't anticipate. Document those as you go, and share them so this tool gets better for the next engagement.</p>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px;">
+      <a class="report-action-btn" style="text-decoration: none;"
+         href="mailto:darshan.meel@gmail.com?subject=Sybase%20Migration%20Evaluator%20%E2%80%94%20Suggestion"
+         target="_blank">
+        <span class="rab-title">Email a suggestion</span>
+        <span class="rab-desc">Anything — rule ideas, bug reports, feature requests</span>
+      </a>
+      <a class="report-action-btn" style="text-decoration: none;"
+         href="mailto:darshan.meel@gmail.com?subject=Sybase%20Migration%20Evaluator%20%E2%80%94%20New%20checklist%20item&amp;body=Phase%20(1%E2%80%936)%3A%20%0AQuestion%3A%20%0AWhy%20it%20matters%3A%20%0ARisk%20weight%20(1%E2%80%935)%3A%20%0ARed%20flag%20if%20unchecked%3F%20(yes%2Fno)%3A%20"
+         target="_blank">
+        <span class="rab-title">Suggest a checklist item</span>
+        <span class="rab-desc">Pre-filled template with phase, weight, red-flag fields</span>
+      </a>
+    </div>
   </div>
 
   <div class="about-section" id="about-credit">
-    <h3>Credit</h3>
-    <p>Prepared by <b>Darshan Singh</b>. This tool, the playbook methodology, and the generated reports are the work of a single consultant. You can hide the credit from exported reports per session via the gear icon in the header (default: on).</p>
+    <h3>Credit &amp; Contact</h3>
+    <p>Prepared by <b>Darshan Singh</b>.</p>
+    <p style="margin-top: 8px;">
+      Email:
+      <a href="mailto:darshan.meel@gmail.com" style="color: var(--accent); text-decoration: none;">darshan.meel@gmail.com</a>
+      &nbsp;·&nbsp;
+      GitHub:
+      <a href="https://github.com/darshanmeel/sybase_migration_analyzer" target="_blank" style="color: var(--accent); text-decoration: none;">github.com/darshanmeel/sybase_migration_analyzer</a>
+    </p>
+    <p style="margin-top: 8px;">The author credit on exports can be hidden per session via the gear icon in the header (default: on).</p>
   </div>
 </section>
 
@@ -1711,7 +1853,7 @@ const state = {
   codeResults: null,       // array from analyzeObject
   codeMetrics: null,       // summary metrics for scoring/reports
   checklist: {},           // { [itemId]: { checked, notes } }
-  meta: { sybaseVersion: 'Unknown', target: '', acquirer: '', bottomLine: '' },
+  meta: { sybaseVersion: 'Unknown', client: '', analyst: '', recommendation: '' },
   showCredit: true,
   confidence: 0.92,
   scores: { code: null, readiness: null, composite: null },
@@ -2849,379 +2991,379 @@ function downloadBlob(content, filename, mimeType) {
 // CHECKLIST DATA + LOGIC
 // ============================================================
 const CHECKLIST = [
-  // ---- Week 1: Pre-Call Preparation (§4.1–§4.4, §4.6) ----
-  { id:'W1-001', phase:'week_1', category:'platform',
-    question:'System architecture diagrams (logical and physical) obtained?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Request from target company before first call. Absence is itself a finding.',
-    playbookRef:'§4.1 #1' },
-  { id:'W1-002', phase:'week_1', category:'data',
-    question:'ERDs or data dictionary obtained?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Request ERD export from Sybase Architect or manual creation if missing.',
-    playbookRef:'§4.1 #2' },
-  { id:'W1-003', phase:'week_1', category:'operations',
-    question:'Runbooks, DR plans, and backup/restore test evidence obtained?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'Missing runbooks = undocumented system; price in documentation workstream.',
-    playbookRef:'§4.1 #3' },
-  { id:'W1-004', phase:'week_1', category:'operations',
-    question:'Security and compliance documentation (SOC2, HIPAA, PCI, GDPR) obtained?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Identify applicable regimes; missing docs may block deal close.',
-    playbookRef:'§4.1 #4' },
-  { id:'W1-005', phase:'week_1', category:'platform',
-    question:'Existing technical debt register or roadmap obtained?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Absence confirms debt is untracked — note in findings.',
-    playbookRef:'§4.1 #5' },
-  { id:'W1-006', phase:'week_1', category:'commercial',
-    question:'Sybase and third-party license agreements reviewed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Per-CPU or per-core licensing may create surprise costs post-acquisition.',
-    playbookRef:'§4.1 #6' },
-  { id:'W1-007', phase:'week_1', category:'operations',
-    question:'Incident/outage log for the last 12 months obtained?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Reveals hidden reliability issues; correlate against SLA claims.',
-    playbookRef:'§4.1 #7' },
-  { id:'W1-008', phase:'week_1', category:'commercial',
-    question:'SAP/Sybase support contracts and third-party support contracts reviewed?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Check for transferability clauses and renewal dates.',
-    playbookRef:'§4.1 #8' },
-  { id:'W1-009', phase:'week_1', category:'platform',
-    question:'Read-only database access requested (or DBA export scripts supplied)?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Self-service discovery is faster; supply scripts to DBA if direct access denied.',
-    playbookRef:'§4.2' },
-  { id:'W1-010', phase:'week_1', category:'integration',
-    question:'Full list of applications connecting to Sybase requested?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Include scheduled jobs, batch processes, Excel ODBC, and shadow IT.',
-    playbookRef:'§4.3 #1–#3' },
-  { id:'W1-011', phase:'week_1', category:'integration',
-    question:'Inbound and outbound data feeds documented?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Every undocumented feed is a migration risk; push for a complete list.',
-    playbookRef:'§4.3 #4–#5' },
-  { id:'W1-012', phase:'week_1', category:'operations',
-    question:'Current SLA and measured uptime for last 12 months confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Inability to quote uptime = weak operational maturity finding.',
-    playbookRef:'§4.4 #1' },
-  { id:'W1-013', phase:'week_1', category:'people',
-    question:'Confirmed whether original architect / lead developer is still with company?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'Departure = institutional knowledge loss; recommend TSA clause to retain.',
-    playbookRef:'§4.4 #3' },
-  { id:'W1-014', phase:'week_1', category:'operations',
-    question:'Sybase EOL dates for the version in use (mainstream and extended support) researched?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'EOL platform creates security exposure and forces migration timing.',
-    playbookRef:'§4.6 #1' },
-  { id:'W1-015', phase:'week_1', category:'platform',
-    question:'Independent research on target company (size, customers, disclosed incidents) completed?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Public breach disclosures or outages indicate hidden risk.',
-    playbookRef:'§4.6 #2–#3' },
+ // ---- Phase 1: Preparation & Scoping (§4.1–§4.4, §4.6) ----
+ { id:'P1-001', phase:'phase_1', category:'platform',
+ question:'System architecture diagrams (logical and physical) obtained?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Request from organization before first call. Absence is itself a finding.',
+ playbookRef:'§4.1 #1' },
+ { id:'P1-002', phase:'phase_1', category:'data',
+ question:'ERDs or data dictionary obtained?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Request ERD export from Sybase Architect or manual creation if missing.',
+ playbookRef:'§4.1 #2' },
+ { id:'P1-003', phase:'phase_1', category:'operations',
+ question:'Runbooks, DR plans, and backup/restore test evidence obtained?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'Missing runbooks = undocumented system; budget for documentation workstream.',
+ playbookRef:'§4.1 #3' },
+ { id:'P1-004', phase:'phase_1', category:'operations',
+ question:'Security and compliance documentation (SOC2, HIPAA, PCI, GDPR) obtained?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Identify applicable regimes; missing docs may block migration start.',
+ playbookRef:'§4.1 #4' },
+ { id:'P1-005', phase:'phase_1', category:'platform',
+ question:'Existing technical debt register or roadmap obtained?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Absence confirms debt is untracked — note in findings.',
+ playbookRef:'§4.1 #5' },
+ { id:'P1-006', phase:'phase_1', category:'commercial',
+ question:'Sybase and third-party license agreements reviewed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Per-CPU or per-core licensing may create surprise costs post-migration.',
+ playbookRef:'§4.1 #6' },
+ { id:'P1-007', phase:'phase_1', category:'operations',
+ question:'Incident/outage log for the last 12 months obtained?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Reveals hidden reliability issues; correlate against SLA claims.',
+ playbookRef:'§4.1 #7' },
+ { id:'P1-008', phase:'phase_1', category:'commercial',
+ question:'SAP/Sybase support contracts and third-party support contracts reviewed?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Check for transferability clauses and renewal dates.',
+ playbookRef:'§4.1 #8' },
+ { id:'P1-009', phase:'phase_1', category:'platform',
+ question:'Read-only database access requested (or DBA export scripts supplied)?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Self-service discovery is faster; supply scripts to DBA if direct access denied.',
+ playbookRef:'§4.2' },
+ { id:'P1-010', phase:'phase_1', category:'integration',
+ question:'Full list of applications connecting to Sybase requested?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Include scheduled jobs, batch processes, Excel ODBC, and shadow IT.',
+ playbookRef:'§4.3 #1–#3' },
+ { id:'P1-011', phase:'phase_1', category:'integration',
+ question:'Inbound and outbound data feeds documented?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Every undocumented feed is a migration risk; push for a complete list.',
+ playbookRef:'§4.3 #4–#5' },
+ { id:'P1-012', phase:'phase_1', category:'operations',
+ question:'Current SLA and measured uptime for last 12 months confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Inability to quote uptime = weak operational maturity finding.',
+ playbookRef:'§4.4 #1' },
+ { id:'P1-013', phase:'phase_1', category:'people',
+ question:'Confirmed whether original architect / lead developer is still with company?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'Departure = institutional knowledge loss; recommend knowledge-transfer arrangement clause to retain.',
+ playbookRef:'§4.4 #3' },
+ { id:'P1-014', phase:'phase_1', category:'operations',
+ question:'Sybase EOL dates for the version in use (mainstream and extended support) researched?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'EOL platform creates security exposure and forces migration timing.',
+ playbookRef:'§4.6 #1' },
+ { id:'P1-015', phase:'phase_1', category:'platform',
+ question:'Independent research on organization (size, customers, disclosed incidents) completed?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Public breach disclosures or outages indicate hidden risk.',
+ playbookRef:'§4.6 #2–#3' },
 
-  // ---- Call 1: Business Context & Platform Overview (§5.1) ----
-  { id:'C1-001', phase:'call_1', category:'platform',
-    question:'Business-critical function of the Sybase platform confirmed (what breaks for customers if it goes down)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Defines migration blast radius and downtime tolerance.',
-    playbookRef:'§5.1 Q1' },
-  { id:'C1-002', phase:'call_1', category:'people',
-    question:'Primary user base confirmed (internal, external, or both)?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'External users mean customer-facing downtime risk during migration.',
-    playbookRef:'§5.1 Q2' },
-  { id:'C1-003', phase:'call_1', category:'commercial',
-    question:'Revenue dependency on the platform assessed (direct or indirect)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Direct revenue dependency raises migration stakes significantly.',
-    playbookRef:'§5.1 Q3' },
-  { id:'C1-004', phase:'call_1', category:'platform',
-    question:'Platform origin confirmed — when built, who built it?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Age and builder context predicts documentation quality and tech debt depth.',
-    playbookRef:'§5.1 Q4' },
-  { id:'C1-005', phase:'call_1', category:'people',
-    question:'Key-person dependency assessed — only one person understands the platform?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'Single-person dependency = dealbreaker risk; recommend TSA with named individual.',
-    playbookRef:'§5.1 Red Flag #1' },
-  { id:'C1-006', phase:'call_1', category:'people',
-    question:'Current team size and support structure confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Understand who will own the platform post-acquisition.',
-    playbookRef:'§5.1 Q6' },
-  { id:'C1-007', phase:'call_1', category:'operations',
-    question:'SLA offered to customers confirmed and uptime measurement approach understood?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Inability to quote numbers is itself a red-flag finding.',
-    playbookRef:'§5.1 Q7' },
-  { id:'C1-008', phase:'call_1', category:'commercial',
-    question:'Regulatory and compliance obligations on the data identified (HIPAA, PCI, SOC2, GDPR)?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'Compliance obligations may constrain downtime windows and architecture choices.',
-    playbookRef:'§5.1 Q8' },
-  { id:'C1-009', phase:'call_1', category:'commercial',
-    question:'Customer contracts referencing specific infrastructure or technology identified?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'Contractual lock-in to Sybase can block or delay migration.',
-    playbookRef:'§5.1 Q9' },
-  { id:'C1-010', phase:'call_1', category:'operations',
-    question:'Biggest operational risk to the platform today surfaced?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Open-ended; captures risks the structured questions missed.',
-    playbookRef:'§5.1 Q10' },
+ // ---- Phase 2: Business Context & Platform Overview (§5.1) ----
+ { id:'P2-001', phase:'phase_2', category:'platform',
+ question:'Business-critical function of the Sybase platform confirmed (what breaks for customers if it goes down)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Defines migration blast radius and downtime tolerance.',
+ playbookRef:'§5.1 Q1' },
+ { id:'P2-002', phase:'phase_2', category:'people',
+ question:'Primary user base confirmed (internal, external, or both)?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'External users mean customer-facing downtime risk during migration.',
+ playbookRef:'§5.1 Q2' },
+ { id:'P2-003', phase:'phase_2', category:'commercial',
+ question:'Revenue dependency on the platform assessed (direct or indirect)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Direct revenue dependency raises migration stakes significantly.',
+ playbookRef:'§5.1 Q3' },
+ { id:'P2-004', phase:'phase_2', category:'platform',
+ question:'Platform origin confirmed — when built, who built it?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Age and builder context predicts documentation quality and tech debt depth.',
+ playbookRef:'§5.1 Q4' },
+ { id:'P2-005', phase:'phase_2', category:'people',
+ question:'Key-person dependency assessed — only one person understands the platform?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'Single-person dependency = scope blocker risk; recommend knowledge-transfer arrangement with named individual.',
+ playbookRef:'§5.1 Red Flag #1' },
+ { id:'P2-006', phase:'phase_2', category:'people',
+ question:'Current team size and support structure confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Understand who will own the platform post-migration.',
+ playbookRef:'§5.1 Q6' },
+ { id:'P2-007', phase:'phase_2', category:'operations',
+ question:'SLA offered to customers confirmed and uptime measurement approach understood?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Inability to quote numbers is itself a red-flag finding.',
+ playbookRef:'§5.1 Q7' },
+ { id:'P2-008', phase:'phase_2', category:'commercial',
+ question:'Regulatory and compliance obligations on the data identified (HIPAA, PCI, SOC2, GDPR)?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'Compliance obligations may constrain downtime windows and architecture choices.',
+ playbookRef:'§5.1 Q8' },
+ { id:'P2-009', phase:'phase_2', category:'commercial',
+ question:'Customer contracts referencing specific infrastructure or technology identified?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'Contractual lock-in to Sybase can block or delay migration.',
+ playbookRef:'§5.1 Q9' },
+ { id:'P2-010', phase:'phase_2', category:'operations',
+ question:'Biggest operational risk to the platform today surfaced?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Open-ended; captures risks the structured questions missed.',
+ playbookRef:'§5.1 Q10' },
 
-  // ---- Call 2: Database & Code Deep Dive (§5.2) ----
-  { id:'C2-001', phase:'call_2', category:'platform',
-    question:'Sybase products in use confirmed (ASE, IQ, Replication Server, SQL Anywhere, Open Switch)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'IQ in use = very high migration complexity requiring separate OLAP layer.',
-    playbookRef:'§5.2 DB Q1' },
-  { id:'C2-002', phase:'call_2', category:'platform',
-    question:'Sybase version and patch level confirmed — still under SAP support?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'EOL version = security and support risk; price in immediate upgrade or migration.',
-    playbookRef:'§5.2 DB Q2' },
-  { id:'C2-003', phase:'call_2', category:'platform',
-    question:'OS, hardware, and hosting model confirmed (on-prem, co-lo, cloud)?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'On-prem with aging hardware adds infrastructure migration cost.',
-    playbookRef:'§5.2 DB Q3' },
-  { id:'C2-004', phase:'call_2', category:'data',
-    question:'Total database size, growth rate, and largest tables quantified?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Drives migration timeline and downtime window estimates.',
-    playbookRef:'§5.2 DB Q4' },
-  { id:'C2-005', phase:'call_2', category:'data',
-    question:'Number of databases, schemas, logins, and roles confirmed?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Large numbers of logins/roles = security cleanup workstream.',
-    playbookRef:'§5.2 DB Q5' },
-  { id:'C2-006', phase:'call_2', category:'platform',
-    question:'Stored procedure count, trigger count, and function count obtained?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Stored procedure count is the primary cost driver for migration effort.',
-    playbookRef:'§5.2 Code Q1' },
-  { id:'C2-007', phase:'call_2', category:'platform',
-    question:'Business logic location assessed — predominantly in DB vs. application layer?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'DB-heavy logic = larger migration scope; application changes required.',
-    playbookRef:'§5.2 Code Q3' },
-  { id:'C2-008', phase:'call_2', category:'platform',
-    question:'Sybase-specific features identified (identity, timestamp, text/image, cross-DB joins, CIS)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Each feature category requires targeted rewrite effort estimation.',
-    playbookRef:'§5.2 Code Q4' },
-  { id:'C2-009', phase:'call_2', category:'integration',
-    question:'Stored procedures calling out to shell, files, or external systems identified?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'External calls from SP = hidden integration dependencies to remap.',
-    playbookRef:'§5.2 Code Q5' },
-  { id:'C2-010', phase:'call_2', category:'platform',
-    question:'Sybase IQ, Replication Server, or materialized views confirmed absent or documented?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'Replication Server needs full replacement; IQ needs separate OLAP strategy.',
-    playbookRef:'§5.2 Code Q6' },
-  { id:'C2-011', phase:'call_2', category:'operations',
-    question:'Backup and DR approach confirmed with RPO and RTO targets?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'No tested restore = migration parallel-run risk; price in DR workstream.',
-    playbookRef:'§5.2 Ops Q1' },
-  { id:'C2-012', phase:'call_2', category:'operations',
-    question:'Last successful restore from backup tested and date confirmed?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'Backups never tested = critical finding; recommend immediate restore test.',
-    playbookRef:'§5.2 Ops Q1 / §4.4 #4' },
-  { id:'C2-013', phase:'call_2', category:'operations',
-    question:'High-availability setup confirmed (companion server, mirroring, clustering)?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'No HA = single point of failure during migration.',
-    playbookRef:'§5.2 Ops Q2' },
-  { id:'C2-014', phase:'call_2', category:'operations',
-    question:'Monitoring, alerting, encryption at rest and in transit confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Absence of encryption may be a compliance violation.',
-    playbookRef:'§5.2 Ops Q3–Q4' },
-  { id:'C2-015', phase:'call_2', category:'data',
-    question:'Tables with no primary key identified and quantified?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Tables without PKs require additional migration prep work.',
-    playbookRef:'§4.2.1' },
+ // ---- Phase 3: Database & Code Deep Dive (§5.2) ----
+ { id:'P3-001', phase:'phase_3', category:'platform',
+ question:'Sybase products in use confirmed (ASE, IQ, Replication Server, SQL Anywhere, Open Switch)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'IQ in use = very high migration complexity requiring separate OLAP layer.',
+ playbookRef:'§5.2 DB Q1' },
+ { id:'P3-002', phase:'phase_3', category:'platform',
+ question:'Sybase version and patch level confirmed — still under SAP support?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'EOL version = security and support risk; budget for immediate upgrade or migration.',
+ playbookRef:'§5.2 DB Q2' },
+ { id:'P3-003', phase:'phase_3', category:'platform',
+ question:'OS, hardware, and hosting model confirmed (on-prem, co-lo, cloud)?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'On-prem with aging hardware adds infrastructure migration cost.',
+ playbookRef:'§5.2 DB Q3' },
+ { id:'P3-004', phase:'phase_3', category:'data',
+ question:'Total database size, growth rate, and largest tables quantified?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Drives migration timeline and downtime window estimates.',
+ playbookRef:'§5.2 DB Q4' },
+ { id:'P3-005', phase:'phase_3', category:'data',
+ question:'Number of databases, schemas, logins, and roles confirmed?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Large numbers of logins/roles = security cleanup workstream.',
+ playbookRef:'§5.2 DB Q5' },
+ { id:'P3-006', phase:'phase_3', category:'platform',
+ question:'Stored procedure count, trigger count, and function count obtained?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Stored procedure count is the primary cost driver for migration effort.',
+ playbookRef:'§5.2 Code Q1' },
+ { id:'P3-007', phase:'phase_3', category:'platform',
+ question:'Business logic location assessed — predominantly in DB vs. application layer?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'DB-heavy logic = larger migration scope; application changes required.',
+ playbookRef:'§5.2 Code Q3' },
+ { id:'P3-008', phase:'phase_3', category:'platform',
+ question:'Sybase-specific features identified (identity, timestamp, text/image, cross-DB joins, CIS)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Each feature category requires targeted rewrite effort estimation.',
+ playbookRef:'§5.2 Code Q4' },
+ { id:'P3-009', phase:'phase_3', category:'integration',
+ question:'Stored procedures calling out to shell, files, or external systems identified?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'External calls from SP = hidden integration dependencies to remap.',
+ playbookRef:'§5.2 Code Q5' },
+ { id:'P3-010', phase:'phase_3', category:'platform',
+ question:'Sybase IQ, Replication Server, or materialized views confirmed absent or documented?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'Replication Server needs full replacement; IQ needs separate OLAP strategy.',
+ playbookRef:'§5.2 Code Q6' },
+ { id:'P3-011', phase:'phase_3', category:'operations',
+ question:'Backup and DR approach confirmed with RPO and RTO targets?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'No tested restore = migration parallel-run risk; budget for DR workstream.',
+ playbookRef:'§5.2 Ops Q1' },
+ { id:'P3-012', phase:'phase_3', category:'operations',
+ question:'Last successful restore from backup tested and date confirmed?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'Backups never tested = critical finding; recommend immediate restore test.',
+ playbookRef:'§5.2 Ops Q1 / §4.4 #4' },
+ { id:'P3-013', phase:'phase_3', category:'operations',
+ question:'High-availability setup confirmed (companion server, mirroring, clustering)?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'No HA = single point of failure during migration.',
+ playbookRef:'§5.2 Ops Q2' },
+ { id:'P3-014', phase:'phase_3', category:'operations',
+ question:'Monitoring, alerting, encryption at rest and in transit confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Absence of encryption may be a compliance violation.',
+ playbookRef:'§5.2 Ops Q3–Q4' },
+ { id:'P3-015', phase:'phase_3', category:'data',
+ question:'Tables with no primary key identified and quantified?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Tables without PKs require additional migration prep work.',
+ playbookRef:'§4.2.1' },
 
-  // ---- Call 3: Applications, Integrations & Dependencies (§5.3) ----
-  { id:'C3-001', phase:'call_3', category:'integration',
-    question:'Full list of applications connecting to Sybase confirmed (with driver, language, owner)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Incomplete list = migration blast radius unknown.',
-    playbookRef:'§5.3 Q1–Q2' },
-  { id:'C3-002', phase:'call_3', category:'integration',
-    question:'ETL and batch tools confirmed (BCP, SSIS, Informatica, custom scripts)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Each ETL tool is a separate migration task; Replication Server is high complexity.',
-    playbookRef:'§5.3 Q4' },
-  { id:'C3-003', phase:'call_3', category:'integration',
-    question:'Upstream and downstream system feeds fully mapped?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Every unmapped feed is a potential migration failure point.',
-    playbookRef:'§5.3 Q5–Q6' },
-  { id:'C3-004', phase:'call_3', category:'integration',
-    question:'Reporting estate confirmed (Crystal, Actuate, SSRS, BI tools, ad-hoc Excel)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Crystal/Actuate often requires full rebuild; largest hidden workload.',
-    playbookRef:'§5.3 Q7 / §4.3 #6' },
-  { id:'C3-005', phase:'call_3', category:'integration',
-    question:'Shadow IT identified (Excel ODBC, Access front-ends, manual exports)?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Shadow IT almost always present and almost never documented.',
-    playbookRef:'§5.3 Q8' },
-  { id:'C3-006', phase:'call_3', category:'integration',
-    question:'Legacy thick-client applications confirmed or ruled out (PowerBuilder, VB6, Delphi)?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'PowerBuilder with embedded T-SQL is typically the largest migration blocker.',
-    playbookRef:'§5.3 Q9 / §8.1' },
-  { id:'C3-007', phase:'call_3', category:'integration',
-    question:'Hardcoded server names, IPs, or credentials in code or jobs investigated?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'Hardcoded credentials = security finding; hardcoded endpoints = cutover risk.',
-    playbookRef:'§5.3 Critical #1' },
-  { id:'C3-008', phase:'call_3', category:'integration',
-    question:'Direct database connections from end-user tools (Excel ODBC, Access) confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'End-user tool connections create a long tail of migration items.',
-    playbookRef:'§5.3 Critical #2' },
-  { id:'C3-009', phase:'call_3', category:'integration',
-    question:'Undocumented feeds to customer systems investigated?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'Customer-facing feeds missed = outage for a customer on cutover day.',
-    playbookRef:'§5.3 Critical #3' },
-  { id:'C3-010', phase:'call_3', category:'platform',
-    question:'Business logic in application code assessed — inline SQL vs. abstracted?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Inline SQL across many applications multiplies the migration surface.',
-    playbookRef:'§5.3 Q3' },
-  { id:'C3-011', phase:'call_3', category:'integration',
-    question:'Any custom extended stored procedures or external .dll/.so files identified?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'XPs with binary dependencies require OS-level migration work.',
-    playbookRef:'§5.2 Code Q7' },
-  { id:'C3-012', phase:'call_3', category:'operations',
-    question:'Patching and release management process for applications confirmed?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Application release process must accommodate Sybase driver changes.',
-    playbookRef:'§5.2 Ops Q5' },
+ // ---- Phase 4: Applications & Integrations (§5.3) ----
+ { id:'P4-001', phase:'phase_4', category:'integration',
+ question:'Full list of applications connecting to Sybase confirmed (with driver, language, owner)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Incomplete list = migration blast radius unknown.',
+ playbookRef:'§5.3 Q1–Q2' },
+ { id:'P4-002', phase:'phase_4', category:'integration',
+ question:'ETL and batch tools confirmed (BCP, SSIS, Informatica, custom scripts)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Each ETL tool is a separate migration task; Replication Server is high complexity.',
+ playbookRef:'§5.3 Q4' },
+ { id:'P4-003', phase:'phase_4', category:'integration',
+ question:'Upstream and downstream system feeds fully mapped?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Every unmapped feed is a potential migration failure point.',
+ playbookRef:'§5.3 Q5–Q6' },
+ { id:'P4-004', phase:'phase_4', category:'integration',
+ question:'Reporting estate confirmed (Crystal, Actuate, SSRS, BI tools, ad-hoc Excel)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Crystal/Actuate often requires full rebuild; largest hidden workload.',
+ playbookRef:'§5.3 Q7 / §4.3 #6' },
+ { id:'P4-005', phase:'phase_4', category:'integration',
+ question:'Shadow IT identified (Excel ODBC, Access front-ends, manual exports)?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Shadow IT almost always present and almost never documented.',
+ playbookRef:'§5.3 Q8' },
+ { id:'P4-006', phase:'phase_4', category:'integration',
+ question:'Legacy thick-client applications confirmed or ruled out (PowerBuilder, VB6, Delphi)?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'PowerBuilder with embedded T-SQL is typically the largest migration blocker.',
+ playbookRef:'§5.3 Q9 / §8.1' },
+ { id:'P4-007', phase:'phase_4', category:'integration',
+ question:'Hardcoded server names, IPs, or credentials in code or jobs investigated?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'Hardcoded credentials = security finding; hardcoded endpoints = cutover risk.',
+ playbookRef:'§5.3 Critical #1' },
+ { id:'P4-008', phase:'phase_4', category:'integration',
+ question:'Direct database connections from end-user tools (Excel ODBC, Access) confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'End-user tool connections create a long tail of migration items.',
+ playbookRef:'§5.3 Critical #2' },
+ { id:'P4-009', phase:'phase_4', category:'integration',
+ question:'Undocumented feeds to customer systems investigated?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'Customer-facing feeds missed = outage for a customer on cutover day.',
+ playbookRef:'§5.3 Critical #3' },
+ { id:'P4-010', phase:'phase_4', category:'platform',
+ question:'Business logic in application code assessed — inline SQL vs. abstracted?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Inline SQL across many applications multiplies the migration surface.',
+ playbookRef:'§5.3 Q3' },
+ { id:'P4-011', phase:'phase_4', category:'integration',
+ question:'Any custom extended stored procedures or external .dll/.so files identified?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'XPs with binary dependencies require OS-level migration work.',
+ playbookRef:'§5.2 Code Q7' },
+ { id:'P4-012', phase:'phase_4', category:'operations',
+ question:'Patching and release management process for applications confirmed?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Application release process must accommodate Sybase driver changes.',
+ playbookRef:'§5.2 Ops Q5' },
 
-  // ---- Call 4: Target State, Timeline & Commercial (§5.4) ----
-  { id:'C4-001', phase:'call_4', category:'commercial',
-    question:'Acquirer\'s target state confirmed — like-for-like migration or full modernization?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Modernization scope is 3–5x more complex than like-for-like migration.',
-    playbookRef:'§5.4 Q1' },
-  { id:'C4-002', phase:'call_4', category:'commercial',
-    question:'Expected business timeline post-acquisition confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Aggressive timeline = higher cost to reduce risk; document trade-offs.',
-    playbookRef:'§5.4 Q2' },
-  { id:'C4-003', phase:'call_4', category:'commercial',
-    question:'Customer commitments constraining downtime windows identified?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'Compliance regimes forbidding long downtime windows = big-bang cutover impossible.',
-    playbookRef:'§5.4 Q3' },
-  { id:'C4-004', phase:'call_4', category:'commercial',
-    question:'Phased migration vs. big-bang cutover preference confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Big-bang is high-risk without comprehensive test coverage.',
-    playbookRef:'§5.4 Q4' },
-  { id:'C4-005', phase:'call_4', category:'commercial',
-    question:'Acquirer\'s preferred cloud and target tech stack confirmed (AWS, Azure, GCP)?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Cloud choice affects tooling selection (AWS SCT, Azure DMS, etc.).',
-    playbookRef:'§5.4 Q5' },
-  { id:'C4-006', phase:'call_4', category:'people',
-    question:'Platform ownership post-acquisition confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'No named owner = governance gap; budget and accountability unclear.',
-    playbookRef:'§5.4 Q6' },
-  { id:'C4-007', phase:'call_4', category:'commercial',
-    question:'Risk tolerance for the transition period assessed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Low tolerance = higher investment in parallel-run and rollback planning.',
-    playbookRef:'§5.4 Q7' },
-  { id:'C4-008', phase:'call_4', category:'commercial',
-    question:'Regulatory or contractual obligations constraining architecture choices confirmed?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'Late discovery of constraints invalidates the effort estimate.',
-    playbookRef:'§5.4 Q8' },
+ // ---- Phase 5: Target State & Timeline (§5.4) ----
+ { id:'P5-001', phase:'phase_5', category:'commercial',
+ question:'Project owner\'s target state confirmed — like-for-like migration or full modernization?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Modernization scope is 3–5x more complex than like-for-like migration.',
+ playbookRef:'§5.4 Q1' },
+ { id:'P5-002', phase:'phase_5', category:'commercial',
+ question:'Expected business timeline post-migration confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Aggressive timeline = higher cost to reduce risk; document trade-offs.',
+ playbookRef:'§5.4 Q2' },
+ { id:'P5-003', phase:'phase_5', category:'commercial',
+ question:'Customer commitments constraining downtime windows identified?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'Compliance regimes forbidding long downtime windows = big-bang cutover impossible.',
+ playbookRef:'§5.4 Q3' },
+ { id:'P5-004', phase:'phase_5', category:'commercial',
+ question:'Phased migration vs. big-bang cutover preference confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Big-bang is high-risk without comprehensive test coverage.',
+ playbookRef:'§5.4 Q4' },
+ { id:'P5-005', phase:'phase_5', category:'commercial',
+ question:'Project owner\'s preferred cloud and target tech stack confirmed (AWS, Azure, GCP)?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Cloud choice affects tooling selection (AWS SCT, Azure DMS, etc.).',
+ playbookRef:'§5.4 Q5' },
+ { id:'P5-006', phase:'phase_5', category:'people',
+ question:'Platform ownership post-migration confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'No named owner = governance gap; budget and accountability unclear.',
+ playbookRef:'§5.4 Q6' },
+ { id:'P5-007', phase:'phase_5', category:'commercial',
+ question:'Risk tolerance for the transition period assessed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Low tolerance = higher investment in parallel-run and rollback planning.',
+ playbookRef:'§5.4 Q7' },
+ { id:'P5-008', phase:'phase_5', category:'commercial',
+ question:'Regulatory or contractual obligations constraining architecture choices confirmed?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'Late discovery of constraints invalidates the effort estimate.',
+ playbookRef:'§5.4 Q8' },
 
-  // ---- Operational Maturity (§4.5 Deployment & Release Process) ----
-  { id:'OP-001', phase:'ops', category:'operations',
-    question:'Source code (application) confirmed in version control (Git, SVN, TFS)?',
-    riskWeight:4, redFlagIfUnchecked:true,
-    mitigationHint:'No version control = cannot safely make or roll back changes.',
-    playbookRef:'§4.5 #1' },
-  { id:'OP-002', phase:'ops', category:'operations',
-    question:'Database code (DDL, stored procedures) confirmed in version control?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'DB code not in VCS = manual, risky schema management; Red risk for any migration.',
-    playbookRef:'§4.5 #2' },
-  { id:'OP-003', phase:'ops', category:'operations',
-    question:'Promotion path (Dev → UAT → Prod) confirmed and documented?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'No promotion path = ad-hoc changes directly to production.',
-    playbookRef:'§4.5 #3' },
-  { id:'OP-004', phase:'ops', category:'operations',
-    question:'Schema change deployment method confirmed (scripts, Flyway, Liquibase, manual)?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Manual schema changes = need Flyway/Liquibase introduced as migration pre-work.',
-    playbookRef:'§4.5 #4' },
-  { id:'OP-005', phase:'ops', category:'operations',
-    question:'Rollback procedure for failed releases confirmed?',
-    riskWeight:5, redFlagIfUnchecked:true,
-    mitigationHint:'No rollback plan = any failed cutover step requires full restore.',
-    playbookRef:'§4.5 #8' },
-  { id:'OP-006', phase:'ops', category:'operations',
-    question:'CI/CD pipeline for application code confirmed or absence noted?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'No CI/CD = manual testing; adds regression risk to migration.',
-    playbookRef:'§4.5 #6' },
-  { id:'OP-007', phase:'ops', category:'operations',
-    question:'Change management / approval process (ticket system, CAB) confirmed?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'No change management = untracked changes; harder to audit migration.',
-    playbookRef:'§4.5 #9' },
-  { id:'OP-008', phase:'ops', category:'operations',
-    question:'Deployments confirmed as logged and auditable?',
-    riskWeight:2, redFlagIfUnchecked:false,
-    mitigationHint:'Audit trail gaps may be a compliance issue.',
-    playbookRef:'§4.5 #10' },
-  { id:'OP-009', phase:'ops', category:'operations',
-    question:'Any outstanding security audit findings from last 12 months reviewed?',
-    riskWeight:4, redFlagIfUnchecked:false,
-    mitigationHint:'Open security findings may become acquirer\'s liability.',
-    playbookRef:'§4.4 #5' },
-  { id:'OP-010', phase:'ops', category:'people',
-    question:'Platform maintained by internal team, contractor, or vendor — dependency confirmed?',
-    riskWeight:3, redFlagIfUnchecked:false,
-    mitigationHint:'Contractor or vendor dependency = risk of knowledge walking out at deal close.',
-    playbookRef:'§4.4 #2' }
+ // ---- Phase 6: Operational Maturity (§4.5 Deployment & Release Process) ----
+ { id:'P6-001', phase:'phase_6', category:'operations',
+ question:'Source code (application) confirmed in version control (Git, SVN, TFS)?',
+ riskWeight:4, redFlagIfUnchecked:true,
+ mitigationHint:'No version control = cannot safely make or roll back changes.',
+ playbookRef:'§4.5 #1' },
+ { id:'P6-002', phase:'phase_6', category:'operations',
+ question:'Database code (DDL, stored procedures) confirmed in version control?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'DB code not in VCS = manual, risky schema management; Red risk for any migration.',
+ playbookRef:'§4.5 #2' },
+ { id:'P6-003', phase:'phase_6', category:'operations',
+ question:'Promotion path (Dev → UAT → Prod) confirmed and documented?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'No promotion path = ad-hoc changes directly to production.',
+ playbookRef:'§4.5 #3' },
+ { id:'P6-004', phase:'phase_6', category:'operations',
+ question:'Schema change deployment method confirmed (scripts, Flyway, Liquibase, manual)?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Manual schema changes = need Flyway/Liquibase introduced as migration pre-work.',
+ playbookRef:'§4.5 #4' },
+ { id:'P6-005', phase:'phase_6', category:'operations',
+ question:'Rollback procedure for failed releases confirmed?',
+ riskWeight:5, redFlagIfUnchecked:true,
+ mitigationHint:'No rollback plan = any failed cutover step requires full restore.',
+ playbookRef:'§4.5 #8' },
+ { id:'P6-006', phase:'phase_6', category:'operations',
+ question:'CI/CD pipeline for application code confirmed or absence noted?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'No CI/CD = manual testing; adds regression risk to migration.',
+ playbookRef:'§4.5 #6' },
+ { id:'P6-007', phase:'phase_6', category:'operations',
+ question:'Change management / approval process (ticket system, CAB) confirmed?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'No change management = untracked changes; harder to audit migration.',
+ playbookRef:'§4.5 #9' },
+ { id:'P6-008', phase:'phase_6', category:'operations',
+ question:'Deployments confirmed as logged and auditable?',
+ riskWeight:2, redFlagIfUnchecked:false,
+ mitigationHint:'Audit trail gaps may be a compliance issue.',
+ playbookRef:'§4.5 #10' },
+ { id:'P6-009', phase:'phase_6', category:'operations',
+ question:'Any outstanding security audit findings from last 12 months reviewed?',
+ riskWeight:4, redFlagIfUnchecked:false,
+ mitigationHint:'Open security findings may become project owner\'s liability.',
+ playbookRef:'§4.4 #5' },
+ { id:'P6-010', phase:'phase_6', category:'people',
+ question:'Platform maintained by internal team, contractor, or vendor — dependency confirmed?',
+ riskWeight:3, redFlagIfUnchecked:false,
+ mitigationHint:'Contractor or vendor dependency = risk of knowledge walking out at migration start.',
+ playbookRef:'§4.4 #2' }
 ];
 
 const PHASE_TITLES = {
-  week_1: 'Week 1 — Pre-Call Preparation',
-  call_1: 'Call 1 — Business Context & Platform Overview',
-  call_2: 'Call 2 — Database & Code Deep Dive',
-  call_3: 'Call 3 — Applications, Integrations & Dependencies',
-  call_4: 'Call 4 — Target State, Timeline & Commercial',
-  ops:    'Operational Maturity'
+  phase_1: 'Phase 1 — Preparation & Scoping',
+  phase_2: 'Phase 2 — Business Context & Platform Overview',
+  phase_3: 'Phase 3 — Database & Code Deep Dive',
+  phase_4: 'Phase 4 — Applications & Integrations',
+  phase_5: 'Phase 5 — Target State & Timeline',
+  phase_6: 'Phase 6 — Operational Maturity'
 };
 
-const PHASE_ORDER = ['week_1','call_1','call_2','call_3','call_4','ops'];
+const PHASE_ORDER = ['phase_1','phase_2','phase_3','phase_4','phase_5','phase_6'];
 
 // ---- Render ----
 function renderChecklist() {
@@ -3823,9 +3965,9 @@ function renderReports() {
   if (!haveData) return;
   renderBigScores();
   renderCarousel();
-  if (document.getElementById('nv-target'))     document.getElementById('nv-target').value     = state.meta.target || '';
-  if (document.getElementById('nv-acquirer'))   document.getElementById('nv-acquirer').value   = state.meta.acquirer || '';
-  if (document.getElementById('nv-bottomLine')) document.getElementById('nv-bottomLine').value = state.meta.bottomLine || '';
+  if (document.getElementById('nv-client'))         document.getElementById('nv-client').value         = state.meta.client || '';
+  if (document.getElementById('nv-analyst'))        document.getElementById('nv-analyst').value        = state.meta.analyst || '';
+  if (document.getElementById('nv-recommendation')) document.getElementById('nv-recommendation').value = state.meta.recommendation || '';
 }
 
 function renderBigScores() {
@@ -3863,8 +4005,8 @@ function renderBigScores() {
 function buildSlides() {
   const m = state.codeMetrics;
   const conf = Math.round((state.confidence || 0.92) * 100);
-  const target = escapeHtml(state.meta.target || 'Target Platform');
-  const acquirer = escapeHtml(state.meta.acquirer || '');
+  const client = escapeHtml(state.meta.client || 'Organization');
+  const analyst = escapeHtml(state.meta.analyst || '');
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   const sysVer = escapeHtml(state.meta.sybaseVersion || 'Unknown');
   const creditLine = state.showCredit ? '<div style="margin-top:12px;font-size:0.8rem;color:#8B949E">Prepared by Darshan Singh</div>' : '';
@@ -3884,8 +4026,8 @@ function buildSlides() {
     <div class="slide-hero">Sybase → PostgreSQL<br>Migration Evaluation</div>
     <div class="slide-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px">
-        <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Target</div><div style="font-size:1rem;margin-top:4px">${target}</div></div>
-        ${acquirer ? `<div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Acquirer</div><div style="font-size:1rem;margin-top:4px">${acquirer}</div></div>` : ''}
+        <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Client / Organization</div><div style="font-size:1rem;margin-top:4px">${client}</div></div>
+        ${analyst ? `<div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Prepared by</div><div style="font-size:1rem;margin-top:4px">${analyst}</div></div>` : ''}
         <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Sybase Version</div><div style="font-size:1rem;margin-top:4px">${sysVer}</div></div>
         <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Date</div><div style="font-size:1rem;margin-top:4px">${today}</div></div>
         <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Confidence</div><div style="font-size:1rem;margin-top:4px">~${conf}%</div></div>
@@ -3893,20 +4035,20 @@ function buildSlides() {
       ${creditLine}
     </div>`;
 
-  // Slide 2: Bottom line
-  let bottomLineText;
-  if (state.meta.bottomLine && state.meta.bottomLine.trim()) {
-    bottomLineText = escapeHtml(state.meta.bottomLine);
+  // Slide 2: Recommendation
+  let recommendationText;
+  if (state.meta.recommendation && state.meta.recommendation.trim()) {
+    recommendationText = escapeHtml(state.meta.recommendation);
   } else if (state.scores.composite != null) {
     const objCount = m ? m.totalObjects : 0;
     const sybasePct = (m && m.totalObjects > 0) ? Math.round(m.sybaseCount / m.totalObjects) : 0;
-    bottomLineText = `Platform carries ${tl(compT)} material risk. ${objCount} objects analyzed, ${sybasePct}% use Sybase-specific constructs. Composite risk score: ${sv(state.scores.composite)}/100.`;
+    recommendationText = `Platform carries ${tl(compT)} migration risk. ${objCount} objects analyzed, ${sybasePct}% use Sybase-specific constructs. Composite risk score: ${sv(state.scores.composite)}/100.`;
   } else {
-    bottomLineText = 'No analysis data available. Run an analysis and fill in the checklist for a complete assessment.';
+    recommendationText = 'No analysis data available. Run an analysis and fill in the checklist for a complete assessment.';
   }
   const s2 = `
-    <h3>02 · Bottom Line</h3>
-    <div class="slide-hero" style="font-size:1.9rem;line-height:1.3">${bottomLineText}</div>
+    <h3>02 · Recommendation</h3>
+    <div class="slide-hero" style="font-size:1.9rem;line-height:1.3">${recommendationText}</div>
     <div class="slide-body" style="margin-top:16px;color:#8B949E;font-size:0.82rem">Confidence ~${conf}% · Sybase T-SQL Migration Evaluator v2</div>`;
 
   // Slide 3: Overall Risk
@@ -4022,43 +4164,49 @@ function buildSlides() {
       </ul>
     </div>`;
 
-  // Slide 8: Commercial Framing
+  // Slide 8: Approach & Team Recommendation
   const comp = state.scores.composite;
-  let recommendation, conditions;
+  let approachRec, teamRec, conditionsList;
   if (comp == null) {
-    recommendation = 'Insufficient data for commercial framing. Complete analysis and checklist.';
-    conditions = ['Complete analyzer run', 'Fill checklist', 'Re-export reports', 'Seek specialist input'];
+    approachRec = 'Insufficient data. Complete analysis and checklist for approach recommendation.';
+    teamRec = 'Team composition cannot be estimated without scores.';
+    conditionsList = ['Complete analyzer run', 'Fill out the Checklist tab', 'Re-export reports', 'Consult a specialist if needed'];
   } else if (comp <= 30) {
-    recommendation = 'Risk profile is LOW. Standard acquisition terms are appropriate. No material price adjustment required for the migration alone.';
-    conditions = ['Standard reps & warranties on platform stability', 'Confirm version support timeline with Sybase', 'Agree migration ownership (buyer vs seller)', 'Post-close monitoring for 90 days'];
+    approachRec = 'Risk profile is LOW. A phased migration or direct big-bang cutover are both viable. Phased approach recommended for production systems with live users.';
+    teamRec = '1 senior PL/pgSQL developer, 1 DBA, 1 project lead — typical 3-person core team.';
+    conditionsList = ['Confirm Sybase support timeline and plan version retirement', 'Agree migration ownership and named project lead', 'Set rollback criteria before cutover', 'Post-migration monitoring for 90 days'];
   } else if (comp <= 55) {
-    recommendation = 'Risk profile is MEDIUM. Consider a modest price adjustment or escrow to cover migration cost overruns. TSA for 6–9 months recommended.';
-    conditions = ['Escrow 5–10% of deal value, released on successful go-live', 'TSA for up to 9 months', 'Milestone-based earnout linked to migration completion', 'Independent technical review pre-sign'];
+    approachRec = 'Risk profile is MEDIUM. Phased migration with parallel-run recommended. Avoid big-bang cutover until Phase 3 gaps are resolved.';
+    teamRec = '2 senior PL/pgSQL developers, 1 DBA, 1 project lead, 1 test engineer.';
+    conditionsList = ['Resolve key-person dependency before migration starts', 'Establish rollback plan and tested restore procedure', 'Map and validate all integration feeds before Phase 4', 'Milestone sign-off at end of each phase'];
   } else if (comp <= 80) {
-    recommendation = 'Risk profile is HIGH. Material price adjustment or extended TSA warranted. Escrow or clawback provision strongly recommended.';
-    conditions = ['Price reduction or escrow 10–20% of deal value', 'TSA of 12–18 months minimum', 'Seller responsible for migration through go-live', 'Walk-away right if migration not complete within 24 months'];
+    approachRec = 'Risk profile is HIGH. Phased migration with extended parallel run required. Each phase needs an explicit go/no-go decision before proceeding.';
+    teamRec = '2–3 senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead.';
+    conditionsList = ['Resolve all scope-blocker checklist items before migration starts', 'Require tested backup + restore before Phase 1 begins', 'Dedicated rollback plan and drill for each phase', 'Independent technical review at Phase 3 milestone'];
   } else {
-    recommendation = 'Risk profile is VERY HIGH. Recommend walk-away unless seller takes on full migration liability, or deal price reflects full platform rebuild cost.';
-    conditions = ['Require seller-funded migration to PostgreSQL pre-close', 'Consider deal restructure (asset purchase of data only)', 'Independent code audit before sign', 'Walk-away right at any milestone failure'];
+    approachRec = 'Risk profile is VERY HIGH. Consider deferring the project until scope blockers are resolved. If proceeding, phased migration with strict go/no-go gates and full rollback capability is mandatory.';
+    teamRec = '3 senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead — minimum.';
+    conditionsList = ['All red-flag checklist items must be resolved before migration starts', 'Mandate backup/restore test and documented rollback drill', 'Independent code audit before Phase 3', 'Go/no-go decision point at each phase boundary'];
   }
   const s8 = `
-    <h3>08 · Commercial Framing</h3>
+    <h3>08 · Approach &amp; Team Recommendation</h3>
     <div class="slide-body">
-      <div style="background:#1F2730;border-left:3px solid ${ragColor};border-radius:0 4px 4px 0;padding:14px 16px;margin-bottom:16px;font-size:0.9rem;line-height:1.6">${escapeHtml(recommendation)}</div>
-      <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Recommended Conditions</div>
-      <ul>${conditions.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
-      <div style="margin-top:16px;font-size:0.76rem;color:#6E7681">Source: Playbook §12 — Commercial Framing & Risk Mitigation · conf ~${conf}%</div>
+      <div style="background:#1F2730;border-left:3px solid ${ragColor};border-radius:0 4px 4px 0;padding:14px 16px;margin-bottom:12px;font-size:0.9rem;line-height:1.6">${escapeHtml(approachRec)}</div>
+      <div style="background:#1F2730;border-left:3px solid #3FB950;border-radius:0 4px 4px 0;padding:10px 16px;margin-bottom:16px;font-size:0.88rem;line-height:1.6"><strong style="color:#8B949E;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em">Team: </strong>${escapeHtml(teamRec)}</div>
+      <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Key Dependencies &amp; Go/No-Go Criteria</div>
+      <ul>${conditionsList.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
+      <div style="margin-top:16px;font-size:0.76rem;color:#6E7681">Source: Playbook §12 — Approach &amp; Engagement Planning · conf ~${conf}%</div>
     </div>`;
 
   return [
-    { title: 'Cover',                   html: s1 },
-    { title: 'Bottom Line',             html: s2 },
-    { title: 'Overall Risk',            html: s3 },
-    { title: 'Code Complexity',         html: s4 },
-    { title: 'Readiness Gaps',          html: s5 },
-    { title: 'Macro Risks',             html: s6 },
-    { title: 'Effort & Timeline',       html: s7 },
-    { title: 'Commercial Framing',      html: s8 },
+    { title: 'Cover',                        html: s1 },
+    { title: 'Recommendation',               html: s2 },
+    { title: 'Overall Risk',                 html: s3 },
+    { title: 'Code Complexity',              html: s4 },
+    { title: 'Readiness Gaps',               html: s5 },
+    { title: 'Macro Risks',                  html: s6 },
+    { title: 'Effort & Timeline',            html: s7 },
+    { title: 'Approach & Team',              html: s8 },
   ];
 }
 
@@ -4217,14 +4365,16 @@ function _scoreSection(label, score, tiers, tcls) {
 function _headerBlock(title, subtitle) {
   const conf = Math.round((state.confidence || 0.92) * 100);
   const creditHtml = state.showCredit ? '<div style="margin-top:4px;font-size:0.82rem;color:#888">Prepared by Darshan Singh</div>' : '';
-  const target = escapeHtml(state.meta.target || 'Target Platform');
+  const client = escapeHtml(state.meta.client || 'Organization');
+  const analyst = state.meta.analyst ? escapeHtml(state.meta.analyst) : '';
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   return `<div style="background:#1a1a2e;color:#fff;padding:24px 32px;margin-bottom:0">
     <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px">Sybase Migration Evaluator v2</div>
     <h1 style="color:#fff;margin-bottom:6px">${escapeHtml(title)}</h1>
     <div style="color:rgba(255,255,255,0.75);font-size:0.88rem">${escapeHtml(subtitle)}</div>
     <div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap">
-      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Target: <strong style="color:#fff">${target}</strong></span>
+      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Client: <strong style="color:#fff">${client}</strong></span>
+      ${analyst ? `<span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Prepared by: <strong style="color:#fff">${analyst}</strong></span>` : ''}
       <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Date: <strong style="color:#fff">${today}</strong></span>
       <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Confidence: <strong style="color:#F59E0B">~${conf}%</strong></span>
     </div>
@@ -4297,6 +4447,7 @@ function downloadRawJSON() {
   const ts = new Date();
   const effort = computeEffortBand();
   const payload = {
+    _disclaimer: "Regex-based triage tool with ~92% confidence on well-formed input. Not a substitute for on-site review. Checklist is not exhaustive. Feedback: darshan.meel@gmail.com",
     tool: 'Sybase Migration Evaluator v2',
     generatedAt: ts.toISOString(),
     confidence: state.confidence,
@@ -4328,9 +4479,14 @@ function downloadTechReportHTML() {
   ).join('') : '';
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Technical Migration Report</title>
-<style>${_exportCSSBase()}</style></head><body>
+<style>${_exportCSSBase()}
+.lim-banner{background:#FFF1F0;border:1px solid #F85149;border-left:4px solid #F85149;color:#721712;padding:10px 14px;border-radius:4px;font-size:0.82rem;margin-bottom:18px}
+.lim-banner strong{color:#F85149}
+.lim-footer{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:0.76rem;color:#555;text-align:center}
+</style></head><body>
 ${_headerBlock('Technical Migration Report', 'Full analyzer findings, checklist answers, and scoring')}
 <div style="padding:24px 32px">
+<div class="lim-banner"><strong>&#9888; Limitations apply.</strong> This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.</div>
 <h2>Scores</h2>
 <div class="score-row">
   ${_scoreSection('Code Complexity', state.scores.code, TIER_CODE)}
@@ -4365,6 +4521,7 @@ ${_delayFactorsHTML(factors)}
   <div class="score-card"><div class="score-label">Calendar (2 FTE)</div><div class="score-num">~${effort.cal}</div><div style="font-size:0.8rem;color:#888">months</div></div>
 </div>
 <div class="conf-note"><strong>Confidence &amp; Limitations:</strong> Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review or manual code inspection. No data leaves your browser.</div>
+<div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: darshan.meel@gmail.com</div>
 </div></body></html>`;
   downloadBlob(html, `sybase_tech_report_${formatDatetime(ts)}.html`, 'text/html');
   showToast('Technical report (HTML) exported.');
@@ -4377,12 +4534,15 @@ function downloadTechReportMD() {
   const conf = Math.round((state.confidence || 0.92) * 100);
   const factors = buildTopDelayFactors();
   const effort = _effortBlock();
-  const target = state.meta.target || 'Target Platform';
+  const client = state.meta.client || 'Organization';
+  const analyst = state.meta.analyst || '';
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 
   let md = `# Technical Migration Report\n\n`;
+  md += `> &#9888; **Limitations apply.** This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.\n>\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
-  md += `**Target:** ${mdEsc(target)}  \n`;
+  md += `**Client:** ${mdEsc(client)}  \n`;
+  if (analyst) md += `**Prepared by:** ${mdEsc(analyst)}  \n`;
   md += `**Date:** ${today}  \n`;
   md += `**Confidence:** ~${conf}%  \n`;
   if (state.showCredit) md += `**Prepared by:** Darshan Singh  \n`;
@@ -4421,7 +4581,8 @@ function downloadTechReportMD() {
   md += `## Checklist Answers\n\n${_checklistSectionMD()}`;
   md += `## Top Delay Factors\n\n${_delayFactorsMD(factors)}`;
   md += `## Effort Estimate\n\n| Band | Person-Months |\n|---|---|\n| Low | ${effort.low} |\n| Central | ${effort.central} |\n| High | ${effort.high} |\n| Calendar (2 FTE) | ~${effort.cal} months |\n\n`;
-  md += `---\n\n> **Confidence & Limitations:** Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review.\n`;
+  md += `---\n\n> **Confidence & Limitations:** Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review.\n\n`;
+  md += `---\n*Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Feedback: darshan.meel@gmail.com*\n`;
 
   downloadBlob(md, `sybase_tech_report_${formatDatetime(ts)}.md`, 'text/markdown');
   showToast('Technical report (Markdown) exported.');
@@ -4438,39 +4599,44 @@ function downloadExecBriefHTML() {
   const TIER_COLOR_HEX = { low:'#2da44e', medium:'#bf8700', high:'#d1400d', veryhigh:'#cf222e' };
   const ragColor = compT ? (TIER_COLOR_HEX[compT.cls] || '#1a1a2e') : '#1a1a2e';
 
-  const bottomLine = state.meta.bottomLine && state.meta.bottomLine.trim()
-    ? escapeHtml(state.meta.bottomLine)
-    : (comp != null ? `Platform carries ${compT ? compT.label : ''} material risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data for automated bottom line.');
+  const overallRec = state.meta.recommendation && state.meta.recommendation.trim()
+    ? escapeHtml(state.meta.recommendation)
+    : (comp != null ? `Platform carries ${compT ? compT.label : ''} migration risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data — complete analysis and checklist.');
 
-  let recommendation, conditionsList;
+  let approachRec, conditionsList;
   if (comp == null) {
-    recommendation = 'Insufficient data. Complete analysis and checklist for full commercial framing.';
+    approachRec = 'Insufficient data. Complete analysis and checklist for full engagement recommendation.';
     conditionsList = ['Complete analyzer run and checklist before proceeding.'];
   } else if (comp <= 30) {
-    recommendation = 'Risk profile is LOW. Standard acquisition terms are appropriate. The migration is straightforward and well-scoped.';
-    conditionsList = ['Standard reps & warranties on platform stability', 'Confirm Sybase support timeline', 'Agree migration ownership', 'Post-close monitoring for 90 days'];
+    approachRec = 'Risk profile is LOW. A phased migration or direct big-bang cutover are both viable. Phased approach recommended for systems with live users.';
+    conditionsList = ['Recommended approach: phased migration or big-bang (either viable at this risk level)', 'Team composition: 1–2 senior PL/pgSQL developers, 1 DBA, 1 project lead', 'Confirm Sybase support timeline and plan version retirement', 'Define rollback criteria before migration starts', 'Post-migration monitoring window: 90 days minimum'];
   } else if (comp <= 55) {
-    recommendation = 'Risk profile is MEDIUM. A modest price adjustment or escrow provision is recommended to cover migration cost overruns.';
-    conditionsList = ['Escrow 5–10% of deal value released on go-live', 'Transition Service Agreement for 6–9 months', 'Milestone-based earnout linked to migration completion', 'Independent technical review before signing'];
+    approachRec = 'Risk profile is MEDIUM. Phased migration with parallel-run recommended. Avoid big-bang cutover until Phase 3 gaps are resolved.';
+    conditionsList = ['Recommended approach: phased migration with parallel run', 'Team composition: 2 senior PL/pgSQL developers, 1 DBA, 1 project lead, 1 test engineer', 'Resolve key-person dependency before migration starts', 'Establish rollback plan and tested restore procedure before Phase 1', 'Map and validate all integration feeds before Phase 4', 'Milestone sign-off required at end of each phase'];
   } else if (comp <= 80) {
-    recommendation = 'Risk profile is HIGH. A material price adjustment and extended TSA are warranted. Escrow or clawback provision strongly recommended.';
-    conditionsList = ['Price reduction or escrow 10–20% of deal value', 'TSA of 12–18 months minimum', 'Seller takes migration responsibility through go-live', 'Walk-away right if migration not complete within 24 months'];
+    approachRec = 'Risk profile is HIGH. Phased migration with extended parallel run required. Each phase needs an explicit go/no-go decision before proceeding.';
+    conditionsList = ['Recommended approach: phased migration with extended parallel run and explicit go/no-go gates', 'Team composition: 2–3 senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead', 'All scope-blocker checklist items must be resolved before migration starts', 'Tested backup + restore required before Phase 1', 'Rollback drill required before each phase', 'Independent technical review at Phase 3 milestone'];
   } else {
-    recommendation = 'Risk profile is VERY HIGH. Recommend walk-away unless the seller takes on full migration liability or the deal price fully reflects the platform rebuild cost.';
-    conditionsList = ['Require seller-funded migration to PostgreSQL pre-close', 'Consider deal restructure (asset purchase of data only)', 'Independent code audit before signing', 'Walk-away right at any milestone failure'];
+    approachRec = 'Risk profile is VERY HIGH. Consider deferring the project until scope blockers are resolved. If proceeding, phased migration with strict go/no-go gates and full rollback capability is mandatory.';
+    conditionsList = ['Recommended approach: defer project until red-flag items resolved, then phased migration only', 'Team composition: 3+ senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead — minimum', 'All red-flag checklist items must be resolved before migration starts', 'Mandate backup/restore test and documented rollback drill', 'Independent code audit before Phase 3', 'Go/no-go decision point at every phase boundary — project can be deferred at any gate'];
   }
 
   const top3risks = factors.slice(0, 3).map(f =>
     `<div class="risk-block ${f.severity}"><strong>${escapeHtml(f.factor)}</strong>${f.mitigation ? `<div style="font-size:0.82rem;margin-top:4px">${escapeHtml(f.mitigation)}</div>` : ''}</div>`
   ).join('');
 
-  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Executive Brief</title>
-<style>${_exportCSSBase()}</style></head><body>
-${_headerBlock('Executive Brief', 'Sybase → PostgreSQL Platform Risk Summary for Acquirer')}
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation — Executive Summary</title>
+<style>${_exportCSSBase()}
+.lim-banner{background:#FFF1F0;border:1px solid #F85149;border-left:4px solid #F85149;color:#721712;padding:10px 14px;border-radius:4px;font-size:0.82rem;margin-bottom:18px}
+.lim-banner strong{color:#F85149}
+.lim-footer{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:0.76rem;color:#555;text-align:center}
+</style></head><body>
+${_headerBlock('Migration Evaluation — Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary')}
 <div style="padding:24px 32px">
+<div class="lim-banner"><strong>&#9888; Limitations apply.</strong> This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.</div>
 <div style="background:${ragColor};color:#fff;border-radius:4px;padding:20px 24px;margin-bottom:24px">
-  <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.8;margin-bottom:6px">Bottom Line</div>
-  <div style="font-size:1.1rem;line-height:1.6">${bottomLine}</div>
+  <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.8;margin-bottom:6px">Overall Recommendation</div>
+  <div style="font-size:1.1rem;line-height:1.6">${overallRec}</div>
 </div>
 <h2>Risk Scores</h2>
 <div class="score-row">
@@ -4485,11 +4651,12 @@ ${top3risks.length ? top3risks : '<p style="color:#888;font-style:italic">No sig
   <div class="score-card"><div class="score-label">Range</div><div class="score-num" style="font-size:1.8rem">${effort.low}–${effort.high}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
   <div class="score-card"><div class="score-label">Calendar (2 FTE)</div><div class="score-num" style="font-size:1.8rem">~${effort.cal}</div><div style="font-size:0.8rem;color:#888">months</div></div>
 </div>
-<h2>Commercial Recommendation</h2>
-<div style="background:#F9F9F9;border-left:3px solid ${ragColor};padding:14px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:0.92rem;line-height:1.6">${escapeHtml(recommendation)}</div>
-<h2>Recommended Conditions</h2>
+<h2>Approach Recommendation</h2>
+<div style="background:#F9F9F9;border-left:3px solid ${ragColor};padding:14px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:0.92rem;line-height:1.6">${escapeHtml(approachRec)}</div>
+<h2>Recommended Engagement Conditions</h2>
 <ul>${conditionsList.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
-<div class="conf-note"><strong>Confidence note:</strong> This brief is generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. It is a triage aid based on regex analysis and a structured checklist — not a substitute for on-site review or legal/financial due diligence.</div>
+<div class="conf-note"><strong>Confidence note:</strong> This summary is generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. It is a triage aid based on regex analysis and a structured checklist — not a substitute for on-site review.</div>
+<div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: darshan.meel@gmail.com</div>
 </div></body></html>`;
   downloadBlob(html, `sybase_exec_brief_${formatDatetime(ts)}.html`, 'text/html');
   showToast('Executive brief (HTML) exported.');
@@ -4504,51 +4671,343 @@ function downloadExecBriefMD() {
   const compT = tierFor(state.scores.composite, TIER_COMPOSITE);
   const comp = state.scores.composite;
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  const target = state.meta.target || 'Target Platform';
-  const acquirer = state.meta.acquirer || '';
+  const client = state.meta.client || 'Organization';
+  const analyst = state.meta.analyst || '';
 
-  const bottomLine = state.meta.bottomLine && state.meta.bottomLine.trim()
-    ? state.meta.bottomLine
-    : (comp != null ? `Platform carries ${compT ? compT.label : ''} material risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data for automated bottom line.');
+  const overallRec = state.meta.recommendation && state.meta.recommendation.trim()
+    ? state.meta.recommendation
+    : (comp != null ? `Platform carries ${compT ? compT.label : ''} migration risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data — complete analysis and checklist.');
 
-  let recommendation, conditions;
+  let approachRec, conditions;
   if (comp == null) {
-    recommendation = 'Insufficient data. Complete analysis and checklist.';
+    approachRec = 'Insufficient data. Complete analysis and checklist.';
     conditions = ['Complete analyzer run and checklist before proceeding.'];
   } else if (comp <= 30) {
-    recommendation = 'Risk profile is LOW. Standard acquisition terms appropriate.';
-    conditions = ['Standard reps & warranties on platform stability', 'Confirm Sybase support timeline', 'Agree migration ownership', 'Post-close monitoring 90 days'];
+    approachRec = 'Risk profile is LOW. Phased migration or big-bang cutover both viable.';
+    conditions = ['Approach: phased or big-bang (both viable)', 'Team: 1–2 senior PL/pgSQL developers, 1 DBA, 1 project lead', 'Define rollback criteria before migration starts', 'Post-migration monitoring: 90 days minimum'];
   } else if (comp <= 55) {
-    recommendation = 'Risk profile is MEDIUM. Modest price adjustment or escrow recommended.';
-    conditions = ['Escrow 5–10% released on go-live', 'TSA 6–9 months', 'Milestone-based earnout', 'Independent tech review pre-sign'];
+    approachRec = 'Risk profile is MEDIUM. Phased migration with parallel-run recommended.';
+    conditions = ['Approach: phased migration with parallel run', 'Team: 2 senior PL/pgSQL developers, 1 DBA, 1 project lead, 1 test engineer', 'Resolve key-person dependency before migration starts', 'Establish rollback plan and tested restore before Phase 1', 'Milestone sign-off required at each phase'];
   } else if (comp <= 80) {
-    recommendation = 'Risk profile is HIGH. Material price adjustment and extended TSA warranted.';
-    conditions = ['Price reduction/escrow 10–20%', 'TSA 12–18 months minimum', 'Seller migration responsibility through go-live', 'Walk-away right if not complete in 24 months'];
+    approachRec = 'Risk profile is HIGH. Phased migration with extended parallel run and explicit go/no-go gates.';
+    conditions = ['Approach: phased migration with extended parallel run', 'Team: 2–3 senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead', 'All scope-blocker items resolved before migration starts', 'Rollback drill required before each phase', 'Independent technical review at Phase 3'];
   } else {
-    recommendation = 'Risk profile is VERY HIGH. Walk-away recommended unless seller takes full migration liability.';
-    conditions = ['Seller-funded pre-close migration', 'Consider asset purchase only', 'Independent code audit pre-sign', 'Walk-away right at any milestone failure'];
+    approachRec = 'Risk profile is VERY HIGH. Consider deferring until scope blockers resolved.';
+    conditions = ['Approach: defer project until red-flag items resolved, then phased migration only', 'Team: 3+ senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead', 'All red-flag items resolved before migration starts', 'Mandate backup/restore test and rollback drill', 'Go/no-go decision at every phase boundary'];
   }
 
-  let md = `# Executive Brief — Sybase Platform Risk Summary\n\n`;
+  let md = `# Migration Evaluation — Executive Summary\n\n`;
+  md += `> &#9888; **Limitations apply.** This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.\n>\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
-  md += `**Target:** ${mdEsc(target)}  \n`;
-  if (acquirer) md += `**Acquirer:** ${mdEsc(acquirer)}  \n`;
+  md += `**Client:** ${mdEsc(client)}  \n`;
+  if (analyst) md += `**Prepared by:** ${mdEsc(analyst)}  \n`;
   md += `**Date:** ${today}  \n`;
   md += `**Confidence:** ~${conf}%  \n`;
-  if (state.showCredit) md += `**Prepared by:** Darshan Singh  \n`;
-  md += `\n---\n\n## Bottom Line\n\n> ${mdEsc(bottomLine)}\n\n`;
+  if (state.showCredit) md += `**Credit:** Darshan Singh  \n`;
+  md += `\n---\n\n## Overall Recommendation\n\n> ${mdEsc(overallRec)}\n\n`;
   md += `## Risk Scores\n\n| Metric | Score | Tier |\n|---|---|---|\n`;
   md += `| Code Complexity | ${state.scores.code ?? 'N/A'} | ${tierFor(state.scores.code, TIER_CODE)?.label ?? 'N/A'} |\n`;
   md += `| Migration Readiness | ${state.scores.readiness ?? 'N/A'} | ${tierFor(state.scores.readiness, TIER_READY)?.label ?? 'N/A'} |\n`;
   md += `| Composite Risk | ${state.scores.composite ?? 'N/A'} | ${tierFor(state.scores.composite, TIER_COMPOSITE)?.label ?? 'N/A'} |\n\n`;
   md += `## Top 3 Macro Risks\n\n${_delayFactorsMD(factors.slice(0, 3))}`;
   md += `## Effort Estimate\n\n| Band | Person-Months |\n|---|---|\n| Low | ${effort.low} |\n| Central | ${effort.central} |\n| High | ${effort.high} |\n| Calendar (2 FTE) | ~${effort.cal} months |\n\n`;
-  md += `## Commercial Recommendation\n\n${mdEsc(recommendation)}\n\n`;
-  md += `## Recommended Conditions\n\n${conditions.map((c,i) => `${i+1}. ${mdEsc(c)}`).join('\n')}\n\n`;
-  md += `---\n\n> **Confidence note:** Generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. Triage aid only — not a substitute for on-site review or legal/financial due diligence.\n`;
+  md += `## Approach Recommendation\n\n${mdEsc(approachRec)}\n\n`;
+  md += `## Recommended Engagement Conditions\n\n${conditions.map((c,i) => `${i+1}. ${mdEsc(c)}`).join('\n')}\n\n`;
+  md += `---\n\n> **Confidence note:** Generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. Triage aid only — not a substitute for on-site review.\n\n`;
+  md += `---\n*Generated by Sybase Migration Evaluator &middot; ~92% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Feedback: darshan.meel@gmail.com*\n`;
 
   downloadBlob(md, `sybase_exec_brief_${formatDatetime(ts)}.md`, 'text/markdown');
   showToast('Executive brief (Markdown) exported.');
+}
+
+// ---- downloadMethodologyDeck ----
+function downloadMethodologyDeck() {
+  const ts = new Date();
+  const today = ts.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  const creditLine = state.showCredit ? ' &middot; Prepared by Darshan Singh' : '';
+  const total = 8;
+
+  const slideCSS = `
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0F1419;color:#E6EDF3;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+    #deck-head{background:#151B23;border-bottom:1px solid #30363D;padding:10px 24px;display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;color:#8B949E;letter-spacing:0.1em;text-transform:uppercase;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;flex-shrink:0}
+    #deck-controls{display:flex;gap:8px;align-items:center}
+    .deck-btn{background:transparent;border:1px solid #30363D;color:#8B949E;width:32px;height:32px;border-radius:3px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+    .deck-btn:hover:not(:disabled){color:#F59E0B;border-color:#B67508}
+    .deck-btn:disabled{opacity:0.3;cursor:default}
+    #deck-counter{font-variant-numeric:tabular-nums;color:#E6EDF3;min-width:54px;text-align:center}
+    #deck-body{flex:1;overflow:hidden;position:relative}
+    .slide{display:none;position:absolute;inset:0;padding:40px 60px;overflow-y:auto}
+    .slide.active{display:block;animation:fadeIn 0.18s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .slide h3{font-size:0.72rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#6E7681;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-bottom:20px}
+    .slide .slide-hero{font-size:2.8rem;font-weight:300;line-height:1.15;letter-spacing:-0.02em;color:#E6EDF3;margin-bottom:20px}
+    .slide .slide-body{color:#E6EDF3;line-height:1.65;font-size:0.92rem}
+    .slide .slide-body ul,.slide .slide-body ol{padding-left:24px;margin:10px 0}
+    .slide .slide-body li{margin-bottom:6px}
+    .slide table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.85rem}
+    .slide table th{text-align:left;padding:8px 10px;background:#0F1419;color:#8B949E;font-weight:500;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid #30363D}
+    .slide table td{padding:8px 10px;border-bottom:1px solid #21262D;color:#E6EDF3}
+    .phase-block{background:#1F2730;border-radius:4px;padding:14px 18px;margin-bottom:12px}
+    .phase-block h4{font-size:0.78rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#F59E0B;margin-bottom:8px}
+    .deliverable-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+    .deliverable-pill{background:#151B23;border:1px solid #30363D;border-radius:3px;padding:6px 12px;font-size:0.78rem;color:#8B949E}
+    #deck-prev-area{position:fixed;left:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+    #deck-next-area{position:fixed;right:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+    #deck-prev-area:hover,#deck-next-area:hover{opacity:1;background:rgba(255,255,255,0.04)}
+    #deck-prev-area span,#deck-next-area span{font-size:2rem;color:#8B949E}
+    .slide-limit-note{position:absolute;bottom:12px;left:20px;right:20px;font-size:0.68rem;color:#888;text-align:center;padding-top:6px;border-top:1px solid #eee}
+  `;
+
+  const _slimNote = `<div class="slide-limit-note">&#9888; Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
+
+  // Slide 1: Cover
+  const ms1 = `
+    <h3>01 · Cover</h3>
+    <div class="slide-hero">Sybase &rarr; PostgreSQL<br>Migration Evaluation<br>Methodology</div>
+    <div class="slide-body">
+      <div style="color:#8B949E;font-size:0.9rem;margin-bottom:12px">${today}${creditLine}</div>
+      <div style="font-size:0.82rem;color:#6E7681;max-width:560px">This deck describes the evaluation process — what we will need from you, how each phase is structured, and what you will receive at the end. It contains no client-specific data.</div>
+    </div>`;
+
+  // Slide 2: What this evaluation delivers
+  const ms2 = `
+    <h3>02 · What this evaluation delivers</h3>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;max-width:700px">
+        <div style="background:#1F2730;border-radius:4px;padding:14px">
+          <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Code Complexity</div>
+          <div style="font-size:0.85rem;line-height:1.5">Regex-based scan of Sybase T-SQL objects. Scores each stored procedure, view, function, and trigger on a 0–100 scale. Tiers: LOW / MEDIUM / HIGH / VERY HIGH.</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:14px">
+          <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Migration Readiness</div>
+          <div style="font-size:0.85rem;line-height:1.5">Structured 70-item checklist across 6 phases. Weighted score of unresolved gaps. Higher score = more preparation required. Tiers: READY / MOSTLY READY / MATERIAL GAPS / SEVERE GAPS.</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:14px">
+          <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Composite Risk</div>
+          <div style="font-size:0.85rem;line-height:1.5">0.45 × Code Complexity + 0.55 × Readiness. Readiness weighted slightly higher — process and people risks are harder to recover from. Drives effort band and approach recommendation.</div>
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Deliverables at end of engagement</div>
+      <div class="deliverable-row">
+        <div class="deliverable-pill">Technical Report (HTML + Markdown)</div>
+        <div class="deliverable-pill">Executive Summary (HTML + Markdown)</div>
+        <div class="deliverable-pill">Slide Deck (HTML, keyboard nav)</div>
+        <div class="deliverable-pill">Raw Data (JSON)</div>
+      </div>
+      <div style="margin-top:12px;font-size:0.78rem;color:#6E7681">All scores carry an explicit ~92% confidence label. Results are a triage aid — not a substitute for on-site review.</div>
+    </div>`;
+
+  // Slide 3: Inputs we'll need
+  const ms3 = `
+    <h3>03 · Inputs we'll need from you</h3>
+    <div class="slide-body">
+      <ul>
+        <li><strong>Read-only access to the Sybase environment</strong> (preferred) — or DDL extracts from a DBA (stored procedures, views, functions, triggers). We supply ready-to-run discovery queries.</li>
+        <li><strong>List of every application, script, and report</strong> connecting to Sybase — including ETL jobs, batch processes, Excel ODBC connections, and any shadow-IT consumers.</li>
+        <li><strong>Architecture diagrams and ERDs</strong> if they exist. Missing documentation is itself a finding, not a blocker.</li>
+        <li><strong>30–60 minutes of a DBA's time per phase</strong> — to walk through discovery query results and confirm platform specifics.</li>
+        <li><strong>Named owner for each integration and scheduled job</strong> — we need someone who can confirm whether each feed is live, retired, or unknown.</li>
+        <li><strong>Backup and restore-test evidence</strong> — date of last successful restore, RTO/RPO targets. If untested, that is a finding.</li>
+        <li><strong>Any compliance obligations</strong> constraining the platform — HIPAA, PCI, SOC2, GDPR, contractual SLAs, downtime windows.</li>
+      </ul>
+      <div style="margin-top:16px;background:#1F2730;border-left:3px solid #F59E0B;border-radius:0 4px 4px 0;padding:10px 14px;font-size:0.82rem">
+        You do not need everything on day one. We collect these across the six phases. Missing items are surfaced as risks in the final report.
+      </div>
+    </div>`;
+
+  // Slide 4: Phase 1
+  const ms4 = `
+    <h3>04 · Phase 1 — Preparation &amp; Scoping</h3>
+    <div class="slide-body">
+      <div class="phase-block">
+        <h4>Goals</h4>
+        <p style="font-size:0.85rem">Establish a complete picture of the platform before any technical deep dive. Identify documentation gaps, confirm access paths, and agree scope.</p>
+      </div>
+      <div class="phase-block">
+        <h4>Sample activities</h4>
+        <ul style="font-size:0.85rem">
+          <li>Collect system architecture diagrams, ERDs, and runbooks</li>
+          <li>Review security and compliance documentation (SOC2, HIPAA, PCI, GDPR)</li>
+          <li>Request read-only database access or DBA export scripts</li>
+          <li>Obtain full list of applications and data feeds connecting to Sybase</li>
+          <li>Confirm Sybase version and support timeline</li>
+          <li>Review license agreements (transferability, renewal dates)</li>
+          <li>Confirm whether the original architect / lead developer is available</li>
+        </ul>
+      </div>
+      <div class="phase-block">
+        <h4>Deliverable at end of phase</h4>
+        <p style="font-size:0.85rem">Scoping document confirming platform boundaries, access method, known gaps, and agreed discovery schedule for Phases 2–6.</p>
+      </div>
+    </div>`;
+
+  // Slide 5: Phase 2
+  const ms5 = `
+    <h3>05 · Phase 2 — Business Context &amp; Platform Overview</h3>
+    <div class="slide-body">
+      <div class="phase-block">
+        <h4>Goals</h4>
+        <p style="font-size:0.85rem">Understand the business function of the platform, its risk profile for the organization, and who depends on it. Establishes the migration blast radius.</p>
+      </div>
+      <div class="phase-block">
+        <h4>Sample activities</h4>
+        <ul style="font-size:0.85rem">
+          <li>Confirm the business-critical function of the platform (what breaks for customers if it goes down)</li>
+          <li>Identify revenue dependency — direct or indirect</li>
+          <li>Assess key-person dependency on the DBA or original developer</li>
+          <li>Confirm regulatory and compliance obligations on the data</li>
+          <li>Identify customer contracts referencing specific infrastructure</li>
+          <li>Surface the biggest operational risk to the platform today</li>
+        </ul>
+      </div>
+      <div class="phase-block">
+        <h4>Deliverable at end of phase</h4>
+        <p style="font-size:0.85rem">Business context summary: platform function, dependency map, compliance obligations, and initial risk flags.</p>
+      </div>
+    </div>`;
+
+  // Slide 6: Phases 3 & 4
+  const ms6 = `
+    <h3>06 · Phases 3 &amp; 4 — Database Deep Dive / Applications &amp; Integrations</h3>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="phase-block" style="margin-bottom:0">
+          <h4>Phase 3 — Database &amp; Code Deep Dive</h4>
+          <ul style="font-size:0.83rem">
+            <li>Confirm Sybase product mix (ASE, IQ, Replication Server, SQL Anywhere)</li>
+            <li>Run object inventory: stored procs, triggers, views, functions</li>
+            <li>Identify Sybase-specific features (identity, text/image, cross-DB joins, CIS)</li>
+            <li>Run code analyzer on DDL extracts — generates Code Complexity score</li>
+            <li>Confirm backup strategy and last successful restore date</li>
+            <li>Identify tables without primary keys</li>
+          </ul>
+        </div>
+        <div class="phase-block" style="margin-bottom:0">
+          <h4>Phase 4 — Applications &amp; Integrations</h4>
+          <ul style="font-size:0.83rem">
+            <li>Confirm full application list with driver, language, and named owner</li>
+            <li>Map ETL and batch tools (BCP, SSIS, Informatica, custom scripts)</li>
+            <li>Confirm upstream and downstream system feeds</li>
+            <li>Identify reporting estate (Crystal, SSRS, BI tools, ad-hoc Excel)</li>
+            <li>Identify shadow IT (Excel ODBC, Access front-ends, manual exports)</li>
+            <li>Flag legacy thick-client applications (PowerBuilder, VB6, Delphi)</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:0.78rem;color:#6E7681">Deliverable: Code Complexity score, integration map, red-flag finding list.</div>
+    </div>`;
+
+  // Slide 7: Phases 5 & 6
+  const ms7 = `
+    <h3>07 · Phases 5 &amp; 6 — Target State &amp; Operational Maturity</h3>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="phase-block" style="margin-bottom:0">
+          <h4>Phase 5 — Target State &amp; Timeline</h4>
+          <ul style="font-size:0.83rem">
+            <li>Confirm target state: like-for-like migration or full modernisation</li>
+            <li>Establish expected business timeline and key milestones</li>
+            <li>Identify customer commitments constraining downtime windows</li>
+            <li>Confirm preference: phased migration vs. big-bang cutover</li>
+            <li>Confirm preferred cloud and target tech stack (AWS, Azure, GCP)</li>
+            <li>Assess regulatory or contractual constraints on architecture choices</li>
+          </ul>
+        </div>
+        <div class="phase-block" style="margin-bottom:0">
+          <h4>Phase 6 — Operational Maturity</h4>
+          <ul style="font-size:0.83rem">
+            <li>Confirm source code in version control (application and DB code)</li>
+            <li>Confirm promotion path (Dev → UAT → Prod)</li>
+            <li>Confirm schema change deployment method (Flyway, Liquibase, manual)</li>
+            <li>Confirm rollback procedure for failed releases</li>
+            <li>Confirm CI/CD pipeline status and change management process</li>
+            <li>Review any outstanding security audit findings</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:0.78rem;color:#6E7681">Deliverable: Migration Readiness score, operational risk summary, effort band.</div>
+    </div>`;
+
+  // Slide 8: What you receive
+  const ms8 = `
+    <h3>08 · What you receive at the end</h3>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="phase-block" style="margin-bottom:0">
+          <h4>Scores &amp; ratings</h4>
+          <ul style="font-size:0.83rem">
+            <li>Overall composite risk number (0–100) + RAG rating</li>
+            <li>Effort band in person-months (low / central / high)</li>
+            <li>Top delay factors with mitigation hints, ranked by severity</li>
+          </ul>
+        </div>
+        <div class="phase-block" style="margin-bottom:0">
+          <h4>Approach recommendation</h4>
+          <ul style="font-size:0.83rem">
+            <li>Recommended migration approach: phased / big-bang / parallel run</li>
+            <li>Team composition recommendation keyed to effort band</li>
+            <li>Rollback criteria and readiness requirements</li>
+            <li>Go/no-go decision points by phase</li>
+          </ul>
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Exported formats</div>
+      <div class="deliverable-row">
+        <div class="deliverable-pill">Technical Report · HTML + Markdown</div>
+        <div class="deliverable-pill">Executive Summary · HTML + Markdown</div>
+        <div class="deliverable-pill">Slide Deck · HTML (keyboard nav)</div>
+        <div class="deliverable-pill">Raw Data · JSON (for archival / re-import)</div>
+      </div>
+      <div style="margin-top:14px;font-size:0.78rem;color:#6E7681">All outputs include the ~92% confidence disclosure. No data leaves your browser at any point — the tool runs entirely offline.</div>
+    </div>`;
+
+  const slidesData = [ms1, ms2, ms3, ms4, ms5, ms6, ms7, ms8];
+  const slidesHTML = slidesData.map((s, i) =>
+    `<div class="slide${i === 0 ? ' active' : ''}" data-idx="${i}">${s}${_slimNote}</div>`
+  ).join('\n');
+
+  const deckJS = `
+    let curIdx = 0;
+    const total = ${total};
+    function gotoSlide(i) {
+      if (i < 0 || i >= total) return;
+      document.querySelectorAll('.slide')[curIdx].classList.remove('active');
+      curIdx = i;
+      document.querySelectorAll('.slide')[i].classList.add('active');
+      document.getElementById('dk-cur').textContent = i + 1;
+      document.getElementById('dk-prev').disabled = (i === 0);
+      document.getElementById('dk-next').disabled = (i === total - 1);
+    }
+    document.getElementById('dk-prev').addEventListener('click', () => gotoSlide(curIdx - 1));
+    document.getElementById('dk-next').addEventListener('click', () => gotoSlide(curIdx + 1));
+    document.getElementById('deck-prev-area').addEventListener('click', () => gotoSlide(curIdx - 1));
+    document.getElementById('deck-next-area').addEventListener('click', () => gotoSlide(curIdx + 1));
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowLeft'  || ev.key === 'ArrowUp'    || ev.key === 'PageUp')   gotoSlide(curIdx - 1);
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown'  || ev.key === 'PageDown' || ev.key === ' ') gotoSlide(curIdx + 1);
+    });
+  `;
+
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation Methodology</title>
+<style>${slideCSS}</style></head><body>
+<div id="deck-head">
+  <span>Sybase Migration Evaluator v2 &middot; Methodology Deck &middot; conf ~92%${creditLine}</span>
+  <div id="deck-controls">
+    <button class="deck-btn" id="dk-prev" disabled>&#8249;</button>
+    <span id="deck-counter"><span id="dk-cur">1</span> / ${total}</span>
+    <button class="deck-btn" id="dk-next">&#8250;</button>
+  </div>
+</div>
+<div id="deck-prev-area"><span>&#8249;</span></div>
+<div id="deck-next-area"><span>&#8250;</span></div>
+<div id="deck-body">
+${slidesHTML}
+</div>
+<script>${deckJS}<\/script>
+</body></html>`;
+  downloadBlob(html, `sybase_migration_methodology_${formatDatetime(ts)}.html`, 'text/html');
+  showToast('Methodology deck exported.');
 }
 
 // ---- downloadSlideDeck ----
@@ -4590,10 +5049,13 @@ function downloadSlideDeck() {
     #deck-next-area{position:fixed;right:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
     #deck-prev-area:hover,#deck-next-area:hover{opacity:1;background:rgba(255,255,255,0.04)}
     #deck-prev-area span,#deck-next-area span{font-size:2rem;color:#8B949E}
+    .slide-limit-note{position:absolute;bottom:12px;left:20px;right:20px;font-size:0.68rem;color:#888;text-align:center;padding-top:6px;border-top:1px solid #333}
   `;
 
+  const _slimNoteSD = `<div class="slide-limit-note">&#9888; Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
+
   const slidesHTML = slides.map((s, i) =>
-    `<div class="slide${i === 0 ? ' active' : ''}" data-idx="${i}">${s.html}</div>`
+    `<div class="slide${i === 0 ? ' active' : ''}" data-idx="${i}">${s.html}${_slimNoteSD}</div>`
   ).join('\n');
 
   const deckJS = `
