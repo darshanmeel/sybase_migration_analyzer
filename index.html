@@ -5601,6 +5601,123 @@ function downloadRawJSON() {
   showToast('JSON exported.');
 }
 
+// ---- triggerImportJSON ----
+function triggerImportJSON() {
+  document.getElementById('json-import-input').click();
+}
+
+// ---- handleJSONImportFile ----
+function handleJSONImportFile() {
+  const input = document.getElementById('json-import-input');
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      importRawJSON(imported);
+    } catch (err) {
+      showToast(`Invalid JSON — ${err.message}`);
+    }
+  };
+  reader.onerror = function() {
+    showToast('File not readable (corrupt or locked).');
+  };
+  reader.readAsText(file);
+
+  // Reset input so same file can be re-imported
+  input.value = '';
+}
+
+// ---- importRawJSON ----
+function importRawJSON(imported) {
+  // Validate tool field
+  if (!imported.tool || !imported.tool.startsWith('Sybase Migration Evaluator')) {
+    showToast("Not a Sybase Migration Evaluator export (missing 'tool' field).");
+    return;
+  }
+
+  // Validate and warn on schemaVersion mismatch
+  if (imported.schemaVersion !== 1) {
+    if (!imported.schemaVersion) {
+      showToast('Partial import — analyzer output unavailable (legacy export).');
+    } else {
+      showToast(`Incompatible export version (this tool expects v1, got ${imported.schemaVersion}).`);
+      // Continue anyway — try to restore what we can
+    }
+  }
+
+  // Restore state fields
+  if (imported.meta) state.meta = imported.meta;
+  if (imported.scores) state.scores = imported.scores;
+  if (imported.checklist) state.checklist = imported.checklist;
+  if (imported.codeMetrics) state.codeMetrics = imported.codeMetrics;
+  if (imported.codeResults) state.codeResults = imported.codeResults;
+  if (imported.source) state.sourceDialect = imported.source;
+
+  // Restore SQL input textarea
+  if (imported.sqlInput) {
+    document.getElementById('sql-input').value = imported.sqlInput;
+  }
+
+  // Restore Sybase version dropdown if present
+  if (imported.meta && imported.meta.sybaseVersion) {
+    const versionSelect = document.getElementById('sybase-version');
+    if (versionSelect) {
+      // Find the option that matches, or set to custom value
+      let found = false;
+      for (const opt of versionSelect.options) {
+        if (opt.value === imported.meta.sybaseVersion) {
+          versionSelect.value = imported.meta.sybaseVersion;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        // If not found in options, set it anyway (some versions may not be in the dropdown)
+        versionSelect.value = imported.meta.sybaseVersion;
+      }
+    }
+  }
+
+  // Re-render UI elements
+  updateDialectStrings();
+
+  // Update checklist view if tab is active
+  if (state.activeTab === 'checklist') {
+    renderChecklist();
+  }
+
+  // Update heat map and details if tab is active
+  if (state.activeTab === 'analysis' && state.codeResults) {
+    renderHeatMap(state.codeResults);
+    renderDetails(state.codeResults);
+  }
+
+  // Update Reports tab if active
+  if (state.activeTab === 'reports') {
+    renderReports();
+  }
+
+  // Update header scores
+  const cc = state.scores?.code !== null ? Math.round(state.scores.code) : null;
+  const mr = state.scores?.readiness !== null ? Math.round(state.scores.readiness) : null;
+  const comp = state.scores?.composite !== null ? Math.round(state.scores.composite) : null;
+
+  // Update header narrative fields
+  const clientInput = document.getElementById('nv-client');
+  if (clientInput && state.meta.client) clientInput.value = state.meta.client;
+
+  const analystInput = document.getElementById('nv-analyst');
+  if (analystInput && state.meta.analyst) analystInput.value = state.meta.analyst;
+
+  const recInput = document.getElementById('nv-recommendation');
+  if (recInput && state.meta.recommendation) recInput.value = state.meta.recommendation;
+
+  showToast('Session imported.');
+}
+
 // ---- downloadTechReportHTML ----
 function downloadTechReportHTML() {
   const ts = new Date();
