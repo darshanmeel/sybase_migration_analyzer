@@ -1,1 +1,6 @@
 .worktrees/
+.claude/
+.internal/
+*.stackdump
+.DS_Store
+Thumbs.db
