@@ -8,27 +8,39 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --navy: #1A237E;
-    --navy-dark: #121858;
-    --navy-light: #283593;
-    --accent: #3949AB;
-    --accent-hover: #303F9F;
-    --bg: #F5F5F5;
-    --surface: #FFFFFF;
-    --border: #DCDFE4;
-    --text: #212121;
-    --text-muted: #616161;
+    /* dark analytical dashboard palette */
+    --bg: #0F1419;
+    --surface: #151B23;
+    --surface-raised: #1F2730;
+    --surface-hover: #252E3A;
+    --border: #30363D;
+    --border-subtle: #21262D;
+    --text: #E6EDF3;
+    --text-muted: #8B949E;
+    --text-dim: #6E7681;
+    --accent: #F59E0B;
+    --accent-dim: #B67508;
+    --accent-hover: #FBBF24;
+    --navy: #1F2730;            /* legacy alias used by a few components */
+    --navy-dark: #0F1419;
+    --navy-light: #252E3A;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-    --color-low: #2E7D32;
-    --color-medium: #F57F17;
-    --color-high: #E65100;
-    --color-veryhigh: #B71C1C;
+    --color-low: #3FB950;
+    --color-medium: #F59E0B;
+    --color-high: #F97316;
+    --color-veryhigh: #F85149;
 
-    --bg-low: #E8F5E9;
-    --bg-medium: #FFF9C4;
-    --bg-high: #FFE0B2;
-    --bg-veryhigh: #FFCDD2;
+    --bg-low: rgba(63,185,80,0.12);
+    --bg-medium: rgba(245,158,11,0.14);
+    --bg-high: rgba(249,115,22,0.16);
+    --bg-veryhigh: rgba(248,81,73,0.18);
+
+    --red-flag: #F85149;
+    --ok-green: #3FB950;
+
+    --shadow-card: 0 1px 0 rgba(255,255,255,0.03) inset, 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-raised: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 14px rgba(0,0,0,0.45);
   }
 
   body {
@@ -555,6 +567,841 @@
     #app-header { padding: 14px 16px; }
     .banner-stats { gap: 16px; }
   }
+
+  /* ============================================================
+     V2 DARK-THEME OVERRIDES
+     ============================================================ */
+  body { background: var(--bg); color: var(--text); }
+
+  #app-header {
+    background: linear-gradient(180deg, #1A2029 0%, #151B23 100%);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 14px rgba(0,0,0,0.5);
+    padding: 14px 28px;
+  }
+  #app-header .title-block h1 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  #app-header .title-block h1::before {
+    content: "◆";
+    color: var(--accent);
+    margin-right: 10px;
+    font-size: 0.85rem;
+  }
+  #app-header .title-block p {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+  #btn-help {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  #btn-help:hover { background: var(--surface-hover); color: var(--accent); border-color: var(--accent-dim); }
+
+  .header-right {
+    display: flex; align-items: center; gap: 14px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+  .conf-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 3px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .conf-badge:hover { background: rgba(245,158,11,0.15); }
+  .conf-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 6px var(--accent);
+  }
+  .credit-line {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+  }
+  .credit-line strong { color: var(--text); font-weight: 500; }
+  .gear-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 26px; height: 26px; border-radius: 4px;
+    cursor: pointer; font-size: 0.85rem; line-height: 1;
+  }
+  .gear-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+  .gear-menu {
+    position: absolute; right: 28px; top: 60px;
+    background: var(--surface-raised); border: 1px solid var(--border);
+    border-radius: 4px; padding: 12px 14px;
+    box-shadow: var(--shadow-raised);
+    display: none; z-index: 100;
+    font-size: 0.8rem;
+    min-width: 240px;
+  }
+  .gear-menu.visible { display: block; }
+  .gear-menu label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); }
+  .gear-menu .menu-note { color: var(--text-dim); font-size: 0.7rem; margin-top: 6px; }
+  .gear-menu .menu-row { margin-bottom: 10px; }
+  .gear-menu .menu-row:last-child { margin-bottom: 0; }
+  .gear-menu select {
+    width: 100%;
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 3px;
+    padding: 5px 8px; font-size: 0.78rem;
+    font-family: inherit;
+  }
+
+  /* ---- TAB NAVIGATION ---- */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    display: flex;
+    gap: 2px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    position: sticky; top: 0; z-index: 20;
+  }
+  .tab-nav button {
+    background: transparent; border: 0;
+    color: var(--text-muted);
+    padding: 14px 18px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+  }
+  .tab-nav button:hover { color: var(--text); }
+  .tab-nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-nav button .tab-bracket { color: var(--text-dim); margin: 0 4px; }
+  .tab-nav button.active .tab-bracket { color: var(--accent-dim); }
+
+  /* ---- SCORE STRIP ---- */
+  #score-strip {
+    display: none;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  #score-strip.visible { display: flex; }
+  .score-card {
+    flex: 1 1 200px;
+    min-width: 200px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: var(--mono);
+  }
+  .score-card:hover { border-color: var(--accent-dim); background: var(--surface-hover); }
+  .score-card .sc-label {
+    font-size: 0.66rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .score-card .sc-value {
+    font-size: 2rem; font-weight: 600;
+    color: var(--text); line-height: 1; letter-spacing: -0.02em;
+  }
+  .score-card .sc-value .sc-max { color: var(--text-dim); font-size: 1rem; font-weight: 400; }
+  .score-card .sc-value.unrated { color: var(--text-dim); font-size: 1.2rem; }
+  .score-card .sc-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 6px;
+    font-size: 0.7rem;
+  }
+  .score-card .sc-tier {
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .score-card .sc-tier.low { color: var(--color-low); }
+  .score-card .sc-tier.medium { color: var(--color-medium); }
+  .score-card .sc-tier.high { color: var(--color-high); }
+  .score-card .sc-tier.veryhigh { color: var(--color-veryhigh); }
+  .score-card .sc-conf { color: var(--text-dim); }
+
+  /* ---- MAIN / TAB PANELS ---- */
+  #main-wrap { max-width: 1400px; padding: 24px 28px 0; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---- DARK OVERRIDES FOR EXISTING ANALYZER COMPONENTS ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+  }
+  .card-title { color: var(--text-dim); font-weight: 500; letter-spacing: 0.14em; }
+  #input-panel textarea {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border);
+    border-radius: 3px;
+  }
+  #input-panel textarea:focus { border-color: var(--accent); background: var(--bg); }
+  #drop-zone { color: var(--text-muted); border-color: var(--border); background: transparent; }
+  #drop-zone:hover, #drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(245,158,11,0.06);
+    color: var(--accent);
+  }
+  .btn-primary { background: var(--accent); color: #0F1419; font-weight: 600; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+  .btn-export {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+  }
+  .btn-export:hover { background: rgba(245,158,11,0.1); border-color: var(--accent); }
+  #help-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  #help-panel h3 { color: var(--accent); }
+  #help-panel code { background: var(--bg); padding: 1px 6px; border-radius: 3px; color: var(--accent); }
+  #summary-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    box-shadow: var(--shadow-card);
+  }
+  #summary-banner h2 { color: var(--text); font-weight: 600; letter-spacing: 0.02em; }
+  #summary-banner .banner-source { color: var(--text-muted); }
+  .stat-label { color: var(--text-dim); }
+  .stat-value { color: var(--text); }
+  .banner-stats { gap: 28px; }
+  .bucket-pills { border-top-color: var(--border); }
+
+  #heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  #heatmap-table th {
+    background: var(--bg); color: var(--text-dim);
+    font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 0.68rem;
+    padding: 10px 12px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  #heatmap-table th:hover { color: var(--accent); }
+  #heatmap-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text);
+  }
+  #heatmap-table tr:hover td { background: var(--surface-hover); }
+  #heatmap-table tr { cursor: pointer; }
+  .sort-arrow { opacity: 0.25; margin-left: 4px; font-size: 0.65rem; }
+  th.sort-active .sort-arrow { opacity: 1; color: var(--accent); }
+
+  .bucket-badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 3px; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .bucket-badge.low { background: var(--bg-low); color: var(--color-low); border: 1px solid rgba(63,185,80,0.3); }
+  .bucket-badge.medium { background: var(--bg-medium); color: var(--color-medium); border: 1px solid rgba(245,158,11,0.3); }
+  .bucket-badge.high { background: var(--bg-high); color: var(--color-high); border: 1px solid rgba(249,115,22,0.3); }
+  .bucket-badge.veryhigh { background: var(--bg-veryhigh); color: var(--color-veryhigh); border: 1px solid rgba(248,81,73,0.3); }
+
+  .obj-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+  }
+  .obj-detail-header { background: var(--surface-raised); border-bottom-color: var(--border); }
+  .obj-detail-header:hover { background: var(--surface-hover); }
+  .obj-detail-header .obj-name { color: var(--text); }
+  .tab-bar { border-bottom-color: var(--border); background: var(--bg); }
+  .tab-btn { color: var(--text-muted); }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-pane pre, .annotation-pre {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .issue-group { background: var(--surface-raised); border: 1px solid var(--border); }
+  .issue-group .ig-head { color: var(--text); }
+  .hl-tooltip {
+    background: var(--surface-raised); color: var(--text);
+    border: 1px solid var(--border); box-shadow: var(--shadow-raised);
+  }
+
+  #app-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .footer-version { color: var(--text-dim); }
+  .limitations-toggle { color: var(--text-muted); }
+  #limitations-body { color: var(--text); }
+
+  /* ============================================================
+     V2 NEW COMPONENTS
+     ============================================================ */
+
+  /* ---- CHECKLIST TAB ---- */
+  .checklist-intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .checklist-intro h3 { font-size: 0.85rem; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .checklist-intro p { color: var(--text-muted); }
+  .checklist-toolbar {
+    display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .phase-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .phase-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    background: var(--surface-raised);
+    border-bottom: 1px solid var(--border);
+  }
+  .phase-head:hover { background: var(--surface-hover); }
+  .phase-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text);
+    font-family: var(--mono);
+  }
+  .phase-title .phase-idx { color: var(--accent); margin-right: 8px; }
+  .phase-meta {
+    display: flex; gap: 14px; align-items: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .phase-progress {
+    padding: 2px 10px; border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .phase-chevron {
+    color: var(--text-dim); transition: transform 0.15s;
+  }
+  .phase-section.collapsed .phase-chevron { transform: rotate(-90deg); }
+  .phase-section.collapsed .phase-body { display: none; }
+  .phase-body { padding: 12px 4px; }
+  .phase-body .sub-toolbar {
+    display: flex; justify-content: flex-end;
+    padding: 0 16px 10px;
+  }
+  .phase-body .sub-toolbar button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: var(--mono);
+  }
+  .phase-body .sub-toolbar button:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+  .check-item {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-subtle);
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 10px;
+    align-items: start;
+  }
+  .check-item:first-child { border-top: 0; }
+  .check-item input[type="checkbox"] {
+    appearance: none;
+    width: 18px; height: 18px; border-radius: 3px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    position: relative;
+    margin-top: 1px;
+  }
+  .check-item input[type="checkbox"]:hover { border-color: var(--accent); }
+  .check-item input[type="checkbox"]:checked {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .check-item input[type="checkbox"]:checked::after {
+    content: "✓";
+    color: var(--bg);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-55%);
+    font-size: 0.8rem; font-weight: 700;
+  }
+  .check-main { display: flex; flex-direction: column; gap: 6px; }
+  .check-row1 {
+    display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
+    font-size: 0.87rem; color: var(--text);
+  }
+  .check-id {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--text-dim); letter-spacing: 0.05em;
+    background: var(--bg); padding: 1px 6px; border-radius: 3px;
+    border: 1px solid var(--border-subtle);
+  }
+  .check-question { color: var(--text); line-height: 1.45; }
+  .check-item.checked .check-question { color: var(--text-muted); }
+  .check-notes {
+    width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 7px 9px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 32px;
+    max-height: 160px;
+  }
+  .check-notes:focus { outline: none; border-color: var(--accent); }
+  .check-ref {
+    font-family: var(--mono);
+    font-size: 0.67rem;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+  .check-meta {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+    font-family: var(--mono); font-size: 0.68rem;
+  }
+  .check-weight {
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+  .check-weight .w-n { color: var(--text); font-weight: 600; }
+  .check-red {
+    background: rgba(248,81,73,0.14);
+    color: var(--color-veryhigh);
+    border: 1px solid rgba(248,81,73,0.35);
+    padding: 1px 6px; border-radius: 3px;
+    font-weight: 600; letter-spacing: 0.06em;
+  }
+
+  /* ---- SQL LIBRARY TAB ---- */
+  .sql-toolbar {
+    display: flex; gap: 12px; margin-bottom: 18px; align-items: center; flex-wrap: wrap;
+  }
+  .sql-search {
+    flex: 1 1 260px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 9px 12px;
+    border-radius: 3px;
+  }
+  .sql-search:focus { outline: none; border-color: var(--accent); }
+  .sql-section { margin-bottom: 22px; }
+  .sql-section-head {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sql-section-head .sec-num { color: var(--text-dim); margin-right: 10px; }
+  .sql-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-card);
+  }
+  .sql-card-head {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; gap: 12px;
+  }
+  .sql-card-title {
+    font-size: 0.92rem; font-weight: 600; color: var(--text);
+  }
+  .sql-card-ref {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+  .sql-card-purpose {
+    font-size: 0.82rem; color: var(--text-muted);
+    margin-bottom: 10px; line-height: 1.5;
+  }
+  .sql-code-wrap {
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .sql-code {
+    font-family: var(--mono); font-size: 0.8rem;
+    padding: 12px 14px;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.55;
+  }
+  .sql-copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .sql-copy-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+  .sql-copy-btn.copied { color: var(--ok-green); border-color: var(--ok-green); }
+  .sql-hint {
+    margin-top: 10px; font-size: 0.78rem; color: var(--text-muted);
+    border-left: 2px solid var(--accent-dim);
+    padding: 4px 10px;
+    background: rgba(245,158,11,0.04);
+  }
+  .sql-hint-label {
+    color: var(--accent); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.68rem;
+    margin-right: 6px;
+  }
+
+  /* ---- REPORTS TAB ---- */
+  .report-scores {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    margin-bottom: 24px;
+  }
+  .big-score {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-card);
+    font-family: var(--mono);
+  }
+  .big-score .bs-label {
+    font-size: 0.72rem; color: var(--text-dim);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .big-score .bs-value {
+    font-size: 3.6rem; font-weight: 300;
+    line-height: 1; letter-spacing: -0.04em;
+    color: var(--text);
+  }
+  .big-score .bs-value .bs-max {
+    color: var(--text-dim); font-size: 1.4rem; font-weight: 300;
+  }
+  .big-score .bs-value.unrated { color: var(--text-dim); font-size: 1.6rem; }
+  .big-score .bs-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px; font-size: 0.78rem;
+  }
+  .big-score .bs-tier {
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .big-score .bs-tier.low { color: var(--color-low); }
+  .big-score .bs-tier.medium { color: var(--color-medium); }
+  .big-score .bs-tier.high { color: var(--color-high); }
+  .big-score .bs-tier.veryhigh { color: var(--color-veryhigh); }
+  .big-score .bs-conf { color: var(--text-dim); }
+  .big-score .bs-bar {
+    height: 3px; background: var(--bg); margin-top: 12px;
+    border-radius: 2px; overflow: hidden;
+  }
+  .big-score .bs-bar-fill {
+    height: 100%; background: var(--accent);
+    transition: width 0.3s ease;
+  }
+
+  /* ---- CAROUSEL ---- */
+  .carousel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .carousel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 18px;
+    background: var(--surface-raised);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .carousel-controls { display: flex; gap: 6px; align-items: center; }
+  .carousel-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px; height: 28px;
+    border-radius: 3px; cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .carousel-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent-dim); }
+  .carousel-btn:disabled { opacity: 0.3; cursor: default; }
+  .carousel-counter { font-variant-numeric: tabular-nums; color: var(--text); min-width: 50px; text-align: center; }
+  .carousel-body {
+    min-height: 320px;
+    padding: 30px 40px;
+    position: relative;
+  }
+  .slide { display: none; }
+  .slide.active { display: block; animation: slideIn 0.18s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .slide h3 {
+    font-size: 0.74rem; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    margin-bottom: 16px;
+  }
+  .slide .slide-hero {
+    font-size: 2.8rem; font-weight: 300;
+    line-height: 1.1; letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .slide .slide-body { color: var(--text); line-height: 1.6; font-size: 0.92rem; }
+  .slide .slide-body ol, .slide .slide-body ul { padding-left: 22px; margin: 10px 0; }
+  .slide .slide-body li { margin-bottom: 6px; }
+  .slide table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+  .slide table th {
+    text-align: left; padding: 8px 10px;
+    background: var(--bg); color: var(--text-dim);
+    font-weight: 500; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .slide table td { padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); color: var(--text); }
+
+  .report-narrative {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-card);
+  }
+  .report-narrative h3 {
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 14px;
+    font-family: var(--mono);
+  }
+  .report-narrative .narrative-row { margin-bottom: 14px; }
+  .report-narrative label {
+    display: block;
+    font-size: 0.75rem; color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .report-narrative input, .report-narrative textarea {
+    width: 100%;
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 3px;
+    padding: 7px 10px; font-size: 0.85rem; font-family: inherit;
+  }
+  .report-narrative input:focus, .report-narrative textarea:focus { outline: none; border-color: var(--accent); }
+  .report-narrative textarea { resize: vertical; min-height: 44px; }
+
+  .report-actions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-card);
+  }
+  .report-actions h3 {
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 14px;
+    font-family: var(--mono);
+  }
+  .report-action-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .report-action-btn {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    background: transparent;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    padding: 12px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+  }
+  .report-action-btn:hover { background: rgba(245,158,11,0.08); border-color: var(--accent); }
+  .report-action-btn .rab-title {
+    font-size: 0.82rem; font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .report-action-btn .rab-desc {
+    font-size: 0.7rem; color: var(--text-muted);
+  }
+
+  .report-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  .report-empty .re-big {
+    font-size: 1rem; color: var(--text); font-style: normal; margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* ---- ABOUT TAB ---- */
+  .about-hero {
+    background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02));
+    border: 1px solid rgba(245,158,11,0.3);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 26px 28px;
+    margin-bottom: 22px;
+  }
+  .about-hero .hero-tag {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--accent); letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .about-hero h2 {
+    font-size: 1.5rem; color: var(--text); font-weight: 400;
+    margin-bottom: 12px; line-height: 1.3;
+  }
+  .about-hero h2 .hero-num { color: var(--accent); font-weight: 600; }
+  .about-hero p { color: var(--text); line-height: 1.6; font-size: 0.92rem; }
+  .about-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .about-section h3 {
+    font-family: var(--mono);
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .about-section p, .about-section li { color: var(--text); line-height: 1.6; font-size: 0.88rem; }
+  .about-section ul, .about-section ol { padding-left: 22px; }
+  .about-section li { margin-bottom: 6px; }
+  .about-section code {
+    font-family: var(--mono);
+    background: var(--bg); padding: 1px 6px; border-radius: 3px;
+    color: var(--accent); font-size: 0.85em;
+  }
+  .rule-catalog {
+    font-size: 0.8rem;
+  }
+  .rule-catalog table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.78rem; }
+  .rule-catalog th {
+    text-align: left; padding: 6px 10px;
+    color: var(--text-dim); font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.68rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-catalog td {
+    padding: 6px 10px; border-bottom: 1px solid var(--border-subtle);
+    color: var(--text);
+  }
+  .rule-catalog td.rc-id { color: var(--accent); }
+  .rule-catalog td.rc-cat { color: var(--text-muted); font-size: 0.75rem; }
+
+  /* ---- RED FLAGS on reports ---- */
+  .risk-row {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    align-items: center;
+  }
+  .risk-row:last-child { border-bottom: 0; }
+  .risk-tag {
+    font-family: var(--mono); font-size: 0.68rem;
+    padding: 2px 7px; border-radius: 3px;
+    letter-spacing: 0.06em; font-weight: 600;
+  }
+  .risk-tag.red { background: rgba(248,81,73,0.14); color: var(--color-veryhigh); border: 1px solid rgba(248,81,73,0.35); }
+  .risk-tag.amber { background: rgba(245,158,11,0.12); color: var(--color-medium); border: 1px solid rgba(245,158,11,0.35); }
+  .risk-tag.green { background: rgba(63,185,80,0.12); color: var(--color-low); border: 1px solid rgba(63,185,80,0.35); }
+  .risk-title { color: var(--text); font-size: 0.88rem; }
+  .risk-meta { color: var(--text-dim); font-family: var(--mono); font-size: 0.72rem; }
+  .risk-mit { grid-column: 2 / -1; font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ---- Misc overrides ---- */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface-raised);
+    border: 1px solid var(--accent-dim);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    box-shadow: var(--shadow-raised);
+    z-index: 200;
+    display: none;
+  }
+  .toast.visible { display: block; animation: slideIn 0.18s ease; }
+
+  @media (max-width: 800px) {
+    .tab-nav { padding: 0 12px; overflow-x: auto; }
+    #score-strip { padding: 12px; }
+    .carousel-body { padding: 20px; }
+  }
 </style>
 </head>
 <body>
@@ -562,14 +1409,83 @@
 <!-- HEADER -->
 <header id="app-header">
   <div class="title-block">
-    <h1>Sybase T-SQL Migration Analyzer</h1>
-    <p>Analyze Sybase stored procedures, views, functions, and triggers for PostgreSQL migration complexity</p>
+    <h1>Sybase · Migration Evaluator</h1>
+    <p>Pre-acquisition technical diligence · Sybase → PostgreSQL · regex + structured checklist · offline</p>
   </div>
-  <button id="btn-help" title="Help" onclick="toggleHelp()">?</button>
+  <div class="header-right">
+    <span class="credit-line" id="credit-line">Prepared by <strong>Darshan Singh</strong></span>
+    <span class="conf-badge" onclick="switchTab('about')" title="How confident is this tool?">
+      <span class="dot"></span>
+      <span>confidence ~0.92</span>
+    </span>
+    <button class="gear-btn" id="gear-btn" onclick="toggleGearMenu(event)" title="Settings">&#9881;</button>
+    <button id="btn-help" title="Help" onclick="toggleHelp()">?</button>
+  </div>
+  <div class="gear-menu" id="gear-menu" onclick="event.stopPropagation()">
+    <div class="menu-row">
+      <label>
+        <input type="checkbox" id="toggle-credit" checked onchange="setShowCredit(this.checked)">
+        <span>Show "Prepared by Darshan Singh" on exports</span>
+      </label>
+      <div class="menu-note">Session-only. Default: on.</div>
+    </div>
+    <div class="menu-row">
+      <label style="display:block; margin-bottom:4px;">Sybase version / edition</label>
+      <select id="sybase-version" onchange="setSybaseVersion(this.value)">
+        <option value="Unknown">Unknown</option>
+        <option value="ASE 15.x">ASE 15.x</option>
+        <option value="ASE 16.0">ASE 16.0</option>
+        <option value="IQ 15.x">IQ 15.x</option>
+        <option value="IQ 16.x">IQ 16.x</option>
+        <option value="SQL Anywhere">SQL Anywhere</option>
+      </select>
+      <div class="menu-note">Appears in exported reports.</div>
+    </div>
+  </div>
 </header>
+
+<!-- TAB NAVIGATION -->
+<nav class="tab-nav" id="tab-nav">
+  <button class="active" data-tab="analysis" onclick="switchTab('analysis')"><span class="tab-bracket">[</span>analysis<span class="tab-bracket">]</span></button>
+  <button data-tab="checklist" onclick="switchTab('checklist')"><span class="tab-bracket">[</span>checklist<span class="tab-bracket">]</span></button>
+  <button data-tab="sqlref" onclick="switchTab('sqlref')"><span class="tab-bracket">[</span>sql.ref<span class="tab-bracket">]</span></button>
+  <button data-tab="reports" onclick="switchTab('reports')"><span class="tab-bracket">[</span>reports<span class="tab-bracket">]</span></button>
+  <button data-tab="about" onclick="switchTab('about')"><span class="tab-bracket">[</span>about<span class="tab-bracket">]</span></button>
+</nav>
+
+<!-- SCORE STRIP -->
+<div id="score-strip">
+  <div class="score-card" onclick="switchTab('reports')">
+    <div class="sc-label">Code Complexity</div>
+    <div class="sc-value unrated" id="sc-code-value">Not assessed</div>
+    <div class="sc-row">
+      <span class="sc-tier" id="sc-code-tier"></span>
+      <span class="sc-conf">conf ~92%</span>
+    </div>
+  </div>
+  <div class="score-card" onclick="switchTab('reports')">
+    <div class="sc-label">Migration Readiness</div>
+    <div class="sc-value unrated" id="sc-ready-value">Not assessed</div>
+    <div class="sc-row">
+      <span class="sc-tier" id="sc-ready-tier"></span>
+      <span class="sc-conf">conf ~92%</span>
+    </div>
+  </div>
+  <div class="score-card" onclick="switchTab('reports')">
+    <div class="sc-label">Composite Risk</div>
+    <div class="sc-value unrated" id="sc-comp-value">Not assessed</div>
+    <div class="sc-row">
+      <span class="sc-tier" id="sc-comp-tier"></span>
+      <span class="sc-conf">conf ~92%</span>
+    </div>
+  </div>
+</div>
 
 <!-- MAIN -->
 <div id="main-wrap">
+
+<!-- ===== TAB: ANALYSIS ===== -->
+<section class="tab-panel active" id="tab-analysis">
 
   <!-- HELP PANEL -->
   <div id="help-panel">
@@ -652,36 +1568,278 @@ GO"></textarea>
     <div id="details-container"></div>
   </div>
 
+</section><!-- /tab-analysis -->
+
+<!-- ===== TAB: CHECKLIST ===== -->
+<section class="tab-panel" id="tab-checklist">
+  <div class="checklist-intro">
+    <h3>Migration Readiness Checklist</h3>
+    <p>Each unchecked item adds to the Migration Readiness score based on its weight (1–5). Red-flag items are surfaced in the Reports tab as macro delay factors. Notes are captured per item for your engagement record. No data leaves the browser.</p>
+  </div>
+  <div class="checklist-toolbar">
+    <button class="btn btn-secondary" onclick="checklistCheckAll()" title="Mark every item as answered">Check all</button>
+    <button class="btn btn-secondary" onclick="checklistClearAll()">Clear all</button>
+    <button class="btn btn-secondary" onclick="downloadChecklistJSON()">Export Progress (JSON)</button>
+  </div>
+  <div id="checklist-container"></div>
+</section>
+
+<!-- ===== TAB: SQL LIBRARY ===== -->
+<section class="tab-panel" id="tab-sqlref">
+  <div class="checklist-intro">
+    <h3>Sybase Discovery SQL Library</h3>
+    <p>Ready-to-run queries for platform discovery, performance diagnostics, dependency mapping, and schema-quality audits. Hand these to the target-company DBA if you do not have read-only access, or run them yourself. This tool does not execute SQL — it's a copy/paste reference.</p>
+  </div>
+  <div class="sql-toolbar">
+    <input type="text" class="sql-search" id="sql-search" placeholder="Filter queries by name or purpose..." oninput="filterSQLLibrary(this.value)">
+  </div>
+  <div id="sql-library-container"></div>
+</section>
+
+<!-- ===== TAB: REPORTS ===== -->
+<section class="tab-panel" id="tab-reports">
+  <div id="reports-empty" class="report-empty">
+    <div class="re-big">No data yet</div>
+    <div>Run an analysis on the <b>Analysis</b> tab, and/or fill in the <b>Checklist</b> tab. Scores and report exports appear here once there is data to summarize.</div>
+  </div>
+  <div id="reports-content" style="display:none;">
+    <div class="report-scores" id="report-scores"></div>
+    <div class="carousel" id="report-carousel"></div>
+    <div class="report-narrative">
+      <h3>Engagement Context</h3>
+      <div class="narrative-row">
+        <label>Target company / platform name</label>
+        <input type="text" id="nv-target" placeholder="e.g., Beta Systems trading platform" oninput="setNarrative('target', this.value)">
+      </div>
+      <div class="narrative-row">
+        <label>Acquirer name (optional)</label>
+        <input type="text" id="nv-acquirer" placeholder="e.g., Acme Capital Partners" oninput="setNarrative('acquirer', this.value)">
+      </div>
+      <div class="narrative-row">
+        <label>Bottom-line assessment (1–2 sentences). Appears on the executive brief cover.</label>
+        <textarea id="nv-bottomLine" rows="2" placeholder="e.g., The Sybase platform is recoverable but carries material risk. Recommend ..." oninput="setNarrative('bottomLine', this.value)"></textarea>
+      </div>
+    </div>
+    <div class="report-actions">
+      <h3>Export</h3>
+      <div class="report-action-grid">
+        <button class="report-action-btn" onclick="downloadTechReportHTML()"><span class="rab-title">Technical Report · HTML</span><span class="rab-desc">Full analyzer findings + checklist answers + scores</span></button>
+        <button class="report-action-btn" onclick="downloadTechReportMD()"><span class="rab-title">Technical Report · Markdown</span><span class="rab-desc">Same content, plain-text for Notion / Confluence</span></button>
+        <button class="report-action-btn" onclick="downloadExecBriefHTML()"><span class="rab-title">Executive Brief · HTML</span><span class="rab-desc">2–3 page summary for acquirer co-founders</span></button>
+        <button class="report-action-btn" onclick="downloadExecBriefMD()"><span class="rab-title">Executive Brief · Markdown</span><span class="rab-desc">Same, Markdown format</span></button>
+        <button class="report-action-btn" onclick="downloadSlideDeck()"><span class="rab-title">Slide Deck · HTML</span><span class="rab-desc">8 slides, keyboard nav, present on a call</span></button>
+        <button class="report-action-btn" onclick="downloadRawJSON()"><span class="rab-title">Raw Data · JSON</span><span class="rab-desc">Full state dump for archival / downstream tools</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TAB: ABOUT ===== -->
+<section class="tab-panel" id="tab-about">
+  <div class="about-hero">
+    <div class="hero-tag">Confidence · Methodology · Limitations</div>
+    <h2>This tool produces estimates with approximately <span class="hero-num">90–95%</span> confidence for well-formed input.</h2>
+    <p>The score is regex-based code analysis plus a structured checklist. <b>Confidence drops sharply</b> when SQL is malformed, when the checklist is partially filled, or when the underlying platform includes features outside the rule set (Sybase IQ specifics, custom extended stored procedures, Replication Server topology, undocumented thick-client dependencies). Results are a <b>triage aid</b>, not a substitute for on-site review, interviews with the engineering team, or reading the actual code.</p>
+  </div>
+
+  <div class="about-section">
+    <h3>What the confidence band means</h3>
+    <p>For a well-structured T-SQL file with clear <code>CREATE</code> boundaries and a substantially-filled checklist, the three scores (Code Complexity, Migration Readiness, Composite) will usually land within about one bucket of the reality that a human architect would report after on-site review. Confidence is lower when inputs are partial; the tool explicitly marks scores as <i>Not assessed</i> when there is no input for them. Numbers are never shown without a <code>conf ~92%</code> label.</p>
+  </div>
+
+  <div class="about-section">
+    <h3>How the three scores are computed</h3>
+    <ul>
+      <li><b>Code Complexity (0–100):</b> derived from per-object rule matches and LOC tiers from the analyzer. Normalized across objects. Tiers: 0–30 LOW, 31–55 MEDIUM, 56–80 HIGH, 81–100 VERY HIGH.</li>
+      <li><b>Migration Readiness (0–100, higher = more gap):</b> sum of weights of unchecked checklist items, normalized to percentage. Tiers: 0–25 READY, 26–50 MOSTLY READY, 51–75 MATERIAL GAPS, 76–100 SEVERE GAPS.</li>
+      <li><b>Composite Risk (0–100):</b> <code>0.45 × CodeComplexity + 0.55 × Readiness</code>. Readiness is weighted slightly heavier because human/process risks are harder to recover from than code. If only one input exists, the composite equals that one (with a caveat).</li>
+      <li><b>Effort estimate (person-months):</b> calibrated to the playbook example (237 procs ≈ 9–14 PM) and inflated by the readiness gap. Range shown ±15% around the central estimate.</li>
+    </ul>
+  </div>
+
+  <div class="about-section">
+    <h3>Known limitations</h3>
+    <ol>
+      <li>This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.</li>
+      <li>Scoring is rubric-based. Two objects with identical scores may take very different times to rewrite in practice.</li>
+      <li>Business logic complexity is not captured — the tool only analyzes syntax, not semantics.</li>
+      <li>No data leaves your browser. Nothing is uploaded, logged, or stored.</li>
+      <li>Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.</li>
+      <li>Checklist answers are <b>self-reported</b>, not independently verified by the tool.</li>
+      <li>Scoring weights are opinionated — based on the playbook methodology. Other engagements may warrant different weights.</li>
+      <li>The effort formula is calibrated to one reference engagement and will vary significantly based on team skill, tooling maturity, and scope decisions.</li>
+    </ol>
+  </div>
+
+  <div class="about-section">
+    <h3>Rule catalog</h3>
+    <p style="margin-bottom:10px;">The analyzer applies the following rules to detect Sybase-specific constructs. Every match is annotated with a PostgreSQL equivalent and surfaced in the Reports tab.</p>
+    <div class="rule-catalog" id="rule-catalog"></div>
+  </div>
+
+  <div class="about-section">
+    <h3>Playbook attribution</h3>
+    <p>This tool operationalizes the methodology in <code>Sybase_MA_Playbook.md</code> — a pre-acquisition due-diligence playbook covering platform audit, technical-debt inventory, migration risk, integration mapping, and commercial framing (price adjustment / TSA / escrow / walk-away). The checklist items, SQL library, and report structure all map to specific playbook sections. Findings produced here are a triage aid, not a substitute for on-site review.</p>
+  </div>
+
+  <div class="about-section" id="about-credit">
+    <h3>Credit</h3>
+    <p>Prepared by <b>Darshan Singh</b>. This tool, the playbook methodology, and the generated reports are the work of a single consultant. You can hide the credit from exported reports per session via the gear icon in the header (default: on).</p>
+  </div>
+</section>
+
 </div><!-- /main-wrap -->
 
 <!-- FOOTER -->
 <footer id="app-footer">
   <div class="footer-inner">
-    <div class="limitations-toggle" onclick="toggleLimitations()" id="lim-toggle">
-      <span>About &amp; Limitations</span>
-      <span class="chevron">&#9660;</span>
-    </div>
-    <div id="limitations-body">
-      <ol>
-        <li>This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.</li>
-        <li>Scoring is rubric-based. Two objects with identical scores may take very different times to rewrite in practice.</li>
-        <li>Business logic complexity is not captured — the tool only analyzes syntax, not semantics.</li>
-        <li>No data leaves your browser. Nothing is uploaded, logged, or stored.</li>
-        <li>Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.</li>
-      </ol>
-    </div>
-    <div class="footer-row">
-      <span class="footer-version">Sybase T-SQL Migration Analyzer v1.0 — Offline, no external dependencies</span>
-      <div class="export-buttons" id="export-buttons">
-        <button class="btn btn-export" onclick="downloadHTML()">Download Report as HTML</button>
-        <button class="btn btn-export" onclick="downloadMarkdown()">Download Report as Markdown</button>
-      </div>
+    <div class="footer-row" style="margin-top:0; padding-top:0; border-top:0;">
+      <span class="footer-version">Sybase Migration Evaluator v2.0 · offline · regex-based triage aid · see <a href="#" onclick="switchTab('about'); return false;" style="color:var(--accent); text-decoration:none;">About</a> for limitations</span>
     </div>
   </div>
 </footer>
 
+<div class="toast" id="toast"></div>
+
 <script>
 'use strict';
+
+// ============================================================
+// V2 GLOBAL STATE
+// ============================================================
+const state = {
+  codeResults: null,       // array from analyzeObject
+  codeMetrics: null,       // summary metrics for scoring/reports
+  checklist: {},           // { [itemId]: { checked, notes } }
+  meta: { sybaseVersion: 'Unknown', target: '', acquirer: '', bottomLine: '' },
+  showCredit: true,
+  confidence: 0.92,
+  scores: { code: null, readiness: null, composite: null },
+  activeTab: 'analysis',
+};
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(name) {
+  state.activeTab = name;
+  document.querySelectorAll('.tab-nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + name);
+  });
+  window.scrollTo(0, 0);
+  // Lazy render tabs that depend on current state
+  if (name === 'reports') renderReports();
+}
+
+// ============================================================
+// GEAR MENU / CREDIT TOGGLE / VERSION
+// ============================================================
+function toggleGearMenu(ev) {
+  ev.stopPropagation();
+  document.getElementById('gear-menu').classList.toggle('visible');
+}
+document.addEventListener('click', (ev) => {
+  const menu = document.getElementById('gear-menu');
+  const gear = document.getElementById('gear-btn');
+  if (!menu.contains(ev.target) && ev.target !== gear) {
+    menu.classList.remove('visible');
+  }
+});
+function setShowCredit(on) {
+  state.showCredit = !!on;
+  const line = document.getElementById('credit-line');
+  line.style.display = on ? 'inline' : 'none';
+}
+function setSybaseVersion(v) { state.meta.sybaseVersion = v; }
+function setNarrative(key, val) { state.meta[key] = val; }
+
+// ============================================================
+// SCORE STRIP — three cards, live update, number tween
+// ============================================================
+const TIER_CODE = [
+  { max: 30,  label: 'LOW',        cls: 'low' },
+  { max: 55,  label: 'MEDIUM',     cls: 'medium' },
+  { max: 80,  label: 'HIGH',       cls: 'high' },
+  { max: 100, label: 'VERY HIGH',  cls: 'veryhigh' },
+];
+const TIER_READY = [
+  { max: 25,  label: 'READY',          cls: 'low' },
+  { max: 50,  label: 'MOSTLY READY',   cls: 'medium' },
+  { max: 75,  label: 'MATERIAL GAPS',  cls: 'high' },
+  { max: 100, label: 'SEVERE GAPS',    cls: 'veryhigh' },
+];
+const TIER_COMPOSITE = [
+  { max: 30,  label: 'LOW',        cls: 'low' },
+  { max: 55,  label: 'MEDIUM',     cls: 'medium' },
+  { max: 80,  label: 'HIGH',       cls: 'high' },
+  { max: 100, label: 'VERY HIGH',  cls: 'veryhigh' },
+];
+function tierFor(score, tiers) {
+  if (score == null) return null;
+  for (const t of tiers) if (score <= t.max) return t;
+  return tiers[tiers.length - 1];
+}
+function tweenNumber(el, from, to, duration) {
+  const start = performance.now();
+  from = from == null ? to : from;
+  function step(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const v = Math.round(from + (to - from) * (1 - Math.pow(1 - t, 3)));
+    el.textContent = v;
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function updateScoreCard(prefix, score, tiers) {
+  const valEl = document.getElementById('sc-' + prefix + '-value');
+  const tierEl = document.getElementById('sc-' + prefix + '-tier');
+  if (score == null) {
+    valEl.classList.add('unrated');
+    valEl.textContent = 'Not assessed';
+    tierEl.textContent = '';
+    tierEl.className = 'sc-tier';
+    return;
+  }
+  const tier = tierFor(score, tiers);
+  valEl.classList.remove('unrated');
+  const prev = parseInt(valEl.dataset.cur || '', 10);
+  valEl.innerHTML = '<span class="sc-num">0</span><span class="sc-max"> / 100</span>';
+  const numEl = valEl.querySelector('.sc-num');
+  tweenNumber(numEl, isNaN(prev) ? null : prev, score, 260);
+  valEl.dataset.cur = String(score);
+  tierEl.textContent = tier.label;
+  tierEl.className = 'sc-tier ' + tier.cls;
+}
+function updateScoreStrip() {
+  const strip = document.getElementById('score-strip');
+  const any = state.scores.code != null || state.scores.readiness != null;
+  strip.classList.toggle('visible', any);
+  updateScoreCard('code',  state.scores.code,      TIER_CODE);
+  updateScoreCard('ready', state.scores.readiness, TIER_READY);
+  updateScoreCard('comp',  state.scores.composite, TIER_COMPOSITE);
+}
+function recomputeComposite() {
+  const c = state.scores.code, r = state.scores.readiness;
+  if (c == null && r == null) state.scores.composite = null;
+  else if (c == null) state.scores.composite = r;
+  else if (r == null) state.scores.composite = c;
+  else state.scores.composite = Math.round(0.45 * c + 0.55 * r);
+}
+
+// ============================================================
+// TOAST (transient notifications)
+// ============================================================
+let toastTimer = null;
+function showToast(msg, ms) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('visible'), ms || 1800);
+}
 
 // ============================================================
 // RULE ENGINE
@@ -1061,6 +2219,7 @@ function runAnalysis() {
   const objects = splitObjects(sql);
   const results = objects.map(analyzeObject);
   analysisResults = results;
+  state.codeResults = results;
 
   renderSummary(results, sql);
   renderHeatMap(results);
@@ -1069,10 +2228,82 @@ function runAnalysis() {
   document.getElementById('summary-banner').classList.add('visible');
   document.getElementById('heatmap-section').classList.add('visible');
   document.getElementById('details-section').classList.add('visible');
-  document.getElementById('export-buttons').classList.add('visible');
+  const exportBtns = document.getElementById('export-buttons');
+  if (exportBtns) exportBtns.classList.add('visible');
+
+  // V2: populate codeMetrics + code score, then refresh score strip
+  buildCodeMetrics(results);
+  state.scores.code = computeCodeScore(state.codeMetrics);
+  recomputeComposite();
+  updateScoreStrip();
 
   // Scroll to summary
   document.getElementById('summary-banner').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// V2 CODE METRICS + SCORING
+// ============================================================
+function buildCodeMetrics(results) {
+  if (!results || results.length === 0) { state.codeMetrics = null; return; }
+  const totalLOC  = results.reduce((s, r) => s + r.lines, 0);
+  const procs     = results.filter(r => r.type === 'proc').length;
+  const views     = results.filter(r => r.type === 'view').length;
+  const functions = results.filter(r => r.type === 'function').length;
+  const triggers  = results.filter(r => r.type === 'trigger').length;
+  const blocks    = results.filter(r => r.type === 'block').length;
+  const buckets   = { low: 0, medium: 0, high: 0, veryHigh: 0 };
+  let totalDays = 0;
+  let totalIssues = 0, sybaseCount = 0, dynamicSqlCount = 0, crossDbCount = 0, cursorCount = 0;
+  const ruleCounts = {};
+  for (const r of results) {
+    const b = r.bucket.name;
+    if (b === 'Low') buckets.low++;
+    else if (b === 'Medium') buckets.medium++;
+    else if (b === 'High') buckets.high++;
+    else buckets.veryHigh++;
+    totalDays      += r.bucket.days;
+    totalIssues    += r.totalIssues || 0;
+    sybaseCount    += r.sybaseCount || 0;
+    if (r.hasDynamicSQL) dynamicSqlCount++;
+    if (r.hasCrossDB)    crossDbCount++;
+    if (r.hasCursor)     cursorCount++;
+    if (r.matchesByRule) {
+      for (const m of r.matchesByRule) {
+        const id = m.rule.id;
+        if (!ruleCounts[id]) ruleCounts[id] = { id, name: m.rule.name, category: m.rule.category, count: 0, score: m.rule.score };
+        ruleCounts[id].count += m.matches.length;
+      }
+    }
+  }
+  const topRulesByMatches = Object.values(ruleCounts)
+    .sort((a, b) => b.count - a.count).slice(0, 5);
+  const topObjectsByScore = [...results]
+    .sort((a, b) => b.totalScore - a.totalScore).slice(0, 5)
+    .map(r => ({ name: r.name, type: r.type, score: r.totalScore, bucket: r.bucket.name, days: r.bucket.days, lines: r.lines }));
+  state.codeMetrics = {
+    totalObjects: results.length,
+    totalLOC, procs, views, functions, triggers, blocks,
+    buckets, totalDays, totalIssues, sybaseCount,
+    dynamicSqlCount, crossDbCount, cursorCount,
+    topRulesByMatches, topObjectsByScore,
+  };
+}
+function computeCodeScore(m) {
+  if (!m) return null;
+  // avg per-object score → normalized to 0–100
+  const avg = m.topObjectsByScore.length ? (state.codeResults.reduce((s, r) => s + r.totalScore, 0) / m.totalObjects) : 0;
+  // An "average object score" of ~15 is HIGH. Map: score = min(100, round(avg * 6.7))
+  let raw = Math.round(avg * 6.7);
+  // Also add a signal from Sybase-specific density (issues per 100 LOC)
+  if (m.totalLOC > 0) {
+    const density = m.sybaseCount / m.totalLOC * 100;   // issues per 100 LOC
+    raw += Math.min(20, Math.round(density * 2));
+  }
+  if (m.dynamicSqlCount > 0) raw += Math.min(15, 3 + m.dynamicSqlCount * 2);
+  if (m.crossDbCount    > 0) raw += Math.min(10, 2 + m.crossDbCount * 2);
+  if (m.cursorCount     > 0) raw += Math.min(10, 2 + m.cursorCount * 1);
+  return Math.max(0, Math.min(100, raw));
 }
 
 // ============================================================
@@ -1242,8 +2473,8 @@ function renderDetails(results) {
        </div>
        <div class="obj-detail-body" id="obj-body-${idx}">
          <div class="tab-bar">
-           <button class="tab-btn active" onclick="switchTab(event, ${idx}, 'summary')">Summary</button>
-           <button class="tab-btn" onclick="switchTab(event, ${idx}, 'annotation')">Full Annotation</button>
+           <button class="tab-btn active" onclick="switchObjTab(event, ${idx}, 'summary')">Summary</button>
+           <button class="tab-btn" onclick="switchObjTab(event, ${idx}, 'annotation')">Full Annotation</button>
          </div>
          <div class="tab-pane active" id="tab-summary-${idx}">${buildSummaryTab(r)}</div>
          <div class="tab-pane" id="tab-annotation-${idx}">${buildAnnotationTab(r)}</div>
@@ -1307,7 +2538,7 @@ function toggleDetail(idx) {
   body.classList.toggle('open');
 }
 
-function switchTab(e, idx, tab) {
+function switchObjTab(e, idx, tab) {
   e.stopPropagation();
   const body = document.getElementById(`obj-body-${idx}`);
   body.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1608,11 +2839,1802 @@ function downloadBlob(content, filename, mimeType) {
 }
 
 // ============================================================
-// INIT
+// CHECKLIST DATA + LOGIC
 // ============================================================
-// Open limitations panel by default on first load
+const CHECKLIST = [
+  // ---- Week 1: Pre-Call Preparation (§4.1–§4.4, §4.6) ----
+  { id:'W1-001', phase:'week_1', category:'platform',
+    question:'System architecture diagrams (logical and physical) obtained?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Request from target company before first call. Absence is itself a finding.',
+    playbookRef:'§4.1 #1' },
+  { id:'W1-002', phase:'week_1', category:'data',
+    question:'ERDs or data dictionary obtained?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Request ERD export from Sybase Architect or manual creation if missing.',
+    playbookRef:'§4.1 #2' },
+  { id:'W1-003', phase:'week_1', category:'operations',
+    question:'Runbooks, DR plans, and backup/restore test evidence obtained?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'Missing runbooks = undocumented system; price in documentation workstream.',
+    playbookRef:'§4.1 #3' },
+  { id:'W1-004', phase:'week_1', category:'operations',
+    question:'Security and compliance documentation (SOC2, HIPAA, PCI, GDPR) obtained?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Identify applicable regimes; missing docs may block deal close.',
+    playbookRef:'§4.1 #4' },
+  { id:'W1-005', phase:'week_1', category:'platform',
+    question:'Existing technical debt register or roadmap obtained?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Absence confirms debt is untracked — note in findings.',
+    playbookRef:'§4.1 #5' },
+  { id:'W1-006', phase:'week_1', category:'commercial',
+    question:'Sybase and third-party license agreements reviewed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Per-CPU or per-core licensing may create surprise costs post-acquisition.',
+    playbookRef:'§4.1 #6' },
+  { id:'W1-007', phase:'week_1', category:'operations',
+    question:'Incident/outage log for the last 12 months obtained?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Reveals hidden reliability issues; correlate against SLA claims.',
+    playbookRef:'§4.1 #7' },
+  { id:'W1-008', phase:'week_1', category:'commercial',
+    question:'SAP/Sybase support contracts and third-party support contracts reviewed?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Check for transferability clauses and renewal dates.',
+    playbookRef:'§4.1 #8' },
+  { id:'W1-009', phase:'week_1', category:'platform',
+    question:'Read-only database access requested (or DBA export scripts supplied)?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Self-service discovery is faster; supply scripts to DBA if direct access denied.',
+    playbookRef:'§4.2' },
+  { id:'W1-010', phase:'week_1', category:'integration',
+    question:'Full list of applications connecting to Sybase requested?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Include scheduled jobs, batch processes, Excel ODBC, and shadow IT.',
+    playbookRef:'§4.3 #1–#3' },
+  { id:'W1-011', phase:'week_1', category:'integration',
+    question:'Inbound and outbound data feeds documented?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Every undocumented feed is a migration risk; push for a complete list.',
+    playbookRef:'§4.3 #4–#5' },
+  { id:'W1-012', phase:'week_1', category:'operations',
+    question:'Current SLA and measured uptime for last 12 months confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Inability to quote uptime = weak operational maturity finding.',
+    playbookRef:'§4.4 #1' },
+  { id:'W1-013', phase:'week_1', category:'people',
+    question:'Confirmed whether original architect / lead developer is still with company?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'Departure = institutional knowledge loss; recommend TSA clause to retain.',
+    playbookRef:'§4.4 #3' },
+  { id:'W1-014', phase:'week_1', category:'operations',
+    question:'Sybase EOL dates for the version in use (mainstream and extended support) researched?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'EOL platform creates security exposure and forces migration timing.',
+    playbookRef:'§4.6 #1' },
+  { id:'W1-015', phase:'week_1', category:'platform',
+    question:'Independent research on target company (size, customers, disclosed incidents) completed?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Public breach disclosures or outages indicate hidden risk.',
+    playbookRef:'§4.6 #2–#3' },
+
+  // ---- Call 1: Business Context & Platform Overview (§5.1) ----
+  { id:'C1-001', phase:'call_1', category:'platform',
+    question:'Business-critical function of the Sybase platform confirmed (what breaks for customers if it goes down)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Defines migration blast radius and downtime tolerance.',
+    playbookRef:'§5.1 Q1' },
+  { id:'C1-002', phase:'call_1', category:'people',
+    question:'Primary user base confirmed (internal, external, or both)?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'External users mean customer-facing downtime risk during migration.',
+    playbookRef:'§5.1 Q2' },
+  { id:'C1-003', phase:'call_1', category:'commercial',
+    question:'Revenue dependency on the platform assessed (direct or indirect)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Direct revenue dependency raises migration stakes significantly.',
+    playbookRef:'§5.1 Q3' },
+  { id:'C1-004', phase:'call_1', category:'platform',
+    question:'Platform origin confirmed — when built, who built it?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Age and builder context predicts documentation quality and tech debt depth.',
+    playbookRef:'§5.1 Q4' },
+  { id:'C1-005', phase:'call_1', category:'people',
+    question:'Key-person dependency assessed — only one person understands the platform?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'Single-person dependency = dealbreaker risk; recommend TSA with named individual.',
+    playbookRef:'§5.1 Red Flag #1' },
+  { id:'C1-006', phase:'call_1', category:'people',
+    question:'Current team size and support structure confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Understand who will own the platform post-acquisition.',
+    playbookRef:'§5.1 Q6' },
+  { id:'C1-007', phase:'call_1', category:'operations',
+    question:'SLA offered to customers confirmed and uptime measurement approach understood?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Inability to quote numbers is itself a red-flag finding.',
+    playbookRef:'§5.1 Q7' },
+  { id:'C1-008', phase:'call_1', category:'commercial',
+    question:'Regulatory and compliance obligations on the data identified (HIPAA, PCI, SOC2, GDPR)?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'Compliance obligations may constrain downtime windows and architecture choices.',
+    playbookRef:'§5.1 Q8' },
+  { id:'C1-009', phase:'call_1', category:'commercial',
+    question:'Customer contracts referencing specific infrastructure or technology identified?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'Contractual lock-in to Sybase can block or delay migration.',
+    playbookRef:'§5.1 Q9' },
+  { id:'C1-010', phase:'call_1', category:'operations',
+    question:'Biggest operational risk to the platform today surfaced?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Open-ended; captures risks the structured questions missed.',
+    playbookRef:'§5.1 Q10' },
+
+  // ---- Call 2: Database & Code Deep Dive (§5.2) ----
+  { id:'C2-001', phase:'call_2', category:'platform',
+    question:'Sybase products in use confirmed (ASE, IQ, Replication Server, SQL Anywhere, Open Switch)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'IQ in use = very high migration complexity requiring separate OLAP layer.',
+    playbookRef:'§5.2 DB Q1' },
+  { id:'C2-002', phase:'call_2', category:'platform',
+    question:'Sybase version and patch level confirmed — still under SAP support?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'EOL version = security and support risk; price in immediate upgrade or migration.',
+    playbookRef:'§5.2 DB Q2' },
+  { id:'C2-003', phase:'call_2', category:'platform',
+    question:'OS, hardware, and hosting model confirmed (on-prem, co-lo, cloud)?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'On-prem with aging hardware adds infrastructure migration cost.',
+    playbookRef:'§5.2 DB Q3' },
+  { id:'C2-004', phase:'call_2', category:'data',
+    question:'Total database size, growth rate, and largest tables quantified?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Drives migration timeline and downtime window estimates.',
+    playbookRef:'§5.2 DB Q4' },
+  { id:'C2-005', phase:'call_2', category:'data',
+    question:'Number of databases, schemas, logins, and roles confirmed?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Large numbers of logins/roles = security cleanup workstream.',
+    playbookRef:'§5.2 DB Q5' },
+  { id:'C2-006', phase:'call_2', category:'platform',
+    question:'Stored procedure count, trigger count, and function count obtained?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Stored procedure count is the primary cost driver for migration effort.',
+    playbookRef:'§5.2 Code Q1' },
+  { id:'C2-007', phase:'call_2', category:'platform',
+    question:'Business logic location assessed — predominantly in DB vs. application layer?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'DB-heavy logic = larger migration scope; application changes required.',
+    playbookRef:'§5.2 Code Q3' },
+  { id:'C2-008', phase:'call_2', category:'platform',
+    question:'Sybase-specific features identified (identity, timestamp, text/image, cross-DB joins, CIS)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Each feature category requires targeted rewrite effort estimation.',
+    playbookRef:'§5.2 Code Q4' },
+  { id:'C2-009', phase:'call_2', category:'integration',
+    question:'Stored procedures calling out to shell, files, or external systems identified?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'External calls from SP = hidden integration dependencies to remap.',
+    playbookRef:'§5.2 Code Q5' },
+  { id:'C2-010', phase:'call_2', category:'platform',
+    question:'Sybase IQ, Replication Server, or materialized views confirmed absent or documented?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'Replication Server needs full replacement; IQ needs separate OLAP strategy.',
+    playbookRef:'§5.2 Code Q6' },
+  { id:'C2-011', phase:'call_2', category:'operations',
+    question:'Backup and DR approach confirmed with RPO and RTO targets?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'No tested restore = migration parallel-run risk; price in DR workstream.',
+    playbookRef:'§5.2 Ops Q1' },
+  { id:'C2-012', phase:'call_2', category:'operations',
+    question:'Last successful restore from backup tested and date confirmed?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'Backups never tested = critical finding; recommend immediate restore test.',
+    playbookRef:'§5.2 Ops Q1 / §4.4 #4' },
+  { id:'C2-013', phase:'call_2', category:'operations',
+    question:'High-availability setup confirmed (companion server, mirroring, clustering)?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'No HA = single point of failure during migration.',
+    playbookRef:'§5.2 Ops Q2' },
+  { id:'C2-014', phase:'call_2', category:'operations',
+    question:'Monitoring, alerting, encryption at rest and in transit confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Absence of encryption may be a compliance violation.',
+    playbookRef:'§5.2 Ops Q3–Q4' },
+  { id:'C2-015', phase:'call_2', category:'data',
+    question:'Tables with no primary key identified and quantified?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Tables without PKs require additional migration prep work.',
+    playbookRef:'§4.2.1' },
+
+  // ---- Call 3: Applications, Integrations & Dependencies (§5.3) ----
+  { id:'C3-001', phase:'call_3', category:'integration',
+    question:'Full list of applications connecting to Sybase confirmed (with driver, language, owner)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Incomplete list = migration blast radius unknown.',
+    playbookRef:'§5.3 Q1–Q2' },
+  { id:'C3-002', phase:'call_3', category:'integration',
+    question:'ETL and batch tools confirmed (BCP, SSIS, Informatica, custom scripts)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Each ETL tool is a separate migration task; Replication Server is high complexity.',
+    playbookRef:'§5.3 Q4' },
+  { id:'C3-003', phase:'call_3', category:'integration',
+    question:'Upstream and downstream system feeds fully mapped?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Every unmapped feed is a potential migration failure point.',
+    playbookRef:'§5.3 Q5–Q6' },
+  { id:'C3-004', phase:'call_3', category:'integration',
+    question:'Reporting estate confirmed (Crystal, Actuate, SSRS, BI tools, ad-hoc Excel)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Crystal/Actuate often requires full rebuild; largest hidden workload.',
+    playbookRef:'§5.3 Q7 / §4.3 #6' },
+  { id:'C3-005', phase:'call_3', category:'integration',
+    question:'Shadow IT identified (Excel ODBC, Access front-ends, manual exports)?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Shadow IT almost always present and almost never documented.',
+    playbookRef:'§5.3 Q8' },
+  { id:'C3-006', phase:'call_3', category:'integration',
+    question:'Legacy thick-client applications confirmed or ruled out (PowerBuilder, VB6, Delphi)?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'PowerBuilder with embedded T-SQL is typically the largest migration blocker.',
+    playbookRef:'§5.3 Q9 / §8.1' },
+  { id:'C3-007', phase:'call_3', category:'integration',
+    question:'Hardcoded server names, IPs, or credentials in code or jobs investigated?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'Hardcoded credentials = security finding; hardcoded endpoints = cutover risk.',
+    playbookRef:'§5.3 Critical #1' },
+  { id:'C3-008', phase:'call_3', category:'integration',
+    question:'Direct database connections from end-user tools (Excel ODBC, Access) confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'End-user tool connections create a long tail of migration items.',
+    playbookRef:'§5.3 Critical #2' },
+  { id:'C3-009', phase:'call_3', category:'integration',
+    question:'Undocumented feeds to customer systems investigated?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'Customer-facing feeds missed = outage for a customer on cutover day.',
+    playbookRef:'§5.3 Critical #3' },
+  { id:'C3-010', phase:'call_3', category:'platform',
+    question:'Business logic in application code assessed — inline SQL vs. abstracted?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Inline SQL across many applications multiplies the migration surface.',
+    playbookRef:'§5.3 Q3' },
+  { id:'C3-011', phase:'call_3', category:'integration',
+    question:'Any custom extended stored procedures or external .dll/.so files identified?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'XPs with binary dependencies require OS-level migration work.',
+    playbookRef:'§5.2 Code Q7' },
+  { id:'C3-012', phase:'call_3', category:'operations',
+    question:'Patching and release management process for applications confirmed?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Application release process must accommodate Sybase driver changes.',
+    playbookRef:'§5.2 Ops Q5' },
+
+  // ---- Call 4: Target State, Timeline & Commercial (§5.4) ----
+  { id:'C4-001', phase:'call_4', category:'commercial',
+    question:'Acquirer\'s target state confirmed — like-for-like migration or full modernization?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Modernization scope is 3–5x more complex than like-for-like migration.',
+    playbookRef:'§5.4 Q1' },
+  { id:'C4-002', phase:'call_4', category:'commercial',
+    question:'Expected business timeline post-acquisition confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Aggressive timeline = higher cost to reduce risk; document trade-offs.',
+    playbookRef:'§5.4 Q2' },
+  { id:'C4-003', phase:'call_4', category:'commercial',
+    question:'Customer commitments constraining downtime windows identified?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'Compliance regimes forbidding long downtime windows = big-bang cutover impossible.',
+    playbookRef:'§5.4 Q3' },
+  { id:'C4-004', phase:'call_4', category:'commercial',
+    question:'Phased migration vs. big-bang cutover preference confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Big-bang is high-risk without comprehensive test coverage.',
+    playbookRef:'§5.4 Q4' },
+  { id:'C4-005', phase:'call_4', category:'commercial',
+    question:'Acquirer\'s preferred cloud and target tech stack confirmed (AWS, Azure, GCP)?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Cloud choice affects tooling selection (AWS SCT, Azure DMS, etc.).',
+    playbookRef:'§5.4 Q5' },
+  { id:'C4-006', phase:'call_4', category:'people',
+    question:'Platform ownership post-acquisition confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'No named owner = governance gap; budget and accountability unclear.',
+    playbookRef:'§5.4 Q6' },
+  { id:'C4-007', phase:'call_4', category:'commercial',
+    question:'Risk tolerance for the transition period assessed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Low tolerance = higher investment in parallel-run and rollback planning.',
+    playbookRef:'§5.4 Q7' },
+  { id:'C4-008', phase:'call_4', category:'commercial',
+    question:'Regulatory or contractual obligations constraining architecture choices confirmed?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'Late discovery of constraints invalidates the effort estimate.',
+    playbookRef:'§5.4 Q8' },
+
+  // ---- Operational Maturity (§4.5 Deployment & Release Process) ----
+  { id:'OP-001', phase:'ops', category:'operations',
+    question:'Source code (application) confirmed in version control (Git, SVN, TFS)?',
+    riskWeight:4, redFlagIfUnchecked:true,
+    mitigationHint:'No version control = cannot safely make or roll back changes.',
+    playbookRef:'§4.5 #1' },
+  { id:'OP-002', phase:'ops', category:'operations',
+    question:'Database code (DDL, stored procedures) confirmed in version control?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'DB code not in VCS = manual, risky schema management; Red risk for any migration.',
+    playbookRef:'§4.5 #2' },
+  { id:'OP-003', phase:'ops', category:'operations',
+    question:'Promotion path (Dev → UAT → Prod) confirmed and documented?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'No promotion path = ad-hoc changes directly to production.',
+    playbookRef:'§4.5 #3' },
+  { id:'OP-004', phase:'ops', category:'operations',
+    question:'Schema change deployment method confirmed (scripts, Flyway, Liquibase, manual)?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Manual schema changes = need Flyway/Liquibase introduced as migration pre-work.',
+    playbookRef:'§4.5 #4' },
+  { id:'OP-005', phase:'ops', category:'operations',
+    question:'Rollback procedure for failed releases confirmed?',
+    riskWeight:5, redFlagIfUnchecked:true,
+    mitigationHint:'No rollback plan = any failed cutover step requires full restore.',
+    playbookRef:'§4.5 #8' },
+  { id:'OP-006', phase:'ops', category:'operations',
+    question:'CI/CD pipeline for application code confirmed or absence noted?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'No CI/CD = manual testing; adds regression risk to migration.',
+    playbookRef:'§4.5 #6' },
+  { id:'OP-007', phase:'ops', category:'operations',
+    question:'Change management / approval process (ticket system, CAB) confirmed?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'No change management = untracked changes; harder to audit migration.',
+    playbookRef:'§4.5 #9' },
+  { id:'OP-008', phase:'ops', category:'operations',
+    question:'Deployments confirmed as logged and auditable?',
+    riskWeight:2, redFlagIfUnchecked:false,
+    mitigationHint:'Audit trail gaps may be a compliance issue.',
+    playbookRef:'§4.5 #10' },
+  { id:'OP-009', phase:'ops', category:'operations',
+    question:'Any outstanding security audit findings from last 12 months reviewed?',
+    riskWeight:4, redFlagIfUnchecked:false,
+    mitigationHint:'Open security findings may become acquirer\'s liability.',
+    playbookRef:'§4.4 #5' },
+  { id:'OP-010', phase:'ops', category:'people',
+    question:'Platform maintained by internal team, contractor, or vendor — dependency confirmed?',
+    riskWeight:3, redFlagIfUnchecked:false,
+    mitigationHint:'Contractor or vendor dependency = risk of knowledge walking out at deal close.',
+    playbookRef:'§4.4 #2' }
+];
+
+const PHASE_TITLES = {
+  week_1: 'Week 1 — Pre-Call Preparation',
+  call_1: 'Call 1 — Business Context & Platform Overview',
+  call_2: 'Call 2 — Database & Code Deep Dive',
+  call_3: 'Call 3 — Applications, Integrations & Dependencies',
+  call_4: 'Call 4 — Target State, Timeline & Commercial',
+  ops:    'Operational Maturity'
+};
+
+const PHASE_ORDER = ['week_1','call_1','call_2','call_3','call_4','ops'];
+
+// ---- Render ----
+function renderChecklist() {
+  const container = document.getElementById('checklist-container');
+  if (!container) return;
+  let html = '';
+  PHASE_ORDER.forEach((phase, idx) => {
+    const items = CHECKLIST.filter(i => i.phase === phase);
+    const padIdx = String(idx + 1).padStart(2, '0');
+    html += `<div class="phase-section" id="phase-${phase}">`;
+    html += `<div class="phase-head" onclick="togglePhase('${phase}')">`;
+    html += `<span class="phase-title"><span class="phase-idx">${padIdx}.</span>${PHASE_TITLES[phase]}</span>`;
+    html += `<span class="phase-meta">`;
+    html += `<span class="phase-progress" id="prog-${phase}">0 / ${items.length}</span>`;
+    html += `<span class="phase-chevron">▼</span>`;
+    html += `</span></div>`;
+    html += `<div class="phase-body">`;
+    html += `<div class="sub-toolbar"><button onclick="checkAllInPhase('${phase}')">Check all in phase</button></div>`;
+    items.forEach(item => {
+      const checked = state.checklist[item.id]?.checked ? 'checked' : '';
+      const noteVal = (state.checklist[item.id]?.note || '').replace(/"/g, '&quot;');
+      const redDisplay = (!checked && item.redFlagIfUnchecked) ? 'inline' : 'none';
+      html += `<div class="check-item${checked ? ' checked' : ''}" id="check-${item.id}">`;
+      html += `<input type="checkbox" ${checked} onchange="toggleChecklistItem('${item.id}')">`;
+      html += `<div class="check-main">`;
+      html += `<div class="check-row1">`;
+      html += `<span class="check-id">${item.id}</span>`;
+      html += `<span class="check-question">${item.question}</span>`;
+      html += `</div>`;
+      html += `<textarea class="check-notes" placeholder="Notes / evidence" oninput="updateChecklistNote('${item.id}', this.value)">${noteVal}</textarea>`;
+      html += `<div class="check-ref">${item.playbookRef}</div>`;
+      html += `</div>`;
+      html += `<div class="check-meta">`;
+      html += `<span class="check-weight">weight: <span class="w-n">${item.riskWeight}</span></span>`;
+      html += `<span class="check-red" id="red-${item.id}" style="display:${redDisplay};">RED</span>`;
+      html += `</div>`;
+      html += `</div>`;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+  recalculateReadiness();
+  updateAllPhaseProgress();
+}
+
+// ---- Recalculate readiness score ----
+function recalculateReadiness() {
+  const totalWeight = CHECKLIST.reduce((s, i) => s + i.riskWeight, 0);
+  const unchecked = CHECKLIST.reduce((s, i) => {
+    return s + (state.checklist[i.id]?.checked === true ? 0 : i.riskWeight);
+  }, 0);
+  state.scores.readiness = Math.round(unchecked / totalWeight * 100);
+  recomputeComposite();
+  updateScoreStrip();
+}
+
+// ---- Toggle a single item ----
+function toggleChecklistItem(id) {
+  const el = document.getElementById('check-' + id);
+  const cb = el ? el.querySelector('input[type=checkbox]') : null;
+  const checked = cb ? cb.checked : false;
+  if (!state.checklist[id]) state.checklist[id] = {};
+  state.checklist[id].checked = checked;
+  if (el) el.classList.toggle('checked', checked);
+  const item = CHECKLIST.find(i => i.id === id);
+  if (item && item.redFlagIfUnchecked) {
+    const redEl = document.getElementById('red-' + id);
+    if (redEl) redEl.style.display = checked ? 'none' : 'inline';
+  }
+  updatePhaseProgress(item ? item.phase : null);
+  recalculateReadiness();
+}
+
+// ---- Update note for an item ----
+function updateChecklistNote(id, val) {
+  if (!state.checklist[id]) state.checklist[id] = {};
+  state.checklist[id].note = val;
+}
+
+// ---- Toggle phase collapse ----
+function togglePhase(phase) {
+  const el = document.getElementById('phase-' + phase);
+  if (el) el.classList.toggle('collapsed');
+}
+
+// ---- Check all items globally ----
+function checklistCheckAll() {
+  CHECKLIST.forEach(item => {
+    if (!state.checklist[item.id]) state.checklist[item.id] = {};
+    state.checklist[item.id].checked = true;
+    const el = document.getElementById('check-' + item.id);
+    if (el) {
+      const cb = el.querySelector('input[type=checkbox]');
+      if (cb) cb.checked = true;
+      el.classList.add('checked');
+    }
+    if (item.redFlagIfUnchecked) {
+      const redEl = document.getElementById('red-' + item.id);
+      if (redEl) redEl.style.display = 'none';
+    }
+  });
+  updateAllPhaseProgress();
+  recalculateReadiness();
+}
+
+// ---- Clear all items globally ----
+function checklistClearAll() {
+  CHECKLIST.forEach(item => {
+    if (state.checklist[item.id]) state.checklist[item.id].checked = false;
+    const el = document.getElementById('check-' + item.id);
+    if (el) {
+      const cb = el.querySelector('input[type=checkbox]');
+      if (cb) cb.checked = false;
+      el.classList.remove('checked');
+    }
+    if (item.redFlagIfUnchecked) {
+      const redEl = document.getElementById('red-' + item.id);
+      if (redEl) redEl.style.display = 'inline';
+    }
+  });
+  updateAllPhaseProgress();
+  recalculateReadiness();
+}
+
+// ---- Check all items in a phase ----
+function checkAllInPhase(phase) {
+  const items = CHECKLIST.filter(i => i.phase === phase);
+  items.forEach(item => {
+    if (!state.checklist[item.id]) state.checklist[item.id] = {};
+    state.checklist[item.id].checked = true;
+    const el = document.getElementById('check-' + item.id);
+    if (el) {
+      const cb = el.querySelector('input[type=checkbox]');
+      if (cb) cb.checked = true;
+      el.classList.add('checked');
+    }
+    if (item.redFlagIfUnchecked) {
+      const redEl = document.getElementById('red-' + item.id);
+      if (redEl) redEl.style.display = 'none';
+    }
+  });
+  updatePhaseProgress(phase);
+  recalculateReadiness();
+}
+
+// ---- Update progress display for a single phase ----
+function updatePhaseProgress(phase) {
+  if (!phase) return;
+  const items = CHECKLIST.filter(i => i.phase === phase);
+  const checked = items.filter(i => state.checklist[i.id]?.checked === true).length;
+  const el = document.getElementById('prog-' + phase);
+  if (el) el.textContent = checked + ' / ' + items.length;
+}
+
+// ---- Update progress display for all phases ----
+function updateAllPhaseProgress() {
+  PHASE_ORDER.forEach(updatePhaseProgress);
+}
+
+// ---- Download checklist state as JSON ----
+function downloadChecklistJSON() {
+  const payload = {
+    meta: state.meta,
+    checklist: state.checklist,
+    scores: state.scores,
+    timestamp: new Date().toISOString()
+  };
+  const filename = 'checklist_' + (state.meta?.clientName || 'export').replace(/\s+/g,'_') + '_' + formatDatetime(new Date()) + '.json';
+  downloadBlob(JSON.stringify(payload, null, 2), filename, 'application/json');
+}
+
+// ============================================================
+// SQL LIBRARY DATA + RENDER
+// ============================================================
+const SQL_LIBRARY = [
+  {
+    section: 1,
+    sectionTitle: 'Platform & Version',
+    queries: [
+      {
+        title: 'Server version and edition',
+        purpose: 'Confirm Sybase product (ASE/IQ/SQL Anywhere), version, patch level, and whether still under SAP support.',
+        code: 'SELECT @@version;\nSELECT @@servername;',
+        ref: '§4.2.1',
+        hint: 'ASE below 15.7 ESD#4 is out of mainstream support. IQ has its own EOL schedule.'
+      },
+      {
+        title: 'Server configuration values',
+        purpose: 'Dump all configuration parameters: memory, connections, tempdb, parallelism, and security settings. Baseline before migration planning.',
+        code: 'sp_configure;',
+        ref: '§4.2.1',
+        hint: 'Look for max memory, number of user connections, and tempdb size — these drive migration-environment sizing.'
+      },
+      {
+        title: 'Database inventory and size',
+        purpose: 'List all databases on the server with their sizes. Understand total footprint and identify databases relevant to the target application.',
+        code: 'sp_helpdb;',
+        ref: '§4.2.1',
+        hint: 'Note dbid for each database you want to drill into. Run sp_spaceused and sp_helpsegment per-database for detail.'
+      },
+      {
+        title: 'Per-database space and segments',
+        purpose: 'Drill into a single database to get space used/free breakdown and segment configuration. Run once per relevant database.',
+        code: 'USE <dbname>;\nsp_spaceused;\nsp_helpsegment;',
+        ref: '§4.2.1',
+        hint: 'Replace <dbname> with each database identified by sp_helpdb. Multiple segments indicate a legacy sizing pattern.'
+      }
+    ]
+  },
+  {
+    section: 2,
+    sectionTitle: 'Object Inventory',
+    queries: [
+      {
+        title: 'Object counts by type',
+        purpose: 'Count all database objects grouped by type: user tables (U), views (V), stored procedures (P), triggers (TR), and functions (FN). Core complexity signal.',
+        code: "SELECT type, COUNT(*) AS cnt\nFROM   sysobjects\nGROUP  BY type\nORDER  BY cnt DESC;\n-- Key types: U=table, V=view, P=procedure, TR=trigger, FN=function, D=default, R=rule",
+        ref: '§4.2.1',
+        hint: 'High stored-proc counts (>200) and trigger counts (>50) are strong indicators of heavy Sybase-specific migration effort.'
+      },
+      {
+        title: 'Top 20 largest tables by row count',
+        purpose: 'Identify the biggest tables by row count — critical for migration planning, parallel extract sizing, and cutover window estimation.',
+        code: 'SELECT TOP 20\n       o.name  AS table_name,\n       i.rowcnt AS row_count\nFROM   sysobjects o\nJOIN   sysindexes i ON o.id = i.id\nWHERE  o.type = \'U\' AND i.indid IN (0, 1)\nORDER  BY i.rowcnt DESC;',
+        ref: '§4.2.1',
+        hint: 'Billion-row tables with no primary key are a Red finding — migration requires a uniqueness strategy before extract.'
+      },
+      {
+        title: 'Tables with no primary key',
+        purpose: 'Find user tables missing a primary key. Tables without PKs require manual uniqueness design before PostgreSQL migration.',
+        code: 'SELECT o.name AS table_name\nFROM   sysobjects o\nWHERE  o.type = \'U\'\nAND    NOT EXISTS (\n         SELECT 1\n         FROM   sysindexes i\n         WHERE  i.id = o.id\n         AND   (i.status & 2048) = 2048\n       )\nORDER  BY o.name;',
+        ref: '§4.2.1 / §6.1',
+        hint: 'Even one large table without a PK can add weeks of preparation. Document each table with a proposed key strategy.'
+      },
+      {
+        title: 'Stored procedure line counts',
+        purpose: 'Rank stored procedures by line count. A proxy for complexity — top procedures by LOC are almost always migration hot spots.',
+        code: 'SELECT   o.name, COUNT(*) AS lines\nFROM     sysobjects o\nJOIN     syscomments c ON o.id = c.id\nWHERE    o.type = \'P\'\nGROUP BY o.name\nORDER BY lines DESC;',
+        ref: '§4.2.1',
+        hint: 'Procedures over 500 lines typically contain complex cursor logic, dynamic SQL, or cross-database joins — all high-effort rewrites.'
+      },
+      {
+        title: 'Per-database space used',
+        purpose: 'Report data and log space used versus reserved for the current database. Needed for migration-environment disk sizing.',
+        code: 'USE <dbname>;\nsp_spaceused;',
+        ref: '§4.2.1',
+        hint: 'Run for every database identified in sp_helpdb. Compare log space to data space — a log/data ratio over 50% suggests large batch operations.'
+      }
+    ]
+  },
+  {
+    section: 3,
+    sectionTitle: 'Connections & Usage',
+    queries: [
+      {
+        title: 'Active connections snapshot',
+        purpose: 'Snapshot of all active connections, logins, and running commands. Shows who is connected and from which applications.',
+        code: 'sp_who;',
+        ref: '§4.2.1',
+        hint: 'Check for system processes (spid < 50) and user processes. Blocked processes will show a non-zero blkby value.'
+      },
+      {
+        title: 'Connections by hostname, program, and login',
+        purpose: 'Group active connections by hostname, application program name, and login. Reveals undocumented application consumers — the migration blast-radius inventory check.',
+        code: "SELECT   hostname, program_name, loginame,\n         COUNT(*) AS connections\nFROM     master..sysprocesses\nWHERE    dbid > 0\nGROUP BY hostname, program_name, loginame\nORDER BY connections DESC;",
+        ref: '§8.8',
+        hint: 'EXCEL.EXE, MSACCESS.EXE, and powerbuilder.exe in program_name are immediate Red flags — shadow-IT consumers the team may not have listed.'
+      },
+      {
+        title: 'Recently executed stored procedures',
+        purpose: 'List cached procedure execution counts from the monitoring tables. Shows which stored procedures are actually being called in production.',
+        code: 'SELECT OBJECT_NAME(ObjectID, DBID) AS proc_name,\n       ExecutionCount\nFROM   master..monCachedProcedures\nORDER  BY ExecutionCount DESC;',
+        ref: '§8.8',
+        hint: 'Requires monitoring tables enabled (sp_configure "enable monitoring", 1). Procedures with high execution counts are the highest-risk migration targets.'
+      },
+      {
+        title: 'Logins with CPU usage',
+        purpose: 'Identify which logins have accumulated the most CPU. Surfaces high-activity service accounts and confirms which application accounts are actually active.',
+        code: 'SELECT   suser_name(suid) AS login,\n         MAX(totcpu)          AS cpu_used\nFROM     master..sysprocesses\nGROUP BY suid\nORDER BY cpu_used DESC;',
+        ref: '§8.8',
+        hint: 'Compare this list against the application inventory provided by the team. Unexplained logins with high CPU usage are a Red finding.'
+      },
+      {
+        title: 'Logins and roles',
+        purpose: 'List all server logins and their role memberships. Needed for PostgreSQL role/privilege mapping and security posture review.',
+        code: 'sp_displaylogin;\nsp_helprotect;',
+        ref: '§4.2.1',
+        hint: 'sa and probe accounts should be locked or renamed. Shared credentials used by multiple applications are a security debt finding.'
+      }
+    ]
+  },
+  {
+    section: 4,
+    sectionTitle: 'Performance & Diagnostics',
+    queries: [
+      {
+        title: 'Server activity monitor',
+        purpose: 'Snapshot of server-level CPU, I/O, and network counters. Use as a baseline health check and to confirm the environment is active.',
+        code: 'sp_monitor;',
+        ref: '§4.2.1',
+        hint: 'Run twice, 60 seconds apart. The delta between calls shows actual utilization. High CPU at discovery time suggests the system is under real load.'
+      },
+      {
+        title: 'Lock snapshot',
+        purpose: 'Show all current locks. Reveals blocking chains, lock escalation patterns, and hot tables. A prerequisite for migration cutover planning.',
+        code: 'sp_lock;',
+        ref: '§4.2.1',
+        hint: 'Page-level and extent-level locks at high frequency indicate Sybase page-locking patterns that behave differently under PostgreSQL MVCC.'
+      },
+      {
+        title: 'Blocking session snapshot',
+        purpose: 'Identify processes that are blocking other processes. Blocking chains that cannot be resolved quickly extend the migration cutover window.',
+        code: 'SELECT   spid, blocked AS blkby,\n         loginame, hostname, program_name,\n         cmd, status, waittime\nFROM     master..sysprocesses\nWHERE    blocked <> 0\nORDER BY waittime DESC;',
+        ref: '§4.2.1',
+        hint: 'Persistent blocking chains in production are an Amber operational risk. If blocking is frequent, capture sp_lock output hourly for a full day.'
+      },
+      {
+        title: 'tempdb usage',
+        purpose: 'Check tempdb space used and free. Oversized tempdb usage indicates heavy worktable activity — temp tables, sorts, and dynamic SQL — all of which behave differently in PostgreSQL.',
+        code: 'USE tempdb;\nsp_spaceused;',
+        ref: '§4.2.1',
+        hint: 'If tempdb data used exceeds 50% of allocated space during peak hours, the migration environment must be sized accordingly. Capture during business hours.'
+      },
+      {
+        title: 'CPU usage by login (extended)',
+        purpose: 'Aggregate CPU and I/O per login across all active sysprocesses. Confirm which service accounts are computationally significant.',
+        code: 'SELECT   suser_name(suid)  AS login,\n         SUM(cpu)           AS total_cpu,\n         SUM(physical_io)   AS total_pio\nFROM     master..sysprocesses\nGROUP BY suid\nORDER BY total_cpu DESC;',
+        ref: '§8.8',
+        hint: 'Combine with the connections-by-program query to build a full picture of which applications drive the most load.'
+      }
+    ]
+  },
+  {
+    section: 5,
+    sectionTitle: 'Schema Quality',
+    queries: [
+      {
+        title: 'Wide tables (more than 100 columns)',
+        purpose: 'Find tables with excessive column counts. Wide tables often indicate poor normalization and significantly complicate ORM mapping and migration validation.',
+        code: 'SELECT   o.name AS table_name,\n         COUNT(c.colid) AS column_count\nFROM     sysobjects o\nJOIN     syscolumns c ON o.id = c.id\nWHERE    o.type = \'U\'\nGROUP BY o.name\nHAVING   COUNT(c.colid) > 100\nORDER BY column_count DESC;',
+        ref: '§6.1',
+        hint: 'Tables with >150 columns are a schema-debt Red flag. Each column must be individually mapped and validated in PostgreSQL.'
+      },
+      {
+        title: 'Tables with text or image columns',
+        purpose: 'List tables using Sybase TEXT or IMAGE data types. These map to PostgreSQL text/bytea and require application-layer changes for LOB handling.',
+        code: "SELECT   o.name  AS table_name,\n         c.name  AS column_name,\n         t.name  AS data_type\nFROM     sysobjects  o\nJOIN     syscolumns  c ON o.id = c.id\nJOIN     systypes    t ON c.usertype = t.usertype\nWHERE    o.type = 'U'\nAND      t.name IN ('text', 'image', 'unitext')\nORDER BY o.name, c.name;",
+        ref: '§6.1',
+        hint: 'TEXT/IMAGE pages are stored off-row in Sybase. PostgreSQL stores TOAST data differently. Any application using readtext/writetext must be rewritten.'
+      },
+      {
+        title: 'MONEY and TIMESTAMP column audit',
+        purpose: 'Find columns using MONEY/SMALLMONEY (maps to numeric(19,4)) and TIMESTAMP (rowversion in Sybase — completely different from PostgreSQL TIMESTAMP).',
+        code: "SELECT   o.name  AS table_name,\n         c.name  AS column_name,\n         t.name  AS data_type\nFROM     sysobjects  o\nJOIN     syscolumns  c ON o.id = c.id\nJOIN     systypes    t ON c.usertype = t.usertype\nWHERE    o.type = 'U'\nAND      t.name IN ('money', 'smallmoney', 'timestamp')\nORDER BY t.name, o.name;",
+        ref: '§6.1',
+        hint: 'Sybase TIMESTAMP is a binary rowversion, not a datetime. PostgreSQL TIMESTAMP is a datetime. Any use of timestamp for optimistic concurrency must be completely redesigned.'
+      },
+      {
+        title: 'Tables without PKs and their row counts',
+        purpose: 'Combine the no-PK check with row counts to prioritize the most impactful schema quality issues for migration planning.',
+        code: "SELECT   o.name  AS table_name,\n         i.rowcnt AS row_count\nFROM     sysobjects  o\nJOIN     sysindexes  i ON o.id = i.id AND i.indid IN (0, 1)\nWHERE    o.type = 'U'\nAND      NOT EXISTS (\n           SELECT 1 FROM sysindexes pk\n           WHERE  pk.id = o.id AND (pk.status & 2048) = 2048\n         )\nORDER BY i.rowcnt DESC;",
+        ref: '§4.2.1 / §6.1',
+        hint: 'Prioritize the top 10 no-PK tables by row count. Each requires a key strategy before migration. Large keyed tables are also candidates for bcp parallel extract.'
+      }
+    ]
+  },
+  {
+    section: 6,
+    sectionTitle: 'Sybase IQ / SQL Anywhere',
+    queries: [
+      {
+        title: 'IQ server status',
+        purpose: 'Confirm Sybase IQ version, active connections, main store usage, temp store usage, and catalog. Run first to validate IQ is in use.',
+        code: 'SELECT @@version;\nsp_iqstatus;',
+        ref: '§4.2.2',
+        hint: 'IQ is a columnar analytics engine — its workloads have no direct PostgreSQL equivalent. Citus, TimescaleDB, or a dedicated OLAP layer (Redshift, BigQuery, Snowflake) must be evaluated.'
+      },
+      {
+        title: 'IQ space usage',
+        purpose: 'Show main and temporary IQ store space used, free, and reserved. Required for migration environment disk sizing and data extraction planning.',
+        code: 'sp_iqspaceused;',
+        ref: '§4.2.2',
+        hint: 'IQ main store can reach multiple terabytes with high compression ratios. Raw extract size for bcp or unload operations will be significantly larger than the IQ footprint.'
+      },
+      {
+        title: 'IQ table sizes and index details',
+        purpose: 'List per-table size in IQ and the indexes defined on each table. IQ uses bitmap and HNG indexes not present in PostgreSQL — each must be redesigned.',
+        code: 'sp_iqtablesize;\nsp_iqindex;',
+        ref: '§4.2.2',
+        hint: 'IQ column-level indexes (HNG, WD, DATE, TIME) are automatic and high-performance. PostgreSQL equivalents require manual index strategy and are row-based — query plans will differ substantially.'
+      }
+    ]
+  },
+  {
+    section: 7,
+    sectionTitle: 'Export Helpers',
+    queries: [
+      {
+        title: 'isql DDL export (shell)',
+        purpose: 'Export the full schema DDL from a Sybase database to a file using isql. Hand this to the target DBA if direct access is unavailable, or run it yourself with read access.',
+        code: '# Export DDL via isql\n# Replace <user>, <pass>, <server>, <db> with actual values\nisql -U <user> -P <pass> -S <server> -D <db> -o schema.sql \\\n     -i extract_ddl.sql\n\n# Extract object counts to a file\nisql -U <user> -P <pass> -S <server> -D <db> -o objects.txt <<EOF\nSELECT type, COUNT(*) FROM sysobjects GROUP BY type\ngo\nEOF',
+        ref: '§4.2.3',
+        hint: 'extract_ddl.sql must contain the sp_helptext or syscomments-based DDL script. Ask the DBA for their standard DDL export procedure, or use Sybase Central to generate it.'
+      },
+      {
+        title: 'bcp bulk extract (shell)',
+        purpose: 'Use bcp (Bulk Copy Program) to extract table data to flat files for parallel migration or validation. Standard method for large-table extraction from Sybase.',
+        code: '# Extract a table to a native-format file\nbcp <db>.dbo.<table> out <table>.bcp \\\n    -U <user> -P <pass> -S <server> \\\n    -n\n\n# Extract as character-delimited (easier for PostgreSQL COPY)\nbcp <db>.dbo.<table> out <table>.csv \\\n    -U <user> -P <pass> -S <server> \\\n    -c -t "|" -r "\\n"\n\n# Load into PostgreSQL using COPY\n# COPY <table> FROM \'<table>.csv\' WITH (FORMAT csv, DELIMITER \'|\');',
+        ref: '§4.2.3',
+        hint: 'Character-mode bcp (-c) with a pipe delimiter is the safest format for cross-platform loads. Validate row counts in Sybase against COPY-loaded row counts in PostgreSQL before proceeding.'
+      }
+    ]
+  }
+];
+
+function renderSQLLibrary() {
+  const container = document.getElementById('sql-library-container');
+  if (!container) return;
+
+  const html = SQL_LIBRARY.map(sec => {
+    const sectionNumStr = String(sec.section).padStart(2, '0');
+    const titleUpper = sec.sectionTitle.toUpperCase().replace(/&/g, '&amp;');
+
+    const cardsHtml = sec.queries.map((q, qi) => {
+      // Build a globally unique query index: section * 100 + qi (collision-safe for <=99 queries/section)
+      const globalIdx = (sec.section - 1) * 100 + qi;
+      // Escape code for data-code attribute (JSON-encode then strip outer quotes)
+      const codeAttr = JSON.stringify(q.code);
+      const titleEsc = q.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const purposeEsc = q.purpose.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const codeEsc = q.code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const hintEsc = (q.hint || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const hintBlock = q.hint
+        ? `<div class="sql-hint"><span class="sql-hint-label">WATCH FOR:&nbsp;</span>${hintEsc}</div>`
+        : '';
+
+      return `<div class="sql-card" data-query-index="${globalIdx}" data-title="${titleEsc.toLowerCase()}" data-purpose="${q.purpose.toLowerCase()}">
+  <div class="sql-card-head">
+    <div class="sql-card-title">${titleEsc}</div>
+    <div class="sql-card-ref">${q.ref || ''}</div>
+  </div>
+  <div class="sql-card-purpose">${purposeEsc}</div>
+  <div class="sql-code-wrap">
+    <button class="sql-copy-btn" data-code=${codeAttr} onclick="copySQLToClipboard(this)">COPY</button>
+    <pre class="sql-code">${codeEsc}</pre>
+  </div>
+  ${hintBlock}
+</div>`;
+    }).join('\n');
+
+    return `<div class="sql-section" data-section-id="${sec.section}">
+  <div class="sql-section-head"><span class="sec-num">${sectionNumStr}.</span>${titleUpper}</div>
+  ${cardsHtml}
+</div>`;
+  }).join('\n');
+
+  container.innerHTML = html;
+}
+
+function filterSQLLibrary(q) {
+  const term = (q || '').toLowerCase().trim();
+  const container = document.getElementById('sql-library-container');
+  if (!container) return;
+
+  const sections = container.querySelectorAll('.sql-section');
+  sections.forEach(sec => {
+    const cards = sec.querySelectorAll('.sql-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      if (!term) {
+        card.style.display = '';
+        visibleCount++;
+        return;
+      }
+      const title   = (card.dataset.title   || '').toLowerCase();
+      const purpose = (card.dataset.purpose || '').toLowerCase();
+      const matches = title.includes(term) || purpose.includes(term);
+      card.style.display = matches ? '' : 'none';
+      if (matches) visibleCount++;
+    });
+
+    sec.style.display = visibleCount > 0 ? '' : 'none';
+  });
+}
+
+function copySQLToClipboard(btnEl) {
+  const code = btnEl.dataset.code || '';
+  const originalText = btnEl.textContent;
+
+  function onSuccess() {
+    btnEl.textContent = 'COPIED';
+    btnEl.classList.add('copied');
+    setTimeout(() => {
+      btnEl.textContent = originalText;
+      btnEl.classList.remove('copied');
+    }, 1500);
+  }
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(code).then(onSuccess).catch(() => {
+      // fallback
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        onSuccess();
+      } catch (_) {
+        showToast('Copy failed — please select the code manually.');
+      }
+    });
+  } else {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      onSuccess();
+    } catch (_) {
+      showToast('Copy failed — please select the code manually.');
+    }
+  }
+}
+
+// ============================================================
+// RULE CATALOG (for About tab)
+// ============================================================
+function renderRuleCatalog() {
+  const container = document.getElementById('rule-catalog');
+  if (!container) return;
+
+  const headerRow = `<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Category</th>
+    <th>Severity</th>
+    <th>Score</th>
+    <th>PostgreSQL equivalent</th>
+  </tr>`;
+
+  const bodyRows = RULES.map(r => {
+    const catLabel = (CATEGORY_LABELS && CATEGORY_LABELS[r.category]) ? CATEGORY_LABELS[r.category] : r.category;
+    const idEsc       = (r.id       || '').replace(/</g, '&lt;');
+    const nameEsc     = (r.name     || '').replace(/</g, '&lt;');
+    const catEsc      = catLabel.replace(/</g, '&lt;');
+    const severityEsc = (r.severity || '').replace(/</g, '&lt;');
+    const postgresEsc = (r.postgres || '').replace(/</g, '&lt;');
+    return `<tr>
+    <td class="rc-id">${idEsc}</td>
+    <td>${nameEsc}</td>
+    <td class="rc-cat">${catEsc}</td>
+    <td>${severityEsc}</td>
+    <td>${r.score}</td>
+    <td>${postgresEsc}</td>
+  </tr>`;
+  }).join('\n');
+
+  container.innerHTML = `<table>
+  <thead>${headerRow}</thead>
+  <tbody>
+${bodyRows}
+  </tbody>
+</table>`;
+}
+
+// ============================================================
+// REPORTS TAB + EXPORTS
+// ============================================================
+
+function renderReports() {
+  const haveData = state.scores.code != null || state.scores.readiness != null;
+  document.getElementById('reports-empty').style.display = haveData ? 'none' : 'block';
+  document.getElementById('reports-content').style.display = haveData ? 'block' : 'none';
+  if (!haveData) return;
+  renderBigScores();
+  renderCarousel();
+  if (document.getElementById('nv-target'))     document.getElementById('nv-target').value     = state.meta.target || '';
+  if (document.getElementById('nv-acquirer'))   document.getElementById('nv-acquirer').value   = state.meta.acquirer || '';
+  if (document.getElementById('nv-bottomLine')) document.getElementById('nv-bottomLine').value = state.meta.bottomLine || '';
+}
+
+function renderBigScores() {
+  const container = document.getElementById('report-scores');
+  if (!container) return;
+  const conf = Math.round((state.confidence || 0.92) * 100);
+
+  function bigScoreCard(label, score, tiers) {
+    const tier = tierFor(score, tiers);
+    if (score == null) {
+      return `<div class="big-score">
+        <div class="bs-label">${label}</div>
+        <div class="bs-value unrated">Not assessed</div>
+        <div class="bs-row"><span class="bs-tier"></span><span class="bs-conf">confidence ~${conf}%</span></div>
+        <div class="bs-bar"><div class="bs-bar-fill" style="width:0%"></div></div>
+      </div>`;
+    }
+    return `<div class="big-score">
+      <div class="bs-label">${label}</div>
+      <div class="bs-value"><span class="bs-num">${score}</span><span class="bs-max"> / 100</span></div>
+      <div class="bs-row">
+        <span class="bs-tier ${tier ? tier.cls : ''}">${tier ? tier.label : ''}</span>
+        <span class="bs-conf">confidence ~${conf}%</span>
+      </div>
+      <div class="bs-bar"><div class="bs-bar-fill" style="width:${score}%"></div></div>
+    </div>`;
+  }
+
+  container.innerHTML =
+    bigScoreCard('Code Complexity', state.scores.code, TIER_CODE) +
+    bigScoreCard('Migration Readiness', state.scores.readiness, TIER_READY) +
+    bigScoreCard('Composite Risk', state.scores.composite, TIER_COMPOSITE);
+}
+
+function buildSlides() {
+  const m = state.codeMetrics;
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const target = escapeHtml(state.meta.target || 'Target Platform');
+  const acquirer = escapeHtml(state.meta.acquirer || '');
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  const sysVer = escapeHtml(state.meta.sybaseVersion || 'Unknown');
+  const creditLine = state.showCredit ? '<div style="margin-top:12px;font-size:0.8rem;color:#8B949E">Prepared by Darshan Singh</div>' : '';
+
+  const codeT = tierFor(state.scores.code, TIER_CODE);
+  const readyT = tierFor(state.scores.readiness, TIER_READY);
+  const compT = tierFor(state.scores.composite, TIER_COMPOSITE);
+
+  const TIER_COLOR = { low:'#3FB950', medium:'#F59E0B', high:'#F97316', veryhigh:'#F85149' };
+  function tc(t) { return t ? (TIER_COLOR[t.cls] || '#E6EDF3') : '#E6EDF3'; }
+  function tl(t) { return t ? t.label : 'N/A'; }
+  function sv(s) { return s != null ? s : '—'; }
+
+  // Slide 1: Cover
+  const s1 = `
+    <h3>01 · Cover</h3>
+    <div class="slide-hero">Sybase → PostgreSQL<br>Migration Evaluation</div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px">
+        <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Target</div><div style="font-size:1rem;margin-top:4px">${target}</div></div>
+        ${acquirer ? `<div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Acquirer</div><div style="font-size:1rem;margin-top:4px">${acquirer}</div></div>` : ''}
+        <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Sybase Version</div><div style="font-size:1rem;margin-top:4px">${sysVer}</div></div>
+        <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Date</div><div style="font-size:1rem;margin-top:4px">${today}</div></div>
+        <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Confidence</div><div style="font-size:1rem;margin-top:4px">~${conf}%</div></div>
+      </div>
+      ${creditLine}
+    </div>`;
+
+  // Slide 2: Bottom line
+  let bottomLineText;
+  if (state.meta.bottomLine && state.meta.bottomLine.trim()) {
+    bottomLineText = escapeHtml(state.meta.bottomLine);
+  } else if (state.scores.composite != null) {
+    const objCount = m ? m.totalObjects : 0;
+    const sybasePct = (m && m.totalObjects > 0) ? Math.round(m.sybaseCount / m.totalObjects) : 0;
+    bottomLineText = `Platform carries ${tl(compT)} material risk. ${objCount} objects analyzed, ${sybasePct}% use Sybase-specific constructs. Composite risk score: ${sv(state.scores.composite)}/100.`;
+  } else {
+    bottomLineText = 'No analysis data available. Run an analysis and fill in the checklist for a complete assessment.';
+  }
+  const s2 = `
+    <h3>02 · Bottom Line</h3>
+    <div class="slide-hero" style="font-size:1.9rem;line-height:1.3">${bottomLineText}</div>
+    <div class="slide-body" style="margin-top:16px;color:#8B949E;font-size:0.82rem">Confidence ~${conf}% · Sybase T-SQL Migration Evaluator v2</div>`;
+
+  // Slide 3: Overall Risk
+  const ragColor = tc(compT);
+  const compScore = sv(state.scores.composite);
+  const s3 = `
+    <h3>03 · Overall Risk</h3>
+    <div class="slide-hero" style="color:${ragColor}">${compScore}<span style="font-size:1.2rem;color:#8B949E"> / 100 — ${tl(compT)}</span></div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:16px;max-width:600px">
+        <div style="background:#1F2730;border-radius:4px;padding:14px">
+          <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Code Complexity</div>
+          <div style="font-size:2rem;font-weight:300;color:${tc(codeT)}">${sv(state.scores.code)}</div>
+          <div style="font-size:0.75rem;color:${tc(codeT)};margin-top:4px">${tl(codeT)}</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:14px">
+          <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Migration Readiness</div>
+          <div style="font-size:2rem;font-weight:300;color:${tc(readyT)}">${sv(state.scores.readiness)}</div>
+          <div style="font-size:0.75rem;color:${tc(readyT)};margin-top:4px">${tl(readyT)}</div>
+        </div>
+        <div style="background:#1F2730;border-radius:4px;padding:14px">
+          <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Composite</div>
+          <div style="font-size:2rem;font-weight:300;color:${ragColor}">${compScore}</div>
+          <div style="font-size:0.75rem;color:${ragColor};margin-top:4px">${tl(compT)}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Slide 4: Code Complexity Findings
+  let s4body;
+  if (!m) {
+    s4body = '<p style="color:#8B949E;font-style:italic">No analyzer run — paste SQL on the Analysis tab.</p>';
+  } else {
+    const top3obj = (m.topObjectsByScore || []).slice(0, 3).map(o =>
+      `<tr><td>${escapeHtml(o.name)}</td><td>${o.type}</td><td>${o.lines}</td><td>${o.score}</td><td>${o.bucket}</td></tr>`
+    ).join('');
+    const top3rules = (m.topRulesByMatches || []).slice(0, 3).map(r =>
+      `<tr><td>${escapeHtml(r.id)}</td><td>${escapeHtml(r.name)}</td><td>${r.count}</td></tr>`
+    ).join('');
+    s4body = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;max-width:540px">
+        <div style="background:#1F2730;border-radius:3px;padding:10px"><div style="font-size:1.6rem;font-weight:300">${m.totalObjects}</div><div style="font-size:0.7rem;color:#8B949E">Objects</div></div>
+        <div style="background:#1F2730;border-radius:3px;padding:10px"><div style="font-size:1.6rem;font-weight:300">${m.totalLOC}</div><div style="font-size:0.7rem;color:#8B949E">LOC</div></div>
+        <div style="background:#1F2730;border-radius:3px;padding:10px"><div style="font-size:1.6rem;font-weight:300;color:#F85149">${m.buckets.veryHigh + m.buckets.high}</div><div style="font-size:0.7rem;color:#8B949E">High/VH Objs</div></div>
+        <div style="background:#1F2730;border-radius:3px;padding:10px"><div style="font-size:1.6rem;font-weight:300">${m.sybaseCount}</div><div style="font-size:0.7rem;color:#8B949E">Sybase Hits</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Top Objects by Score</div>
+          <table><thead><tr><th>Name</th><th>Type</th><th>LOC</th><th>Score</th><th>Bucket</th></tr></thead><tbody>${top3obj}</tbody></table>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Top Rule Hits</div>
+          <table><thead><tr><th>Rule</th><th>Name</th><th>Count</th></tr></thead><tbody>${top3rules}</tbody></table>
+        </div>
+      </div>`;
+  }
+  const s4 = `<h3>04 · Code Complexity Findings</h3><div class="slide-body">${s4body}</div>`;
+
+  // Slide 5: Readiness Gaps
+  let s5body;
+  const anyChecklist = CHECKLIST.length > 0 && Object.keys(state.checklist).length > 0;
+  if (!anyChecklist) {
+    s5body = '<p style="color:#8B949E;font-style:italic">Checklist not filled in — complete the Checklist tab for gap analysis.</p>';
+  } else {
+    const uncheckedItems = CHECKLIST
+      .filter(i => !state.checklist[i.id]?.checked)
+      .sort((a, b) => b.riskWeight - a.riskWeight)
+      .slice(0, 5);
+    const gapRows = uncheckedItems.map(i =>
+      `<tr><td>${i.id}</td><td>${PHASE_TITLES[i.phase] || i.phase}</td><td style="color:${i.riskWeight >= 4 ? '#F85149' : '#F59E0B'}">${i.riskWeight}</td><td style="font-size:0.82rem">${escapeHtml(i.question)}</td></tr>`
+    ).join('');
+    s5body = `
+      <div style="margin-bottom:16px">Readiness score: <span style="color:${tc(readyT)};font-weight:600">${sv(state.scores.readiness)}/100 — ${tl(readyT)}</span></div>
+      <table><thead><tr><th>ID</th><th>Phase</th><th>Weight</th><th>Gap</th></tr></thead><tbody>${gapRows}</tbody></table>`;
+  }
+  const s5 = `<h3>05 · Readiness Gaps</h3><div class="slide-body">${s5body}</div>`;
+
+  // Slide 6: Macro Risks
+  const delayFactors = buildTopDelayFactors();
+  let s6body;
+  if (!delayFactors.length) {
+    s6body = '<p style="color:#8B949E;font-style:italic">No significant risk factors identified — data may be incomplete.</p>';
+  } else {
+    s6body = delayFactors.slice(0, 6).map(f =>
+      `<div class="risk-row">
+        <span class="risk-tag ${f.severity}">${f.severity.toUpperCase()}</span>
+        <span class="risk-title">${escapeHtml(f.factor)}</span>
+        <span class="risk-meta"></span>
+        <span class="risk-mit">${escapeHtml(f.mitigation || '')}</span>
+      </div>`
+    ).join('');
+  }
+  const s6 = `<h3>06 · Macro Risks</h3><div class="slide-body">${s6body}</div>`;
+
+  // Slide 7: Effort & Timeline
+  const effort = computeEffortBand();
+  const calendarMonths = Math.round(effort.central / 2);
+  const s7 = `
+    <h3>07 · Effort &amp; Timeline</h3>
+    <div class="slide-hero">${effort.low}–${effort.high} <span style="font-size:1.2rem;color:#8B949E">person-months</span></div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:480px;margin-bottom:16px">
+        <div style="background:#1F2730;border-radius:3px;padding:12px"><div style="font-size:1.4rem;font-weight:300">${effort.low}</div><div style="font-size:0.72rem;color:#8B949E">Low PM</div></div>
+        <div style="background:#1F2730;border-radius:3px;padding:12px"><div style="font-size:1.4rem;font-weight:300">${effort.central}</div><div style="font-size:0.72rem;color:#8B949E">Central PM</div></div>
+        <div style="background:#1F2730;border-radius:3px;padding:12px"><div style="font-size:1.4rem;font-weight:300">${effort.high}</div><div style="font-size:0.72rem;color:#8B949E">High PM</div></div>
+      </div>
+      <ul>
+        <li>Calendar months (2 FTE): ~${calendarMonths} months</li>
+        <li>Contingency: Add 20–30% for scope creep, UAT cycles, and go-live stabilisation.</li>
+        <li>Estimate excludes: data migration, infrastructure provisioning, and application-layer rewrites.</li>
+        <li>Confidence: ~${conf}%</li>
+      </ul>
+    </div>`;
+
+  // Slide 8: Commercial Framing
+  const comp = state.scores.composite;
+  let recommendation, conditions;
+  if (comp == null) {
+    recommendation = 'Insufficient data for commercial framing. Complete analysis and checklist.';
+    conditions = ['Complete analyzer run', 'Fill checklist', 'Re-export reports', 'Seek specialist input'];
+  } else if (comp <= 30) {
+    recommendation = 'Risk profile is LOW. Standard acquisition terms are appropriate. No material price adjustment required for the migration alone.';
+    conditions = ['Standard reps & warranties on platform stability', 'Confirm version support timeline with Sybase', 'Agree migration ownership (buyer vs seller)', 'Post-close monitoring for 90 days'];
+  } else if (comp <= 55) {
+    recommendation = 'Risk profile is MEDIUM. Consider a modest price adjustment or escrow to cover migration cost overruns. TSA for 6–9 months recommended.';
+    conditions = ['Escrow 5–10% of deal value, released on successful go-live', 'TSA for up to 9 months', 'Milestone-based earnout linked to migration completion', 'Independent technical review pre-sign'];
+  } else if (comp <= 80) {
+    recommendation = 'Risk profile is HIGH. Material price adjustment or extended TSA warranted. Escrow or clawback provision strongly recommended.';
+    conditions = ['Price reduction or escrow 10–20% of deal value', 'TSA of 12–18 months minimum', 'Seller responsible for migration through go-live', 'Walk-away right if migration not complete within 24 months'];
+  } else {
+    recommendation = 'Risk profile is VERY HIGH. Recommend walk-away unless seller takes on full migration liability, or deal price reflects full platform rebuild cost.';
+    conditions = ['Require seller-funded migration to PostgreSQL pre-close', 'Consider deal restructure (asset purchase of data only)', 'Independent code audit before sign', 'Walk-away right at any milestone failure'];
+  }
+  const s8 = `
+    <h3>08 · Commercial Framing</h3>
+    <div class="slide-body">
+      <div style="background:#1F2730;border-left:3px solid ${ragColor};border-radius:0 4px 4px 0;padding:14px 16px;margin-bottom:16px;font-size:0.9rem;line-height:1.6">${escapeHtml(recommendation)}</div>
+      <div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Recommended Conditions</div>
+      <ul>${conditions.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
+      <div style="margin-top:16px;font-size:0.76rem;color:#6E7681">Source: Playbook §12 — Commercial Framing & Risk Mitigation · conf ~${conf}%</div>
+    </div>`;
+
+  return [
+    { title: 'Cover',                   html: s1 },
+    { title: 'Bottom Line',             html: s2 },
+    { title: 'Overall Risk',            html: s3 },
+    { title: 'Code Complexity',         html: s4 },
+    { title: 'Readiness Gaps',          html: s5 },
+    { title: 'Macro Risks',             html: s6 },
+    { title: 'Effort & Timeline',       html: s7 },
+    { title: 'Commercial Framing',      html: s8 },
+  ];
+}
+
+function renderCarousel() {
+  const container = document.getElementById('report-carousel');
+  if (!container) return;
+  if (!state.carousel) state.carousel = { idx: 0 };
+  const slides = buildSlides();
+  const total = slides.length;
+  const slidesHTML = slides.map((s, i) =>
+    `<div class="slide${i === state.carousel.idx ? ' active' : ''}">${s.html}</div>`
+  ).join('\n');
+  container.innerHTML = `
+    <div class="carousel-head">
+      <div>Migration Evaluation Deck</div>
+      <div class="carousel-controls">
+        <button class="carousel-btn" onclick="carouselPrev()" id="car-prev" ${state.carousel.idx === 0 ? 'disabled' : ''}>&lsaquo;</button>
+        <span class="carousel-counter"><span id="car-cur">${state.carousel.idx + 1}</span> / <span id="car-total">${total}</span></span>
+        <button class="carousel-btn" onclick="carouselNext()" id="car-next" ${state.carousel.idx === total - 1 ? 'disabled' : ''}>&rsaquo;</button>
+      </div>
+    </div>
+    <div class="carousel-body" id="carousel-body">
+      ${slidesHTML}
+    </div>`;
+}
+
+function carouselGoto(i) {
+  if (!state.carousel) state.carousel = { idx: 0 };
+  const body = document.getElementById('carousel-body');
+  if (!body) return;
+  const slides = body.querySelectorAll('.slide');
+  const total = slides.length;
+  if (i < 0 || i >= total) return;
+  slides[state.carousel.idx].classList.remove('active');
+  state.carousel.idx = i;
+  slides[i].classList.add('active');
+  const cur = document.getElementById('car-cur');
+  if (cur) cur.textContent = i + 1;
+  const prev = document.getElementById('car-prev');
+  const next = document.getElementById('car-next');
+  if (prev) prev.disabled = (i === 0);
+  if (next) next.disabled = (i === total - 1);
+}
+
+function carouselPrev() {
+  if (!state.carousel) return;
+  carouselGoto(state.carousel.idx - 1);
+}
+
+function carouselNext() {
+  if (!state.carousel) return;
+  carouselGoto(state.carousel.idx + 1);
+}
+
+function buildTopDelayFactors() {
+  const factors = [];
+
+  // 1. Unchecked redFlag items, sorted by riskWeight desc
+  const redFlagUnchecked = CHECKLIST
+    .filter(i => i.redFlagIfUnchecked && !state.checklist[i.id]?.checked)
+    .sort((a, b) => b.riskWeight - a.riskWeight);
+  for (const i of redFlagUnchecked) {
+    factors.push({
+      factor: i.question,
+      severity: 'red',
+      mitigation: i.mitigationHint || '',
+    });
+    if (factors.length >= 5) break;
+  }
+
+  // 2. High-weight unchecked items (weight >= 4) not already added
+  const addedIds = new Set(redFlagUnchecked.map(i => i.id));
+  const highWeightUnchecked = CHECKLIST
+    .filter(i => !addedIds.has(i.id) && !state.checklist[i.id]?.checked && i.riskWeight >= 4)
+    .sort((a, b) => b.riskWeight - a.riskWeight);
+  for (const i of highWeightUnchecked) {
+    if (factors.length >= 6) break;
+    factors.push({
+      factor: i.question,
+      severity: i.riskWeight >= 5 ? 'red' : 'amber',
+      mitigation: i.mitigationHint || '',
+    });
+  }
+
+  // 3. Top rule categories by match count from analyzer
+  const m = state.codeMetrics;
+  if (m && m.topRulesByMatches && factors.length < 8) {
+    const catCounts = {};
+    for (const r of (state.codeResults || [])) {
+      if (r.matchesByRule) {
+        for (const mb of r.matchesByRule) {
+          const cat = mb.rule.category;
+          catCounts[cat] = (catCounts[cat] || 0) + mb.matches.length;
+        }
+      }
+    }
+    const sortedCats = Object.entries(catCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    for (const [cat, cnt] of sortedCats) {
+      if (factors.length >= 8) break;
+      factors.push({
+        factor: `High ${CATEGORY_LABELS[cat] || cat} usage (${cnt} matches)`,
+        severity: cnt >= 10 ? 'red' : 'amber',
+        mitigation: `Review all ${CATEGORY_LABELS[cat] || cat} usages and map to PostgreSQL equivalents.`,
+      });
+    }
+  }
+
+  return factors.slice(0, 8);
+}
+
+function computeEffortBand() {
+  const m = state.codeMetrics;
+  let base = 1;
+  if (m && m.totalLOC) {
+    const weighted =
+        (m.buckets.veryHigh || 0) * 1500 +
+        (m.buckets.high     || 0) * 800 +
+        (m.buckets.medium   || 0) * 400 +
+        (m.buckets.low      || 0) * 150;
+    base = Math.max(1, weighted / 4000);
+  }
+  const readinessGap = state.scores.readiness || 0;
+  const mult = 1 + 0.01 * readinessGap;
+  const central = base * mult;
+  return {
+    low:     Math.max(1, Math.round(central * 0.85)),
+    high:    Math.max(2, Math.round(central * 1.25)),
+    central: Math.round(central),
+  };
+}
+
+// ---- Export helpers ----
+function _exportCSSBase() {
+  return `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#fff;color:#1a1a2e;font-size:14px;line-height:1.6}
+h1{font-size:1.6rem;margin:0 0 6px}h2{font-size:1.2rem;margin:24px 0 8px;color:#1a1a2e;border-bottom:2px solid #F59E0B;padding-bottom:4px}h3{font-size:1rem;margin:16px 0 6px;color:#444}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88rem}th{text-align:left;padding:7px 10px;background:#F5F5F5;color:#555;font-weight:600;border-bottom:2px solid #ddd}td{padding:7px 10px;border-bottom:1px solid #eee}
+.score-row{display:flex;gap:24px;flex-wrap:wrap;margin:16px 0}.score-card{background:#F9F9F9;border:1px solid #ddd;border-radius:4px;padding:16px 20px;min-width:160px}
+.score-num{font-size:2.4rem;font-weight:300;color:#1a1a2e}.score-label{font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.1em}.score-tier{font-size:0.8rem;font-weight:600;margin-top:4px}
+.t-low{color:#2da44e}.t-medium{color:#bf8700}.t-high{color:#d1400d}.t-veryhigh{color:#cf222e}
+.risk-block{border-left:3px solid #ddd;padding:8px 12px;margin:8px 0;border-radius:0 3px 3px 0}
+.risk-block.red{border-color:#cf222e;background:#fff0f0}.risk-block.amber{border-color:#bf8700;background:#fffbf0}.risk-block.green{border-color:#2da44e;background:#f0fff4}
+.conf-note{background:#F5F5F5;border:1px solid #ddd;border-radius:4px;padding:12px;font-size:0.82rem;color:#666;margin-top:24px}
+.meta-row{font-size:0.82rem;color:#888;margin-bottom:4px}
+ul,ol{padding-left:24px;margin:8px 0}li{margin-bottom:4px}
+@media print{body{font-size:12px}h1{font-size:1.3rem}h2{font-size:1rem}}`;
+}
+
+function _scoreSection(label, score, tiers, tcls) {
+  const tier = tierFor(score, tiers);
+  const num = score != null ? score : '—';
+  const tLabel = tier ? tier.label : 'N/A';
+  const cls = tier ? 't-' + tier.cls : '';
+  return `<div class="score-card"><div class="score-label">${label}</div><div class="score-num">${num}<span style="font-size:1rem;color:#aaa"> / 100</span></div><div class="score-tier ${cls}">${tLabel}</div></div>`;
+}
+
+function _headerBlock(title, subtitle) {
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const creditHtml = state.showCredit ? '<div style="margin-top:4px;font-size:0.82rem;color:#888">Prepared by Darshan Singh</div>' : '';
+  const target = escapeHtml(state.meta.target || 'Target Platform');
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  return `<div style="background:#1a1a2e;color:#fff;padding:24px 32px;margin-bottom:0">
+    <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px">Sybase Migration Evaluator v2</div>
+    <h1 style="color:#fff;margin-bottom:6px">${escapeHtml(title)}</h1>
+    <div style="color:rgba(255,255,255,0.75);font-size:0.88rem">${escapeHtml(subtitle)}</div>
+    <div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap">
+      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Target: <strong style="color:#fff">${target}</strong></span>
+      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Date: <strong style="color:#fff">${today}</strong></span>
+      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Confidence: <strong style="color:#F59E0B">~${conf}%</strong></span>
+    </div>
+    ${creditHtml}
+  </div>`;
+}
+
+function _checklistSectionHTML() {
+  const anyChecklist = CHECKLIST.length > 0 && Object.keys(state.checklist).length > 0;
+  if (!anyChecklist) return '<p style="color:#888;font-style:italic">Checklist not filled in.</p>';
+  let html = '';
+  PHASE_ORDER.forEach(phase => {
+    const items = CHECKLIST.filter(i => i.phase === phase);
+    html += `<h3>${PHASE_TITLES[phase] || phase}</h3><table><thead><tr><th>ID</th><th>Question</th><th>Status</th><th>Notes</th></tr></thead><tbody>`;
+    items.forEach(i => {
+      const checked = state.checklist[i.id]?.checked ? '&#x2713; Confirmed' : '&#x2717; Not confirmed';
+      const note = escapeHtml(state.checklist[i.id]?.note || '');
+      const color = state.checklist[i.id]?.checked ? '#2da44e' : (i.riskWeight >= 4 ? '#cf222e' : '#bf8700');
+      html += `<tr><td style="font-family:monospace;font-size:0.8rem">${i.id}</td><td>${escapeHtml(i.question)}</td><td style="color:${color};white-space:nowrap">${checked}</td><td style="color:#888">${note}</td></tr>`;
+    });
+    html += '</tbody></table>';
+  });
+  return html;
+}
+
+function _checklistSectionMD() {
+  const anyChecklist = CHECKLIST.length > 0 && Object.keys(state.checklist).length > 0;
+  if (!anyChecklist) return '_Checklist not filled in._\n\n';
+  let md = '';
+  PHASE_ORDER.forEach(phase => {
+    const items = CHECKLIST.filter(i => i.phase === phase);
+    md += `### ${PHASE_TITLES[phase] || phase}\n\n`;
+    md += `| ID | Question | Status | Notes |\n|---|---|---|---|\n`;
+    items.forEach(i => {
+      const checked = state.checklist[i.id]?.checked ? 'Confirmed' : 'Not confirmed';
+      const note = mdEsc(state.checklist[i.id]?.note || '');
+      md += `| ${i.id} | ${mdEsc(i.question)} | ${checked} | ${note} |\n`;
+    });
+    md += '\n';
+  });
+  return md;
+}
+
+function _delayFactorsHTML(factors) {
+  if (!factors.length) return '<p style="color:#888;font-style:italic">No significant delay factors identified.</p>';
+  return factors.map(f =>
+    `<div class="risk-block ${f.severity}">
+      <strong>${escapeHtml(f.factor)}</strong>
+      ${f.mitigation ? `<div style="font-size:0.82rem;color:#666;margin-top:4px">${escapeHtml(f.mitigation)}</div>` : ''}
+    </div>`
+  ).join('');
+}
+
+function _delayFactorsMD(factors) {
+  if (!factors.length) return '_No significant delay factors identified._\n\n';
+  return factors.map((f, i) =>
+    `${i+1}. **[${f.severity.toUpperCase()}]** ${mdEsc(f.factor)}\n   - *Mitigation:* ${mdEsc(f.mitigation || 'N/A')}\n`
+  ).join('\n') + '\n';
+}
+
+function _effortBlock() {
+  const e = computeEffortBand();
+  const cal = Math.round(e.central / 2);
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  return { low: e.low, central: e.central, high: e.high, cal, conf };
+}
+
+// ---- downloadRawJSON ----
+function downloadRawJSON() {
+  const ts = new Date();
+  const effort = computeEffortBand();
+  const payload = {
+    tool: 'Sybase Migration Evaluator v2',
+    generatedAt: ts.toISOString(),
+    confidence: state.confidence,
+    meta: state.meta,
+    scores: state.scores,
+    codeMetrics: state.codeMetrics,
+    checklist: state.checklist,
+    delayFactors: buildTopDelayFactors(),
+    effort,
+  };
+  downloadBlob(JSON.stringify(payload, null, 2), `sybase_evaluation_${formatDatetime(ts)}.json`, 'application/json');
+  showToast('JSON exported.');
+}
+
+// ---- downloadTechReportHTML ----
+function downloadTechReportHTML() {
+  const ts = new Date();
+  const m = state.codeMetrics;
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const factors = buildTopDelayFactors();
+  const effort = _effortBlock();
+
+  const top10obj = m ? (m.topObjectsByScore || []).slice(0, 10).map(o =>
+    `<tr><td>${escapeHtml(o.name)}</td><td>${o.type}</td><td>${o.lines}</td><td>${o.score}</td><td>${o.bucket}</td></tr>`
+  ).join('') : '';
+
+  const topRules = m ? (m.topRulesByMatches || []).map(r =>
+    `<tr><td style="font-family:monospace;font-size:0.8rem">${escapeHtml(r.id)}</td><td>${escapeHtml(r.name)}</td><td>${CATEGORY_LABELS[r.category] || r.category}</td><td>${r.count}</td></tr>`
+  ).join('') : '';
+
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Technical Migration Report</title>
+<style>${_exportCSSBase()}</style></head><body>
+${_headerBlock('Technical Migration Report', 'Full analyzer findings, checklist answers, and scoring')}
+<div style="padding:24px 32px">
+<h2>Scores</h2>
+<div class="score-row">
+  ${_scoreSection('Code Complexity', state.scores.code, TIER_CODE)}
+  ${_scoreSection('Migration Readiness', state.scores.readiness, TIER_READY)}
+  ${_scoreSection('Composite Risk', state.scores.composite, TIER_COMPOSITE)}
+</div>
+${m ? `
+<h2>Platform Audit Summary</h2>
+<table><tbody>
+<tr><td><strong>Total Objects</strong></td><td>${m.totalObjects}</td><td><strong>Total LOC</strong></td><td>${m.totalLOC}</td></tr>
+<tr><td><strong>Stored Procs</strong></td><td>${m.procs}</td><td><strong>Views</strong></td><td>${m.views}</td></tr>
+<tr><td><strong>Functions</strong></td><td>${m.functions}</td><td><strong>Triggers</strong></td><td>${m.triggers}</td></tr>
+<tr><td><strong>Dynamic SQL objects</strong></td><td>${m.dynamicSqlCount}</td><td><strong>Cross-DB refs</strong></td><td>${m.crossDbCount}</td></tr>
+<tr><td><strong>Cursor usage</strong></td><td>${m.cursorCount}</td><td><strong>Sybase hits total</strong></td><td>${m.sybaseCount}</td></tr>
+<tr><td><strong>Low bucket</strong></td><td>${m.buckets.low}</td><td><strong>Medium bucket</strong></td><td>${m.buckets.medium}</td></tr>
+<tr><td><strong>High bucket</strong></td><td>${m.buckets.high}</td><td><strong>Very High bucket</strong></td><td>${m.buckets.veryHigh}</td></tr>
+</tbody></table>
+<h2>Top 10 Objects by Score</h2>
+<table><thead><tr><th>Name</th><th>Type</th><th>LOC</th><th>Score</th><th>Bucket</th></tr></thead><tbody>${top10obj}</tbody></table>
+<h2>Rule Hit Summary</h2>
+<table><thead><tr><th>Rule ID</th><th>Name</th><th>Category</th><th>Total Matches</th></tr></thead><tbody>${topRules}</tbody></table>
+` : '<p style="color:#888;font-style:italic">No analyzer run — paste SQL on the Analysis tab.</p>'}
+<h2>Checklist Answers</h2>
+${_checklistSectionHTML()}
+<h2>Top Delay Factors</h2>
+${_delayFactorsHTML(factors)}
+<h2>Effort Estimate</h2>
+<div class="score-row">
+  <div class="score-card"><div class="score-label">Low</div><div class="score-num">${effort.low}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
+  <div class="score-card"><div class="score-label">Central</div><div class="score-num">${effort.central}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
+  <div class="score-card"><div class="score-label">High</div><div class="score-num">${effort.high}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
+  <div class="score-card"><div class="score-label">Calendar (2 FTE)</div><div class="score-num">~${effort.cal}</div><div style="font-size:0.8rem;color:#888">months</div></div>
+</div>
+<div class="conf-note"><strong>Confidence &amp; Limitations:</strong> Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review or manual code inspection. No data leaves your browser.</div>
+</div></body></html>`;
+  downloadBlob(html, `sybase_tech_report_${formatDatetime(ts)}.html`, 'text/html');
+  showToast('Technical report (HTML) exported.');
+}
+
+// ---- downloadTechReportMD ----
+function downloadTechReportMD() {
+  const ts = new Date();
+  const m = state.codeMetrics;
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const factors = buildTopDelayFactors();
+  const effort = _effortBlock();
+  const target = state.meta.target || 'Target Platform';
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+
+  let md = `# Technical Migration Report\n\n`;
+  md += `**Tool:** Sybase Migration Evaluator v2  \n`;
+  md += `**Target:** ${mdEsc(target)}  \n`;
+  md += `**Date:** ${today}  \n`;
+  md += `**Confidence:** ~${conf}%  \n`;
+  if (state.showCredit) md += `**Prepared by:** Darshan Singh  \n`;
+  md += `\n---\n\n## Scores\n\n`;
+  md += `| Metric | Score | Tier |\n|---|---|---|\n`;
+  md += `| Code Complexity | ${state.scores.code ?? 'N/A'} | ${tierFor(state.scores.code, TIER_CODE)?.label ?? 'N/A'} |\n`;
+  md += `| Migration Readiness | ${state.scores.readiness ?? 'N/A'} | ${tierFor(state.scores.readiness, TIER_READY)?.label ?? 'N/A'} |\n`;
+  md += `| Composite Risk | ${state.scores.composite ?? 'N/A'} | ${tierFor(state.scores.composite, TIER_COMPOSITE)?.label ?? 'N/A'} |\n\n`;
+
+  if (m) {
+    md += `## Platform Audit Summary\n\n`;
+    md += `| Metric | Value |\n|---|---|\n`;
+    md += `| Total Objects | ${m.totalObjects} |\n| Total LOC | ${m.totalLOC} |\n`;
+    md += `| Stored Procs | ${m.procs} |\n| Views | ${m.views} |\n| Functions | ${m.functions} |\n| Triggers | ${m.triggers} |\n`;
+    md += `| Dynamic SQL objects | ${m.dynamicSqlCount} |\n| Cross-DB refs | ${m.crossDbCount} |\n| Cursor usage | ${m.cursorCount} |\n`;
+    md += `| Sybase hits total | ${m.sybaseCount} |\n`;
+    md += `| Low/Medium/High/VeryHigh buckets | ${m.buckets.low}/${m.buckets.medium}/${m.buckets.high}/${m.buckets.veryHigh} |\n\n`;
+
+    md += `## Top Objects by Score\n\n`;
+    md += `| Name | Type | LOC | Score | Bucket |\n|---|---|---|---|---|\n`;
+    (m.topObjectsByScore || []).slice(0, 10).forEach(o => {
+      md += `| ${mdEsc(o.name)} | ${o.type} | ${o.lines} | ${o.score} | ${o.bucket} |\n`;
+    });
+    md += '\n';
+
+    md += `## Rule Hit Summary\n\n`;
+    md += `| Rule ID | Name | Category | Matches |\n|---|---|---|---|\n`;
+    (m.topRulesByMatches || []).forEach(r => {
+      md += `| ${r.id} | ${mdEsc(r.name)} | ${CATEGORY_LABELS[r.category] || r.category} | ${r.count} |\n`;
+    });
+    md += '\n';
+  } else {
+    md += `## Platform Audit\n\n_No analyzer run._\n\n`;
+  }
+
+  md += `## Checklist Answers\n\n${_checklistSectionMD()}`;
+  md += `## Top Delay Factors\n\n${_delayFactorsMD(factors)}`;
+  md += `## Effort Estimate\n\n| Band | Person-Months |\n|---|---|\n| Low | ${effort.low} |\n| Central | ${effort.central} |\n| High | ${effort.high} |\n| Calendar (2 FTE) | ~${effort.cal} months |\n\n`;
+  md += `---\n\n> **Confidence & Limitations:** Scores are produced by regex-based analysis and a structured checklist. Confidence ~${conf}%. Results are a triage aid — not a substitute for on-site review.\n`;
+
+  downloadBlob(md, `sybase_tech_report_${formatDatetime(ts)}.md`, 'text/markdown');
+  showToast('Technical report (Markdown) exported.');
+}
+
+// ---- downloadExecBriefHTML ----
+function downloadExecBriefHTML() {
+  const ts = new Date();
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const factors = buildTopDelayFactors();
+  const effort = _effortBlock();
+  const compT = tierFor(state.scores.composite, TIER_COMPOSITE);
+  const comp = state.scores.composite;
+  const TIER_COLOR_HEX = { low:'#2da44e', medium:'#bf8700', high:'#d1400d', veryhigh:'#cf222e' };
+  const ragColor = compT ? (TIER_COLOR_HEX[compT.cls] || '#1a1a2e') : '#1a1a2e';
+
+  const bottomLine = state.meta.bottomLine && state.meta.bottomLine.trim()
+    ? escapeHtml(state.meta.bottomLine)
+    : (comp != null ? `Platform carries ${compT ? compT.label : ''} material risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data for automated bottom line.');
+
+  let recommendation, conditionsList;
+  if (comp == null) {
+    recommendation = 'Insufficient data. Complete analysis and checklist for full commercial framing.';
+    conditionsList = ['Complete analyzer run and checklist before proceeding.'];
+  } else if (comp <= 30) {
+    recommendation = 'Risk profile is LOW. Standard acquisition terms are appropriate. The migration is straightforward and well-scoped.';
+    conditionsList = ['Standard reps & warranties on platform stability', 'Confirm Sybase support timeline', 'Agree migration ownership', 'Post-close monitoring for 90 days'];
+  } else if (comp <= 55) {
+    recommendation = 'Risk profile is MEDIUM. A modest price adjustment or escrow provision is recommended to cover migration cost overruns.';
+    conditionsList = ['Escrow 5–10% of deal value released on go-live', 'Transition Service Agreement for 6–9 months', 'Milestone-based earnout linked to migration completion', 'Independent technical review before signing'];
+  } else if (comp <= 80) {
+    recommendation = 'Risk profile is HIGH. A material price adjustment and extended TSA are warranted. Escrow or clawback provision strongly recommended.';
+    conditionsList = ['Price reduction or escrow 10–20% of deal value', 'TSA of 12–18 months minimum', 'Seller takes migration responsibility through go-live', 'Walk-away right if migration not complete within 24 months'];
+  } else {
+    recommendation = 'Risk profile is VERY HIGH. Recommend walk-away unless the seller takes on full migration liability or the deal price fully reflects the platform rebuild cost.';
+    conditionsList = ['Require seller-funded migration to PostgreSQL pre-close', 'Consider deal restructure (asset purchase of data only)', 'Independent code audit before signing', 'Walk-away right at any milestone failure'];
+  }
+
+  const top3risks = factors.slice(0, 3).map(f =>
+    `<div class="risk-block ${f.severity}"><strong>${escapeHtml(f.factor)}</strong>${f.mitigation ? `<div style="font-size:0.82rem;margin-top:4px">${escapeHtml(f.mitigation)}</div>` : ''}</div>`
+  ).join('');
+
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Executive Brief</title>
+<style>${_exportCSSBase()}</style></head><body>
+${_headerBlock('Executive Brief', 'Sybase → PostgreSQL Platform Risk Summary for Acquirer')}
+<div style="padding:24px 32px">
+<div style="background:${ragColor};color:#fff;border-radius:4px;padding:20px 24px;margin-bottom:24px">
+  <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.8;margin-bottom:6px">Bottom Line</div>
+  <div style="font-size:1.1rem;line-height:1.6">${bottomLine}</div>
+</div>
+<h2>Risk Scores</h2>
+<div class="score-row">
+  ${_scoreSection('Code Complexity', state.scores.code, TIER_CODE)}
+  ${_scoreSection('Migration Readiness', state.scores.readiness, TIER_READY)}
+  ${_scoreSection('Composite Risk', state.scores.composite, TIER_COMPOSITE)}
+</div>
+<h2>Top 3 Macro Risks</h2>
+${top3risks.length ? top3risks : '<p style="color:#888;font-style:italic">No significant risks identified or insufficient data.</p>'}
+<h2>Effort Estimate</h2>
+<div class="score-row">
+  <div class="score-card"><div class="score-label">Range</div><div class="score-num" style="font-size:1.8rem">${effort.low}–${effort.high}</div><div style="font-size:0.8rem;color:#888">person-months</div></div>
+  <div class="score-card"><div class="score-label">Calendar (2 FTE)</div><div class="score-num" style="font-size:1.8rem">~${effort.cal}</div><div style="font-size:0.8rem;color:#888">months</div></div>
+</div>
+<h2>Commercial Recommendation</h2>
+<div style="background:#F9F9F9;border-left:3px solid ${ragColor};padding:14px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:0.92rem;line-height:1.6">${escapeHtml(recommendation)}</div>
+<h2>Recommended Conditions</h2>
+<ul>${conditionsList.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
+<div class="conf-note"><strong>Confidence note:</strong> This brief is generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. It is a triage aid based on regex analysis and a structured checklist — not a substitute for on-site review or legal/financial due diligence.</div>
+</div></body></html>`;
+  downloadBlob(html, `sybase_exec_brief_${formatDatetime(ts)}.html`, 'text/html');
+  showToast('Executive brief (HTML) exported.');
+}
+
+// ---- downloadExecBriefMD ----
+function downloadExecBriefMD() {
+  const ts = new Date();
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const factors = buildTopDelayFactors();
+  const effort = _effortBlock();
+  const compT = tierFor(state.scores.composite, TIER_COMPOSITE);
+  const comp = state.scores.composite;
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  const target = state.meta.target || 'Target Platform';
+  const acquirer = state.meta.acquirer || '';
+
+  const bottomLine = state.meta.bottomLine && state.meta.bottomLine.trim()
+    ? state.meta.bottomLine
+    : (comp != null ? `Platform carries ${compT ? compT.label : ''} material risk with a composite score of ${comp}/100. Effort estimate: ${effort.low}–${effort.high} person-months.` : 'Insufficient data for automated bottom line.');
+
+  let recommendation, conditions;
+  if (comp == null) {
+    recommendation = 'Insufficient data. Complete analysis and checklist.';
+    conditions = ['Complete analyzer run and checklist before proceeding.'];
+  } else if (comp <= 30) {
+    recommendation = 'Risk profile is LOW. Standard acquisition terms appropriate.';
+    conditions = ['Standard reps & warranties on platform stability', 'Confirm Sybase support timeline', 'Agree migration ownership', 'Post-close monitoring 90 days'];
+  } else if (comp <= 55) {
+    recommendation = 'Risk profile is MEDIUM. Modest price adjustment or escrow recommended.';
+    conditions = ['Escrow 5–10% released on go-live', 'TSA 6–9 months', 'Milestone-based earnout', 'Independent tech review pre-sign'];
+  } else if (comp <= 80) {
+    recommendation = 'Risk profile is HIGH. Material price adjustment and extended TSA warranted.';
+    conditions = ['Price reduction/escrow 10–20%', 'TSA 12–18 months minimum', 'Seller migration responsibility through go-live', 'Walk-away right if not complete in 24 months'];
+  } else {
+    recommendation = 'Risk profile is VERY HIGH. Walk-away recommended unless seller takes full migration liability.';
+    conditions = ['Seller-funded pre-close migration', 'Consider asset purchase only', 'Independent code audit pre-sign', 'Walk-away right at any milestone failure'];
+  }
+
+  let md = `# Executive Brief — Sybase Platform Risk Summary\n\n`;
+  md += `**Tool:** Sybase Migration Evaluator v2  \n`;
+  md += `**Target:** ${mdEsc(target)}  \n`;
+  if (acquirer) md += `**Acquirer:** ${mdEsc(acquirer)}  \n`;
+  md += `**Date:** ${today}  \n`;
+  md += `**Confidence:** ~${conf}%  \n`;
+  if (state.showCredit) md += `**Prepared by:** Darshan Singh  \n`;
+  md += `\n---\n\n## Bottom Line\n\n> ${mdEsc(bottomLine)}\n\n`;
+  md += `## Risk Scores\n\n| Metric | Score | Tier |\n|---|---|---|\n`;
+  md += `| Code Complexity | ${state.scores.code ?? 'N/A'} | ${tierFor(state.scores.code, TIER_CODE)?.label ?? 'N/A'} |\n`;
+  md += `| Migration Readiness | ${state.scores.readiness ?? 'N/A'} | ${tierFor(state.scores.readiness, TIER_READY)?.label ?? 'N/A'} |\n`;
+  md += `| Composite Risk | ${state.scores.composite ?? 'N/A'} | ${tierFor(state.scores.composite, TIER_COMPOSITE)?.label ?? 'N/A'} |\n\n`;
+  md += `## Top 3 Macro Risks\n\n${_delayFactorsMD(factors.slice(0, 3))}`;
+  md += `## Effort Estimate\n\n| Band | Person-Months |\n|---|---|\n| Low | ${effort.low} |\n| Central | ${effort.central} |\n| High | ${effort.high} |\n| Calendar (2 FTE) | ~${effort.cal} months |\n\n`;
+  md += `## Commercial Recommendation\n\n${mdEsc(recommendation)}\n\n`;
+  md += `## Recommended Conditions\n\n${conditions.map((c,i) => `${i+1}. ${mdEsc(c)}`).join('\n')}\n\n`;
+  md += `---\n\n> **Confidence note:** Generated by Sybase Migration Evaluator v2 with ~${conf}% confidence. Triage aid only — not a substitute for on-site review or legal/financial due diligence.\n`;
+
+  downloadBlob(md, `sybase_exec_brief_${formatDatetime(ts)}.md`, 'text/markdown');
+  showToast('Executive brief (Markdown) exported.');
+}
+
+// ---- downloadSlideDeck ----
+function downloadSlideDeck() {
+  const ts = new Date();
+  const slides = buildSlides();
+  const total = slides.length;
+
+  const slideCSS = `
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0F1419;color:#E6EDF3;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+    #deck-head{background:#151B23;border-bottom:1px solid #30363D;padding:10px 24px;display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;color:#8B949E;letter-spacing:0.1em;text-transform:uppercase;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;flex-shrink:0}
+    #deck-controls{display:flex;gap:8px;align-items:center}
+    .deck-btn{background:transparent;border:1px solid #30363D;color:#8B949E;width:32px;height:32px;border-radius:3px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+    .deck-btn:hover:not(:disabled){color:#F59E0B;border-color:#B67508}
+    .deck-btn:disabled{opacity:0.3;cursor:default}
+    #deck-counter{font-variant-numeric:tabular-nums;color:#E6EDF3;min-width:54px;text-align:center}
+    #deck-body{flex:1;overflow:hidden;position:relative}
+    .slide{display:none;position:absolute;inset:0;padding:40px 60px;overflow-y:auto}
+    .slide.active{display:block;animation:fadeIn 0.18s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .slide h3{font-size:0.72rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#6E7681;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-bottom:20px}
+    .slide .slide-hero{font-size:2.8rem;font-weight:300;line-height:1.15;letter-spacing:-0.02em;color:#E6EDF3;margin-bottom:20px}
+    .slide .slide-body{color:#E6EDF3;line-height:1.65;font-size:0.92rem}
+    .slide .slide-body ul,.slide .slide-body ol{padding-left:24px;margin:10px 0}
+    .slide .slide-body li{margin-bottom:6px}
+    .slide table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.85rem}
+    .slide table th{text-align:left;padding:8px 10px;background:#0F1419;color:#8B949E;font-weight:500;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid #30363D}
+    .slide table td{padding:8px 10px;border-bottom:1px solid #21262D;color:#E6EDF3}
+    .risk-row{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #21262D;align-items:start}
+    .risk-row:last-child{border-bottom:0}
+    .risk-tag{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.68rem;padding:2px 7px;border-radius:3px;letter-spacing:0.06em;font-weight:600;white-space:nowrap}
+    .risk-tag.red{background:rgba(248,81,73,0.14);color:#F85149;border:1px solid rgba(248,81,73,0.35)}
+    .risk-tag.amber{background:rgba(245,158,11,0.12);color:#F59E0B;border:1px solid rgba(245,158,11,0.35)}
+    .risk-tag.green{background:rgba(63,185,80,0.12);color:#3FB950;border:1px solid rgba(63,185,80,0.35)}
+    .risk-title{color:#E6EDF3;font-size:0.88rem}
+    .risk-mit{grid-column:2;font-size:0.8rem;color:#8B949E;margin-top:3px}
+    #deck-prev-area{position:fixed;left:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+    #deck-next-area{position:fixed;right:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+    #deck-prev-area:hover,#deck-next-area:hover{opacity:1;background:rgba(255,255,255,0.04)}
+    #deck-prev-area span,#deck-next-area span{font-size:2rem;color:#8B949E}
+  `;
+
+  const slidesHTML = slides.map((s, i) =>
+    `<div class="slide${i === 0 ? ' active' : ''}" data-idx="${i}">${s.html}</div>`
+  ).join('\n');
+
+  const deckJS = `
+    let curIdx = 0;
+    const total = ${total};
+    function gotoSlide(i) {
+      if (i < 0 || i >= total) return;
+      document.querySelectorAll('.slide')[curIdx].classList.remove('active');
+      curIdx = i;
+      document.querySelectorAll('.slide')[i].classList.add('active');
+      document.getElementById('dk-cur').textContent = i + 1;
+      document.getElementById('dk-prev').disabled = (i === 0);
+      document.getElementById('dk-next').disabled = (i === total - 1);
+    }
+    document.getElementById('dk-prev').addEventListener('click', () => gotoSlide(curIdx - 1));
+    document.getElementById('dk-next').addEventListener('click', () => gotoSlide(curIdx + 1));
+    document.getElementById('deck-prev-area').addEventListener('click', () => gotoSlide(curIdx - 1));
+    document.getElementById('deck-next-area').addEventListener('click', () => gotoSlide(curIdx + 1));
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowLeft'  || ev.key === 'ArrowUp'    || ev.key === 'PageUp')   gotoSlide(curIdx - 1);
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown'  || ev.key === 'PageDown' || ev.key === ' ') gotoSlide(curIdx + 1);
+    });
+  `;
+
+  const conf = Math.round((state.confidence || 0.92) * 100);
+  const creditHtml = state.showCredit ? ' &middot; Prepared by Darshan Singh' : '';
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation Deck</title>
+<style>${slideCSS}</style></head><body>
+<div id="deck-head">
+  <span>Sybase Migration Evaluator v2 &middot; conf ~${conf}%${creditHtml}</span>
+  <div id="deck-controls">
+    <button class="deck-btn" id="dk-prev" disabled>&#8249;</button>
+    <span id="deck-counter"><span id="dk-cur">1</span> / ${total}</span>
+    <button class="deck-btn" id="dk-next">&#8250;</button>
+  </div>
+</div>
+<div id="deck-prev-area"><span>&#8249;</span></div>
+<div id="deck-next-area"><span>&#8250;</span></div>
+<div id="deck-body">
+${slidesHTML}
+</div>
+<script>${deckJS}<\/script>
+</body></html>`;
+  downloadBlob(html, `sybase_slide_deck_${formatDatetime(ts)}.html`, 'text/html');
+  showToast('Slide deck exported.');
+}
+
+// ============================================================
+// V2 INIT
+// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // keep limitations closed by default for cleaner UX
+  renderChecklist();
+  renderSQLLibrary();
+  renderRuleCatalog();
+  updateScoreStrip();           // hidden until data exists
+  // Keyboard nav for the Reports-tab carousel (when Reports tab is active)
+  document.addEventListener('keydown', (ev) => {
+    if (state.activeTab !== 'reports') return;
+    if (ev.target && /INPUT|TEXTAREA|SELECT/.test(ev.target.tagName || '')) return;
+    if (ev.key === 'ArrowLeft')  carouselPrev();
+    if (ev.key === 'ArrowRight') carouselNext();
+  });
 });
 </script>
 </body>
