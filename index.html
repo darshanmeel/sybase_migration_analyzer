@@ -2037,6 +2037,7 @@ GO"></textarea>
         <button class="report-action-btn" onclick="downloadExecBriefMD()"><span class="rab-title">Executive Summary · Markdown</span><span class="rab-desc">Same, Markdown format</span></button>
         <button class="report-action-btn" onclick="downloadSlideDeck()"><span class="rab-title">Slide Deck · HTML</span><span class="rab-desc">8 slides, keyboard nav, present on a call</span></button>
         <button class="report-action-btn" onclick="downloadRawJSON()"><span class="rab-title">Raw Data · JSON</span><span class="rab-desc">Full state dump for archival / downstream tools</span></button>
+        <button class="report-action-btn" onclick="triggerImportJSON()"><span class="rab-title">Import Raw JSON</span><span class="rab-desc">Resume a previous session from exported JSON</span></button>
       </div>
     </div>
   </div>
@@ -6297,5 +6298,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<input type="file" id="json-import-input" accept=".json" style="display:none;" onchange="handleJSONImportFile()">
 </body>
 </html>
