@@ -16,7 +16,7 @@ A single-file, fully offline HTML tool for **migration evaluation** of Sybase pl
 
 | Tab | What it does |
 |---|---|
-| **Analysis** | Paste Sybase T-SQL or upload a `.sql` file. A regex rule engine (40 patterns) splits input into objects (procs / views / functions / triggers), scores each, and produces a sortable heat map plus per-object collapsible detail with a color-highlighted annotated source view. |
+| **Analysis** | Paste Sybase T-SQL or upload a `.sql` file. A regex rule engine (60+ patterns) splits input into objects (procs / views / functions / triggers), scores each, and produces a sortable heat map plus per-object collapsible detail with a color-highlighted annotated source view. Every rule carries rewrite hints for three migration targets — **PostgreSQL**, **Microsoft SQL Server**, and **Oracle** — switchable via a segmented control on the Analysis tab. |
 | **Checklist** | 70 phase-based migration-readiness items across six phases (Phase 1–6). Each item has a checkbox, notes/evidence field, risk weight (1–5), and a playbook reference. Readiness score updates live as you tick items. |
 | **SQL Library** | 27 ready-to-run Sybase discovery queries across 7 sections — platform & version, object inventory, connections & usage, performance diagnostics, schema quality, Sybase IQ / SQL Anywhere, and export helpers. One-click copy, searchable. |
 | **Reports** | Three live scores (Code Complexity, Migration Readiness, Composite Risk), an 8-slide presentation carousel, engagement-context narrative fields, and six export formats (Tech HTML, Tech Markdown, Executive Summary HTML, Executive Summary Markdown, Slide Deck HTML, Raw JSON). |
@@ -68,7 +68,7 @@ Every number the tool outputs ships with a visible `~92%` confidence label. The 
 
 **It does not export to PDF.** Use the browser's Print → Save as PDF on any HTML export. The HTML exports are styled to print cleanly.
 
-**Rewrite suggestions are Sybase-specific.** The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase. If you run it against Oracle, SQL Server, MySQL, DB2, or Informix, the analyzer output will be noisy — but the **checklist, SQL Library, scoring model, reports, and slide decks are fully reusable**. Rule packs for SQL Server, Oracle, and MySQL are planned — email feedback to prioritize.
+**Source dialect is Sybase T-SQL.** The analyzer's 60+ regex rules are tuned to Sybase T-SQL constructs. Rewrite hints are provided for three target dialects: **PostgreSQL**, **Microsoft SQL Server**, and **Oracle** — pick the target from the Analysis tab and heat-map tooltips + reports update to match. If you run it against Oracle or MySQL as a *source*, rule matches will be noisy, but the **checklist, SQL Library, scoring model, reports, and slide decks are fully reusable** regardless of source.
 
 **Read the Limitations tab.** The in-app **Limitations** tab (red warning styling, rightmost in the nav) describes exactly what the tool can and cannot do. Read it before sharing any report with a stakeholder.
 

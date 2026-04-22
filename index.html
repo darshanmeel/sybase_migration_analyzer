@@ -772,6 +772,56 @@
     border: 1px solid var(--border);
   }
   .btn-secondary:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+
+  /* ---- TARGET DIALECT SELECTOR ---- */
+  .target-row {
+    display: flex; align-items: center; gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .target-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 600;
+  }
+  .target-seg {
+    display: inline-flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px;
+  }
+  .target-seg .tseg {
+    background: transparent;
+    border: 0;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    padding: 6px 14px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+  }
+  .target-seg .tseg:hover { color: var(--text); }
+  .target-seg .tseg.active {
+    background: var(--accent);
+    color: #0F1419;
+    font-weight: 600;
+  }
+  .target-hint {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-style: italic;
+    flex: 1 1 240px;
+  }
   .btn-export {
     background: transparent;
     color: var(--accent);
@@ -1749,6 +1799,15 @@ GO"></textarea>
       <button class="btn btn-primary" onclick="runAnalysis()">Analyze</button>
       <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
     </div>
+    <div class="target-row">
+      <span class="target-label">Target dialect</span>
+      <div class="target-seg" id="target-seg" role="tablist">
+        <button type="button" class="tseg active" data-target="postgres" onclick="setTargetDialect('postgres')">PostgreSQL</button>
+        <button type="button" class="tseg"        data-target="mssql"    onclick="setTargetDialect('mssql')">SQL Server</button>
+        <button type="button" class="tseg"        data-target="oracle"   onclick="setTargetDialect('oracle')">Oracle</button>
+      </div>
+      <span class="target-hint" id="target-hint">Default target. Every rule carries a PostgreSQL rewrite hint.</span>
+    </div>
   </div>
 
   <!-- SUMMARY BANNER -->
@@ -1912,7 +1971,7 @@ GO"></textarea>
   <div class="about-section" id="what-it-does-section">
     <h3>What this tool does</h3>
     <ul>
-      <li>Analyzes pasted Sybase T-SQL against 40 regex patterns to surface constructs that usually require rewrite for PostgreSQL.</li>
+      <li>Analyzes pasted Sybase T-SQL against 60+ regex patterns and surfaces rewrite hints for three migration targets: <b>PostgreSQL</b>, <b>Microsoft SQL Server</b>, and <b>Oracle</b>. Switch targets from the Analysis tab.</li>
       <li>Tracks a 70-item migration-readiness checklist across six phases. Each item has a weight and a notes field.</li>
       <li>Produces three live scores — Code Complexity, Migration Readiness, Composite Risk — with transparent formulas.</li>
       <li>Generates a pre-engagement methodology deck, a technical report, an executive summary, a filled slide deck, and a raw JSON dump.</li>
@@ -1921,7 +1980,7 @@ GO"></textarea>
     </ul>
     <h3 style="margin-top: 18px;">Other databases</h3>
     <p>
-      The same tool works for <b>any relational database</b> you want to evaluate for migration — Oracle, SQL Server, MySQL, DB2, Informix. The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase, so those specific suggestions will not be meaningful for other sources — but the <b>checklist, SQL Library, scoring model, reports, and slide decks</b> all translate directly. Rule packs for SQL Server, Oracle, and MySQL are planned — email feedback to prioritize.
+      The analyzer's <b>60+ regex rules</b> are tuned for Sybase T-SQL, but rewrite hints are provided for three targets: <b>PostgreSQL</b>, <b>Microsoft SQL Server</b>, and <b>Oracle</b>. Pick the target dialect from the Analysis tab — heat map tooltips, detail blocks, and exported reports all update to show the chosen target's guidance. The <b>checklist, SQL Library, scoring model, reports, and slide decks</b> are dialect-neutral and translate to any relational source (MySQL, DB2, Informix, etc.) — only the per-rule rewrite strings are Sybase-sourced.
     </p>
   </div>
 
@@ -2015,7 +2074,7 @@ GO"></textarea>
       <li><b>Up to +20%</b> scaled by the fraction of checklist items answered</li>
       <li><b>Floor:</b> 40%. <b>Ceiling:</b> 95%. Nothing in this tool is ever "100% confident".</li>
     </ul>
-    <p style="margin-top:10px">Confidence also drops sharply (even when the number looks fine) whenever the platform uses features outside the 40-rule set — custom extended stored procedures, Sybase IQ columnar analytics, Replication Server topology, undocumented thick-client dependencies — or when checklist items are self-reported rather than verified.</p>
+    <p style="margin-top:10px">Confidence also drops sharply (even when the number looks fine) whenever the platform uses features outside the 60+ rule set — custom extended stored procedures, Sybase IQ columnar analytics, Replication Server topology, undocumented thick-client dependencies — or when checklist items are self-reported rather than verified.</p>
   </div>
 
   <div class="about-section about-limitations">
@@ -2059,7 +2118,36 @@ const state = {
   confidence: 0.92,
   scores: { code: null, readiness: null, composite: null },
   activeTab: 'analysis',
+  targetDialect: 'postgres', // 'postgres' | 'mssql' | 'oracle'
 };
+
+// Pull the rewrite string for the active (or passed) target; fall back gracefully.
+function rewriteFor(rule, target) {
+  const t = target || state.targetDialect || 'postgres';
+  const field = (TARGETS[t] && TARGETS[t].field) || 'postgres';
+  return rule[field] || rule.postgres || 'No specific guidance — verify manually.';
+}
+
+// Switch the active rewrite target and re-render anywhere that shows target-specific text.
+function setTargetDialect(t) {
+  if (!TARGETS[t]) return;
+  state.targetDialect = t;
+  // Sync segmented control
+  document.querySelectorAll('#target-seg .tseg').forEach(b => {
+    b.classList.toggle('active', b.dataset.target === t);
+  });
+  const hint = document.getElementById('target-hint');
+  if (hint) hint.textContent = TARGETS[t].note;
+  // Re-render everything that shows a target-specific rewrite hint
+  if (state.codeResults) {
+    const results = state.codeResults;
+    if (typeof renderHeatMap === 'function') renderHeatMap(results);
+    if (typeof renderDetails === 'function') renderDetails(results);
+  }
+  if (state.activeTab === 'reports') renderReports();
+  if (typeof renderRuleCatalog === 'function')  renderRuleCatalog();
+  if (typeof showToast === 'function') showToast('Target: ' + TARGETS[t].label);
+}
 
 // ============================================================
 // TAB SWITCHING
@@ -2197,61 +2285,247 @@ function showToast(msg, ms) {
 // ============================================================
 // RULE ENGINE
 // ============================================================
+// Each rule carries rewrite suggestions for three migration targets:
+//   postgres — PostgreSQL (default, most detail)
+//   mssql    — Microsoft SQL Server (closest cousin; many Sybase constructs carry over)
+//   oracle   — Oracle Database (most translation work)
+// If a field is missing, renderers fall back to a "no specific guidance" placeholder.
 const RULES = [
-  // sybase_function
-  { id:'SYB-001', name:'ISNULL function',      category:'sybase_function',  severity:'low',    score:1, pattern:/\bisnull\s*\(/gi,                   postgres:'coalesce(...)',             note:'ISNULL is Sybase-specific. Use ANSI COALESCE for portability.' },
-  { id:'SYB-002', name:'GETDATE function',     category:'sybase_function',  severity:'low',    score:1, pattern:/\bgetdate\s*\(\s*\)/gi,              postgres:'now() or current_timestamp', note:'GETDATE() is Sybase/SQL Server-specific.' },
-  { id:'SYB-003', name:'CONVERT function',     category:'sybase_function',  severity:'medium', score:2, pattern:/\bconvert\s*\(/gi,                   postgres:'cast(... as ...) or to_char(...)', note:'CONVERT syntax differs. Verify data type and style codes.' },
-  { id:'SYB-004', name:'DATEPART function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bdatepart\s*\(/gi,                  postgres:"extract(... from ...)",    note:'DATEPART maps to extract() or date_part() in PostgreSQL.' },
-  { id:'SYB-005', name:'DATEADD function',     category:'sybase_function',  severity:'medium', score:2, pattern:/\bdateadd\s*\(/gi,                   postgres:"timestamp + interval '...'", note:'DATEADD has no direct equivalent; use interval arithmetic.' },
-  { id:'SYB-006', name:'DATEDIFF function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bdatediff\s*\(/gi,                  postgres:'age(...) or subtract timestamps', note:'DATEDIFF semantics differ in PostgreSQL.' },
-  { id:'SYB-007', name:'CHARINDEX function',   category:'sybase_function',  severity:'low',    score:1, pattern:/\bcharindex\s*\(/gi,                 postgres:"position(... in ...) or strpos", note:'CHARINDEX maps to strpos() or position().' },
-  { id:'SYB-008', name:'PATINDEX function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bpatindex\s*\(/gi,                  postgres:'regex functions (~ operator)', note:'PATINDEX has no direct equivalent; use regexp_match or similar.' },
-  { id:'SYB-009', name:'STUFF function',       category:'sybase_function',  severity:'medium', score:2, pattern:/\bstuff\s*\(/gi,                     postgres:'overlay(...)',              note:'STUFF maps to overlay() in PostgreSQL.' },
-  { id:'SYB-010', name:'STR function',         category:'sybase_function',  severity:'low',    score:1, pattern:/\bstr\s*\(/gi,                       postgres:'to_char(...)',              note:'STR() for numeric-to-string; use to_char() in PostgreSQL.' },
-  // sybase_global
-  { id:'SYB-020', name:'@@identity',           category:'sybase_global',    severity:'high',   score:3, pattern:/@@identity\b/gi,                     postgres:"currval(seq) or RETURNING clause", note:'@@IDENTITY is unreliable in triggers. Use RETURNING or sequences.' },
-  { id:'SYB-021', name:'@@rowcount',           category:'sybase_global',    severity:'medium', score:2, pattern:/@@rowcount\b/gi,                     postgres:'GET DIAGNOSTICS n = ROW_COUNT', note:'Use GET DIAGNOSTICS in PL/pgSQL.' },
-  { id:'SYB-022', name:'@@error',              category:'sybase_global',    severity:'high',   score:3, pattern:/@@error\b/gi,                        postgres:'EXCEPTION blocks in PL/pgSQL', note:'Replace @@ERROR-based error handling with proper EXCEPTION handling.' },
-  { id:'SYB-023', name:'@@trancount',          category:'sybase_global',    severity:'high',   score:3, pattern:/@@trancount\b/gi,                    postgres:'No direct equivalent — redesign transaction logic', note:'@@TRANCOUNT has no PostgreSQL equivalent; redesign transaction management.' },
-  { id:'SYB-024', name:'@@servername',         category:'sybase_global',    severity:'low',    score:1, pattern:/@@servername\b/gi,                   postgres:'inet_server_addr()',        note:'@@SERVERNAME has limited equivalent; consider current_database().' },
-  // dynamic_sql
-  { id:'SYB-030', name:'EXEC dynamic SQL',     category:'dynamic_sql',      severity:'high',   score:5, pattern:/\bexec(?:ute)?\s*\(/gi,              postgres:'EXECUTE ... in PL/pgSQL',  note:'Dynamic SQL requires careful rewrite; review all dynamic strings for SQL injection.' },
-  { id:'SYB-031', name:'sp_executesql',        category:'dynamic_sql',      severity:'high',   score:5, pattern:/\bsp_executesql\b/gi,                postgres:'EXECUTE ... USING in PL/pgSQL', note:'sp_executesql parameterized dynamic SQL maps to EXECUTE ... USING.' },
-  // cross_database
-  { id:'SYB-040', name:'Cross-database ref',   category:'cross_database',   severity:'high',   score:3, pattern:/\b\w+\s*\.\.\s*\w+\b/g,             postgres:'FDW or schema consolidation', note:'Sybase three-part db..table references require FDW or schema redesign in PostgreSQL.' },
-  // temp_table
-  { id:'SYB-050', name:'Temp table (#name)',   category:'temp_table',       severity:'medium', score:1, pattern:/#\w+\b/g,                            postgres:'CREATE TEMP TABLE ...',    note:'Local temp tables (#name) map to PostgreSQL TEMP tables or CTEs.' },
-  // locking_hint
-  { id:'SYB-060', name:'HOLDLOCK hint',        category:'locking_hint',     severity:'medium', score:2, pattern:/\bholdlock\b/gi,                     postgres:'SELECT ... FOR UPDATE',    note:'HOLDLOCK is Sybase-specific; use SELECT FOR UPDATE or transaction isolation.' },
-  { id:'SYB-061', name:'NOHOLDLOCK hint',      category:'locking_hint',     severity:'medium', score:2, pattern:/\bnoholdlock\b/gi,                   postgres:'Default PostgreSQL MVCC',  note:'NOHOLDLOCK hint has no PostgreSQL equivalent (MVCC handles this).' },
-  { id:'SYB-062', name:'READPAST hint',        category:'locking_hint',     severity:'high',   score:2, pattern:/\breadpast\b/gi,                     postgres:'SKIP LOCKED',              note:'READPAST maps to SKIP LOCKED in PostgreSQL 9.5+.' },
-  { id:'SYB-063', name:'WITH (NOLOCK) hint',   category:'locking_hint',     severity:'high',   score:2, pattern:/\bwith\s*\(\s*nolock\s*\)/gi,        postgres:'No equivalent; use READ COMMITTED isolation', note:'NOLOCK has no PostgreSQL equivalent; READ COMMITTED isolation is the default.' },
-  // cursor
-  { id:'SYB-070', name:'Cursor declaration',   category:'cursor',           severity:'high',   score:3, pattern:/\bdeclare\s+\w+\s+cursor\b/gi,       postgres:'PL/pgSQL cursors',         note:'Cursor syntax differs significantly; consider set-based rewrites where possible.' },
-  // control_flow
-  { id:'SYB-080', name:'GOTO statement',       category:'control_flow',     severity:'high',   score:3, pattern:/\bgoto\s+\w+/gi,                    postgres:'PL/pgSQL has no GOTO — redesign', note:'GOTO has no equivalent in PL/pgSQL; restructure as loops or exceptions.' },
-  // error_handling
-  { id:'SYB-081', name:'RAISERROR',            category:'error_handling',   severity:'medium', score:1, pattern:/\braiserror\b/gi,                    postgres:'RAISE EXCEPTION',          note:'RAISERROR maps to RAISE EXCEPTION in PL/pgSQL; syntax differs.' },
-  { id:'SYB-082', name:'PRINT statement',      category:'error_handling',   severity:'low',    score:1, pattern:/\bprint\b/gi,                        postgres:'RAISE NOTICE',             note:'PRINT maps to RAISE NOTICE in PL/pgSQL.' },
-  // data_type
-  { id:'SYB-090', name:'MONEY / SMALLMONEY type', category:'data_type',    severity:'medium', score:1, pattern:/\b(?:small)?money\b/gi,              postgres:'numeric(19,4)',            note:'MONEY/SMALLMONEY types map to numeric(19,4) in PostgreSQL.' },
-  { id:'SYB-091', name:'TEXT / IMAGE type',    category:'data_type',        severity:'medium', score:2, pattern:/\b(?:text|image)\b(?!\s*=)/gi,       postgres:'text / bytea',             note:'TEXT/IMAGE are legacy types; use text and bytea in PostgreSQL.' },
-  { id:'SYB-092', name:'TINYINT type',         category:'data_type',        severity:'low',    score:1, pattern:/\btinyint\b/gi,                      postgres:'smallint',                 note:'TINYINT maps to smallint in PostgreSQL.' },
-  { id:'SYB-093', name:'UNITEXT type',         category:'data_type',        severity:'medium', score:1, pattern:/\bunitext\b/gi,                      postgres:'text (UTF-8)',             note:'UNITEXT maps to text in PostgreSQL (UTF-8 native).' },
-  { id:'SYB-094', name:'TIMESTAMP type',       category:'data_type',        severity:'medium', score:2, pattern:/\btimestamp\b/gi,                    postgres:'Redesign (semantics differ)', note:'Sybase TIMESTAMP is a row version, not a datetime; PostgreSQL TIMESTAMP is datetime.' },
-  // syntax
-  { id:'SYB-100', name:'TOP N syntax',         category:'syntax',           severity:'low',    score:1, pattern:/\btop\s+\d+/gi,                      postgres:'LIMIT n',                  note:'TOP N maps to LIMIT n in PostgreSQL.' },
-  { id:'SYB-101', name:'SELECT INTO #temp',    category:'syntax',           severity:'medium', score:2, pattern:/\bselect\s+[\s\S]{0,200}?\binto\s+#\w+/gi, postgres:'CREATE TEMP TABLE ... AS SELECT', note:'SELECT INTO #temp maps to CREATE TEMP TABLE ... AS SELECT.' },
-  { id:'SYB-102', name:'INSERT ... EXEC',      category:'syntax',           severity:'high',   score:3, pattern:/\binsert\s+[\s\S]{0,100}?\bexec\b/gi, postgres:'Rewrite using CTE or table function', note:'INSERT...EXEC has no direct PostgreSQL equivalent; redesign required.' },
-  // identity
-  { id:'SYB-110', name:'IDENTITY column',      category:'identity',         severity:'medium', score:2, pattern:/\bidentity\b/gi,                     postgres:'GENERATED ... AS IDENTITY', note:'IDENTITY column property maps to GENERATED AS IDENTITY or SERIAL in PostgreSQL.' },
-  { id:'SYB-111', name:'SET IDENTITY_INSERT',  category:'identity',         severity:'high',   score:3, pattern:/\bset\s+identity_insert\b/gi,        postgres:'OVERRIDING SYSTEM VALUE',  note:'SET IDENTITY_INSERT maps to INSERT ... OVERRIDING SYSTEM VALUE.' },
-  // ansi_good (zero score)
-  { id:'ANSI-001', name:'COALESCE (ANSI)',     category:'ansi_good',        severity:'low',    score:0, pattern:/\bcoalesce\s*\(/gi,                  postgres:'COALESCE - portable as-is', note:'ANSI-standard; no migration needed.' },
-  { id:'ANSI-002', name:'CASE WHEN (ANSI)',    category:'ansi_good',        severity:'low',    score:0, pattern:/\bcase\b/gi,                         postgres:'CASE WHEN - portable as-is', note:'ANSI-standard; no migration needed.' },
-  { id:'ANSI-003', name:'CAST (ANSI)',         category:'ansi_good',        severity:'low',    score:0, pattern:/\bcast\s*\([\s\S]{0,60}?\bas\b/gi,   postgres:'CAST - portable as-is',    note:'ANSI-standard; no migration needed.' },
-  { id:'ANSI-004', name:'Standard JOINs',     category:'ansi_good',        severity:'low',    score:0, pattern:/\b(?:inner|left|right|full)\s+(?:outer\s+)?join\b/gi, postgres:'Standard JOINs - portable as-is', note:'ANSI-standard join syntax; no migration needed.' },
+  // ---- sybase_function ----
+  { id:'SYB-001', name:'ISNULL function',      category:'sybase_function',  severity:'low',    score:1, pattern:/\bisnull\s*\(/gi,
+    postgres:'coalesce(expr, default)',                         mssql:'ISNULL works natively in SQL Server (identical semantics)',    oracle:'NVL(expr, default)',
+    note:'ISNULL is Sybase/MSSQL specific. PostgreSQL uses COALESCE; Oracle uses NVL.' },
+  { id:'SYB-002', name:'GETDATE function',     category:'sybase_function',  severity:'low',    score:1, pattern:/\bgetdate\s*\(\s*\)/gi,
+    postgres:'now() or current_timestamp',                      mssql:'GETDATE() works natively',                                    oracle:'SYSDATE or SYSTIMESTAMP',
+    note:'GETDATE() is Sybase/MSSQL-specific.' },
+  { id:'SYB-003', name:'CONVERT function',     category:'sybase_function',  severity:'medium', score:2, pattern:/\bconvert\s*\(/gi,
+    postgres:'cast(expr as type) or to_char(expr, fmt)',        mssql:'CONVERT works natively with style codes',                     oracle:'TO_CHAR / TO_DATE / TO_NUMBER or CAST',
+    note:'CONVERT style codes are dialect-specific. Verify each usage.' },
+  { id:'SYB-004', name:'DATEPART function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bdatepart\s*\(/gi,
+    postgres:'extract(part from timestamp)',                    mssql:'DATEPART works natively',                                     oracle:'EXTRACT(part FROM ts) or TO_CHAR(ts, fmt)',
+    note:'DATEPART part codes differ slightly across dialects.' },
+  { id:'SYB-005', name:'DATEADD function',     category:'sybase_function',  severity:'medium', score:2, pattern:/\bdateadd\s*\(/gi,
+    postgres:"ts + interval 'n unit'",                          mssql:'DATEADD works natively',                                      oracle:'ts + NUMTODSINTERVAL(n, "unit") or ts + n (days)',
+    note:'DATEADD has no direct equivalent in ANSI SQL; switch to interval arithmetic.' },
+  { id:'SYB-006', name:'DATEDIFF function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bdatediff\s*\(/gi,
+    postgres:'extract(epoch from t2 - t1) / units',             mssql:'DATEDIFF works natively',                                     oracle:'(t2 - t1) or MONTHS_BETWEEN(t2, t1)',
+    note:'DATEDIFF return units differ. Test boundary cases.' },
+  { id:'SYB-007', name:'CHARINDEX function',   category:'sybase_function',  severity:'low',    score:1, pattern:/\bcharindex\s*\(/gi,
+    postgres:'position(sub in str) or strpos(str, sub)',        mssql:'CHARINDEX works natively',                                    oracle:'INSTR(str, sub)',
+    note:'Different name per dialect; semantics equivalent.' },
+  { id:'SYB-008', name:'PATINDEX function',    category:'sybase_function',  severity:'medium', score:2, pattern:/\bpatindex\s*\(/gi,
+    postgres:'regexp_match / ~ operator',                       mssql:'PATINDEX works natively',                                     oracle:'REGEXP_INSTR(str, pattern)',
+    note:'Pattern syntax differs; PATINDEX uses LIKE wildcards, REGEXP_* uses POSIX.' },
+  { id:'SYB-009', name:'STUFF function',       category:'sybase_function',  severity:'medium', score:2, pattern:/\bstuff\s*\(/gi,
+    postgres:'overlay(str placing repl from start for length)', mssql:'STUFF works natively',                                        oracle:'SUBSTR / CONCAT combination, or REGEXP_REPLACE',
+    note:'STUFF is a concise string-splice; destination dialects need composed functions.' },
+  { id:'SYB-010', name:'STR function',         category:'sybase_function',  severity:'low',    score:1, pattern:/\bstr\s*\(/gi,
+    postgres:'to_char(num, fmt)',                               mssql:'STR works natively',                                          oracle:'TO_CHAR(num, fmt)',
+    note:'STR() formats numeric-to-string in Sybase/MSSQL; both PG and Oracle use TO_CHAR.' },
+  { id:'SYB-011', name:'LEN function',         category:'sybase_function',  severity:'low',    score:1, pattern:/\blen\s*\(/gi,
+    postgres:'length(str) or char_length(str)',                 mssql:'LEN works natively (trims trailing spaces)',                  oracle:'LENGTH(str)',
+    note:'LEN trims trailing spaces in Sybase/MSSQL; LENGTH in PG/Oracle does not. Watch CHAR columns.' },
+  { id:'SYB-012', name:'SUBSTRING function',   category:'sybase_function',  severity:'low',    score:1, pattern:/\bsubstring\s*\(/gi,
+    postgres:'substring(str from start for length)',            mssql:'SUBSTRING works natively',                                    oracle:'SUBSTR(str, start, length)',
+    note:'SUBSTRING is ANSI; Oracle uses SUBSTR and also accepts SUBSTRING. Safe migration.' },
+  { id:'SYB-013', name:'SUSER_NAME / USER_NAME', category:'sybase_function', severity:'low',   score:1, pattern:/\b(?:suser_name|user_name|host_name)\s*\(/gi,
+    postgres:'current_user / session_user / inet_client_addr()',mssql:'SUSER_NAME / USER_NAME work natively',                        oracle:"USER, SYS_CONTEXT('USERENV','...')",
+    note:'Session/user introspection maps to dialect-specific built-ins.' },
+  { id:'SYB-014', name:'DB_NAME / DB_ID',      category:'sybase_function',  severity:'low',    score:1, pattern:/\b(?:db_name|db_id|object_name|object_id)\s*\(/gi,
+    postgres:'current_database(), oid columns in pg_catalog',   mssql:'DB_NAME / DB_ID work natively',                               oracle:"SYS_CONTEXT('USERENV','DB_NAME'), USER_OBJECTS views",
+    note:'Object/database introspection uses catalog views or functions in each dialect.' },
+  { id:'SYB-015', name:'DATALENGTH function',  category:'sybase_function',  severity:'low',    score:1, pattern:/\bdatalength\s*\(/gi,
+    postgres:'octet_length(str) or pg_column_size(col)',        mssql:'DATALENGTH works natively',                                   oracle:'LENGTHB(str) for byte length',
+    note:'Byte length vs character length differs. LENGTH/LEN may be what you actually need.' },
+  { id:'SYB-016', name:'REPLICATE / SPACE',    category:'sybase_function',  severity:'low',    score:1, pattern:/\b(?:replicate|space)\s*\(/gi,
+    postgres:'repeat(str, n) / repeat(\' \', n)',               mssql:'REPLICATE / SPACE work natively',                             oracle:'RPAD(str, n, pattern) / RPAD(\' \', n)',
+    note:'String repetition helpers differ by name per dialect.' },
+  { id:'SYB-017', name:'REVERSE function',     category:'sybase_function',  severity:'low',    score:1, pattern:/\breverse\s*\(/gi,
+    postgres:'reverse(str) (available in PG)',                  mssql:'REVERSE works natively',                                      oracle:'REVERSE(str) in some versions; workaround with CONNECT BY if missing',
+    note:'Reverse() is widely available but edition-dependent on legacy Oracle.' },
+
+  // ---- sybase_global ----
+  { id:'SYB-020', name:'@@identity',           category:'sybase_global',    severity:'high',   score:3, pattern:/@@identity\b/gi,
+    postgres:'currval(sequence) or INSERT ... RETURNING',       mssql:'@@IDENTITY works but SCOPE_IDENTITY() is safer',              oracle:'sequence.CURRVAL or RETURNING ... INTO',
+    note:'@@IDENTITY is unreliable under triggers. Prefer scope-local return.' },
+  { id:'SYB-021', name:'@@rowcount',           category:'sybase_global',    severity:'medium', score:2, pattern:/@@rowcount\b/gi,
+    postgres:'GET DIAGNOSTICS n = ROW_COUNT',                   mssql:'@@ROWCOUNT works natively',                                   oracle:'SQL%ROWCOUNT',
+    note:'Statement-level affected-row count. Dialect-specific syntax.' },
+  { id:'SYB-022', name:'@@error',              category:'sybase_global',    severity:'high',   score:3, pattern:/@@error\b/gi,
+    postgres:'EXCEPTION block (BEGIN ... EXCEPTION WHEN ...)',  mssql:'TRY / CATCH is preferred (2005+); @@ERROR still works',      oracle:'EXCEPTION block (BEGIN ... EXCEPTION WHEN ... THEN)',
+    note:'@@ERROR-based polling is an anti-pattern. Rewrite to structured exception handling.' },
+  { id:'SYB-023', name:'@@trancount',          category:'sybase_global',    severity:'high',   score:3, pattern:/@@trancount\b/gi,
+    postgres:'No direct equivalent — redesign transaction logic', mssql:'@@TRANCOUNT works natively',                                oracle:'No direct equivalent — use SAVEPOINT / autonomous txn',
+    note:'PostgreSQL and Oracle lack nested transactions; use savepoints instead.' },
+  { id:'SYB-024', name:'@@servername',         category:'sybase_global',    severity:'low',    score:1, pattern:/@@servername\b/gi,
+    postgres:"inet_server_addr(), current_setting('server_version')", mssql:'@@SERVERNAME works natively',                           oracle:"SYS_CONTEXT('USERENV','SERVER_HOST')",
+    note:'Server identity introspection.' },
+  { id:'SYB-025', name:'@@version / @@spid',   category:'sybase_global',    severity:'low',    score:1, pattern:/@@(?:version|spid|options|connections|pack_received|cpu_busy)\b/gi,
+    postgres:"version(), pg_backend_pid(), current_setting('...')", mssql:'@@VERSION / @@SPID work natively',                         oracle:"SYS_CONTEXT('USERENV','SESSIONID'), V$ views",
+    note:'Session / server introspection globals vary by dialect.' },
+
+  // ---- dynamic_sql ----
+  { id:'SYB-030', name:'EXEC dynamic SQL',     category:'dynamic_sql',      severity:'high',   score:5, pattern:/\bexec(?:ute)?\s*\(/gi,
+    postgres:'EXECUTE sql_str [USING params] in PL/pgSQL',      mssql:'EXEC(sql) or sp_executesql (parameterized)',                  oracle:"EXECUTE IMMEDIATE sql_str USING params",
+    note:'Dynamic SQL must be audited for injection in every target.' },
+  { id:'SYB-031', name:'sp_executesql',        category:'dynamic_sql',      severity:'high',   score:5, pattern:/\bsp_executesql\b/gi,
+    postgres:'EXECUTE ... USING in PL/pgSQL',                   mssql:'sp_executesql works natively',                                oracle:'EXECUTE IMMEDIATE ... USING',
+    note:'Parameterized dynamic SQL; preserves bind parameters on all targets.' },
+
+  // ---- cross_database ----
+  { id:'SYB-040', name:'Cross-database ref (db..table)', category:'cross_database', severity:'high', score:3, pattern:/\b\w+\s*\.\.\s*\w+\b/g,
+    postgres:'postgres_fdw (foreign data wrapper) or schema consolidation', mssql:'Three-part refs work natively (db.schema.table)',   oracle:'dblink / schema consolidation (Oracle treats schemas as users)',
+    note:'Sybase three-part refs (db..table) rarely port cleanly; consolidate or use FDW/dblink.' },
+
+  // ---- temp_table ----
+  { id:'SYB-050', name:'Temp table (#name)',   category:'temp_table',       severity:'medium', score:1, pattern:/#\w+\b/g,
+    postgres:'CREATE TEMP TABLE ... or WITH cte AS (...)',      mssql:'#temp tables work natively',                                  oracle:'GLOBAL TEMPORARY TABLE (on commit preserve/delete rows)',
+    note:'Local #temp semantics differ; Oracle temp tables are global with session scope.' },
+  { id:'SYB-051', name:'Global temp table (##name)', category:'temp_table', severity:'high',   score:2, pattern:/##\w+\b/g,
+    postgres:'CREATE TABLE in a shared schema + cleanup',       mssql:'##temp tables work natively',                                 oracle:'GLOBAL TEMPORARY TABLE (shared by design)',
+    note:'Global temp tables are Sybase/MSSQL-specific. Design shared staging instead.' },
+
+  // ---- locking_hint ----
+  { id:'SYB-060', name:'HOLDLOCK hint',        category:'locking_hint',     severity:'medium', score:2, pattern:/\bholdlock\b/gi,
+    postgres:'SELECT ... FOR UPDATE or SERIALIZABLE isolation', mssql:'HOLDLOCK works natively',                                     oracle:'SELECT ... FOR UPDATE or SERIALIZABLE',
+    note:'HOLDLOCK escalates to serializable on the referenced table.' },
+  { id:'SYB-061', name:'NOHOLDLOCK hint',      category:'locking_hint',     severity:'medium', score:2, pattern:/\bnoholdlock\b/gi,
+    postgres:'Default MVCC — hint is a no-op',                  mssql:'NOHOLDLOCK works but is usually redundant',                   oracle:'Default MVCC — hint is a no-op',
+    note:'Modern MVCC engines do not need this hint.' },
+  { id:'SYB-062', name:'READPAST hint',        category:'locking_hint',     severity:'high',   score:2, pattern:/\breadpast\b/gi,
+    postgres:'FOR UPDATE SKIP LOCKED (PG 9.5+)',                mssql:'READPAST works natively',                                     oracle:'FOR UPDATE SKIP LOCKED (Oracle 11g+)',
+    note:'Queue pattern — skip rows locked by other sessions.' },
+  { id:'SYB-063', name:'WITH (NOLOCK) hint',   category:'locking_hint',     severity:'high',   score:2, pattern:/\bwith\s*\(\s*nolock\s*\)/gi,
+    postgres:'No equivalent; READ COMMITTED is default',        mssql:'NOLOCK works but is often a code smell',                      oracle:'No equivalent; READ COMMITTED is default',
+    note:'NOLOCK returns dirty reads. Modern dialects handle concurrency with MVCC.' },
+  { id:'SYB-064', name:'Row/page/table locking hints', category:'locking_hint', severity:'medium', score:2, pattern:/\b(?:paglock|rowlock|tablock|tablockx|updlock|xlock)\b/gi,
+    postgres:'LOCK TABLE ... or FOR UPDATE modes',              mssql:'All of these work natively as table hints',                   oracle:'LOCK TABLE ... IN mode MODE',
+    note:'Granularity hints (PAGLOCK/ROWLOCK/TABLOCK/UPDLOCK/XLOCK) are Sybase/MSSQL style.' },
+
+  // ---- cursor ----
+  { id:'SYB-070', name:'Cursor declaration',   category:'cursor',           severity:'high',   score:3, pattern:/\bdeclare\s+\w+\s+cursor\b/gi,
+    postgres:'PL/pgSQL cursors (OPEN / FETCH / CLOSE)',         mssql:'DECLARE CURSOR works natively (prefer set-based)',            oracle:'PL/SQL cursors (OPEN / FETCH / CLOSE) or implicit FOR loop',
+    note:'Cursor logic is usually rewriteable as a set-based query — a worthwhile modernisation.' },
+
+  // ---- control_flow ----
+  { id:'SYB-080', name:'GOTO statement',       category:'control_flow',     severity:'high',   score:3, pattern:/\bgoto\s+\w+/gi,
+    postgres:'No GOTO in PL/pgSQL — restructure as loops/exceptions', mssql:'GOTO works natively',                                  oracle:'GOTO works in PL/SQL (discouraged)',
+    note:'GOTO is a legacy control construct. Restructure regardless of target.' },
+  { id:'SYB-083', name:'WHILE / BREAK / CONTINUE loop', category:'control_flow', severity:'low', score:1, pattern:/\bwhile\s+\S[\s\S]{0,80}?\bbegin\b/gi,
+    postgres:'WHILE condition LOOP ... END LOOP; (PL/pgSQL)',   mssql:'WHILE ... BEGIN ... END works natively',                      oracle:'WHILE ... LOOP ... END LOOP; (PL/SQL)',
+    note:'Loop body syntax differs. BREAK/CONTINUE → EXIT/CONTINUE in PG/Oracle.' },
+  { id:'SYB-084', name:'IF EXISTS / IF NOT EXISTS', category:'control_flow', severity:'low',   score:1, pattern:/\bif\s+(?:not\s+)?exists\s*\(/gi,
+    postgres:'PERFORM / IF EXISTS (SELECT 1 FROM ...) THEN',    mssql:'IF EXISTS works natively',                                    oracle:"DECLARE n NUMBER; BEGIN SELECT COUNT(*) INTO n FROM ...; IF n > 0 THEN ...",
+    note:'Existence check idiom. Oracle PL/SQL has no standalone IF EXISTS.' },
+  { id:'SYB-085', name:'RETURN n (status code)', category:'control_flow',   severity:'medium', score:1, pattern:/\breturn\s+\d+/gi,
+    postgres:'PL/pgSQL functions use RETURN expr; not status codes', mssql:'RETURN n works natively for procedures',                 oracle:'Procedures use OUT params; functions use RETURN expr',
+    note:'Numeric RETURN status codes are a Sybase/MSSQL proc idiom — model as OUT params elsewhere.' },
+
+  // ---- error_handling ----
+  { id:'SYB-081', name:'RAISERROR',            category:'error_handling',   severity:'medium', score:1, pattern:/\braiserror\b/gi,
+    postgres:"RAISE EXCEPTION 'msg' USING ERRCODE = '...'",     mssql:'RAISERROR works; THROW is preferred (2012+)',                 oracle:"RAISE_APPLICATION_ERROR(-20000 + n, 'msg')",
+    note:'Error-raising syntax varies. Map severity codes carefully.' },
+  { id:'SYB-082', name:'PRINT statement',      category:'error_handling',   severity:'low',    score:1, pattern:/\bprint\b/gi,
+    postgres:'RAISE NOTICE \'msg\'',                            mssql:'PRINT works natively',                                        oracle:'DBMS_OUTPUT.PUT_LINE(\'msg\')',
+    note:'Diagnostic output channel.' },
+  { id:'SYB-086', name:'TRY / CATCH block',    category:'error_handling',   severity:'medium', score:1, pattern:/\bbegin\s+try\b|\bend\s+try\b|\bbegin\s+catch\b/gi,
+    postgres:'BEGIN ... EXCEPTION WHEN ... THEN ... END',       mssql:'TRY / CATCH works natively',                                 oracle:'BEGIN ... EXCEPTION WHEN ... THEN ... END',
+    note:'MSSQL TRY/CATCH style. PG and Oracle use the ANSI exception block.' },
+
+  // ---- data_type ----
+  { id:'SYB-090', name:'MONEY / SMALLMONEY type', category:'data_type',     severity:'medium', score:1, pattern:/\b(?:small)?money\b/gi,
+    postgres:'numeric(19,4)',                                   mssql:'MONEY / SMALLMONEY work natively',                            oracle:'NUMBER(19,4)',
+    note:'MONEY fixed-point types are non-portable to PG/Oracle.' },
+  { id:'SYB-091', name:'TEXT / IMAGE type',    category:'data_type',        severity:'medium', score:2, pattern:/\b(?:text|image)\b(?!\s*=)/gi,
+    postgres:'text / bytea',                                    mssql:'TEXT / IMAGE deprecated — use VARCHAR(MAX) / VARBINARY(MAX)', oracle:'CLOB / BLOB',
+    note:'Legacy LOB types — every dialect has replaced them.' },
+  { id:'SYB-092', name:'TINYINT type',         category:'data_type',        severity:'low',    score:1, pattern:/\btinyint\b/gi,
+    postgres:'smallint',                                        mssql:'TINYINT works natively (0-255)',                              oracle:'NUMBER(3)',
+    note:'Only MSSQL has a native TINYINT.' },
+  { id:'SYB-093', name:'UNITEXT / UNIVARCHAR type', category:'data_type',   severity:'medium', score:1, pattern:/\b(?:unitext|univarchar|unichar)\b/gi,
+    postgres:'text (UTF-8 native)',                             mssql:'NTEXT / NVARCHAR (NCHAR for fixed-width)',                    oracle:'NCLOB / NVARCHAR2 / NCHAR',
+    note:'Unicode type names differ widely.' },
+  { id:'SYB-094', name:'TIMESTAMP type (row version)', category:'data_type', severity:'high',  score:2, pattern:/\btimestamp\b/gi,
+    postgres:'Redesign — PG TIMESTAMP is a datetime, not a row version. Use xmin system column or updated_at trigger.', mssql:'ROWVERSION (renamed from TIMESTAMP)',                    oracle:'ORA_ROWSCN pseudo-column or explicit version column',
+    note:'Sybase TIMESTAMP is a row-version token. PG/Oracle TIMESTAMP is a datetime — DO NOT map directly.' },
+  { id:'SYB-095', name:'DATETIME / SMALLDATETIME', category:'data_type',    severity:'low',    score:1, pattern:/\b(?:small)?datetime\b(?!2)/gi,
+    postgres:'timestamp(3) (datetime) or timestamp(0) (smalldatetime)', mssql:'DATETIME / SMALLDATETIME work; DATETIME2 is preferred', oracle:'DATE (no sub-second) or TIMESTAMP',
+    note:'Precision and range differ across dialects; pick the closest match.' },
+  { id:'SYB-096', name:'N-prefixed unicode types', category:'data_type',    severity:'low',    score:1, pattern:/\bn(?:char|varchar|text)\b/gi,
+    postgres:'text / varchar (UTF-8 native)',                   mssql:'NCHAR / NVARCHAR / NTEXT work natively',                      oracle:'NCHAR / NVARCHAR2 / NCLOB',
+    note:'PG is natively UTF-8 and needs no N-prefix types.' },
+
+  // ---- syntax ----
+  { id:'SYB-100', name:'TOP N syntax',         category:'syntax',           severity:'low',    score:1, pattern:/\btop\s+\d+/gi,
+    postgres:'LIMIT n (and OFFSET for paging)',                 mssql:'TOP n works natively',                                        oracle:'FETCH FIRST n ROWS ONLY (12c+) or WHERE ROWNUM <= n',
+    note:'Row-limiting clause differs per dialect.' },
+  { id:'SYB-101', name:'SELECT INTO #temp',    category:'syntax',           severity:'medium', score:2, pattern:/\bselect\s+[\s\S]{0,200}?\binto\s+#\w+/gi,
+    postgres:'CREATE TEMP TABLE name AS SELECT ...',            mssql:'SELECT ... INTO #temp works natively',                        oracle:'CREATE GLOBAL TEMPORARY TABLE ... AS SELECT ...',
+    note:'Materialising into a new temp table.' },
+  { id:'SYB-102', name:'INSERT ... EXEC',      category:'syntax',           severity:'high',   score:3, pattern:/\binsert\s+[\s\S]{0,100}?\bexec\b/gi,
+    postgres:'Rewrite using CTE, table function, or RETURNING', mssql:'INSERT ... EXEC works natively',                              oracle:'Rewrite as pipelined table function or collection',
+    note:'Populating from a proc result set is Sybase/MSSQL-specific.' },
+  { id:'SYB-103', name:'Old-style outer join (*= / =*)', category:'syntax', severity:'high',   score:4, pattern:/[*=]\s*=\s*[*=]|\S\s*\*=\s*\S|\S\s*=\*\s*\S/g,
+    postgres:'LEFT / RIGHT OUTER JOIN (ANSI)',                  mssql:'*= / =* removed in 2012+ — use ANSI joins',                   oracle:'(+) operator or ANSI JOIN',
+    note:'Pre-ANSI Sybase outer joins. Rewrite to LEFT/RIGHT JOIN on every target.' },
+  { id:'SYB-104', name:'SET ROWCOUNT n',       category:'syntax',           severity:'medium', score:2, pattern:/\bset\s+rowcount\s+\d+/gi,
+    postgres:'Use LIMIT on individual statements',              mssql:'SET ROWCOUNT deprecated for DML (2005+) — use TOP',          oracle:'Use FETCH FIRST on individual statements',
+    note:'Session-level row cap is deprecated everywhere. Scope the limit per-statement.' },
+  { id:'SYB-105', name:'COMPUTE / COMPUTE BY', category:'syntax',           severity:'high',   score:3, pattern:/\bcompute(?:\s+by)?\b/gi,
+    postgres:'ROLLUP / CUBE / GROUPING SETS',                   mssql:'COMPUTE removed in 2012+ — use ROLLUP/CUBE',                  oracle:'ROLLUP / CUBE / GROUPING SETS',
+    note:'Legacy reporting clause. Modern dialects use GROUPING SETS.' },
+  { id:'SYB-106', name:'USE <database>',       category:'syntax',           severity:'medium', score:1, pattern:/^\s*use\s+\w+/gim,
+    postgres:'\\c dbname (psql) or reconnect — no in-SQL USE',  mssql:'USE db works natively',                                      oracle:'ALTER SESSION SET CURRENT_SCHEMA = ...',
+    note:'Database-switching statement has no PG equivalent; model schemas instead.' },
+
+  // ---- identity ----
+  { id:'SYB-110', name:'IDENTITY column',      category:'identity',         severity:'medium', score:2, pattern:/\bidentity\b/gi,
+    postgres:'GENERATED BY DEFAULT AS IDENTITY or SERIAL',      mssql:'IDENTITY(seed,increment) works natively',                     oracle:'GENERATED AS IDENTITY (12c+) or SEQUENCE + trigger',
+    note:'Auto-increment syntax differs; semantics are similar.' },
+  { id:'SYB-111', name:'SET IDENTITY_INSERT',  category:'identity',         severity:'high',   score:3, pattern:/\bset\s+identity_insert\b/gi,
+    postgres:'OVERRIDING SYSTEM VALUE on the INSERT',           mssql:'SET IDENTITY_INSERT tablename ON/OFF works natively',         oracle:'No toggle — drop/disable trigger or re-key sequence',
+    note:'Explicit identity overrides are dialect-specific.' },
+
+  // ---- trigger patterns ----
+  { id:'SYB-120', name:'inserted / deleted pseudo-tables', category:'trigger', severity:'medium', score:2, pattern:/\b(?:inserted|deleted)\b/gi,
+    postgres:'NEW and OLD row variables in trigger function',   mssql:'inserted / deleted pseudo-tables work natively',              oracle:':NEW and :OLD row variables in trigger body',
+    note:'Row-access in triggers uses per-row records in PG/Oracle vs set pseudo-tables in Sybase/MSSQL.' },
+  { id:'SYB-121', name:'INSTEAD OF trigger',   category:'trigger',           severity:'medium', score:2, pattern:/\binstead\s+of\s+(?:insert|update|delete)/gi,
+    postgres:'INSTEAD OF trigger on views works natively',      mssql:'INSTEAD OF trigger works natively',                           oracle:'INSTEAD OF trigger on views works natively',
+    note:'All three dialects support INSTEAD OF on views.' },
+
+  // ---- transactions ----
+  { id:'SYB-130', name:'BEGIN TRAN / COMMIT TRAN', category:'transaction',  severity:'low',    score:1, pattern:/\b(?:begin|commit|rollback|save)\s+tran(?:saction)?\b/gi,
+    postgres:'BEGIN / COMMIT / ROLLBACK / SAVEPOINT',           mssql:'BEGIN TRAN / COMMIT TRAN work natively',                      oracle:'COMMIT / ROLLBACK / SAVEPOINT (no BEGIN — implicit)',
+    note:'Transaction control syntax differs slightly.' },
+  { id:'SYB-131', name:'Named SAVE TRAN',      category:'transaction',      severity:'medium', score:2, pattern:/\bsave\s+tran(?:saction)?\s+\w+/gi,
+    postgres:'SAVEPOINT name (standard)',                       mssql:'SAVE TRAN name works natively',                              oracle:'SAVEPOINT name (standard)',
+    note:'Named savepoint inside a transaction. Syntax differs.' },
+
+  // ---- schema objects ----
+  { id:'SYB-140', name:'sp_addtype / CREATE DEFAULT / CREATE RULE', category:'schema_legacy', severity:'high', score:3, pattern:/\b(?:sp_addtype|create\s+default|create\s+rule|sp_bindrule|sp_bindefault)\b/gi,
+    postgres:'CREATE DOMAIN + CHECK constraints',               mssql:'Legacy — deprecated; use CHECK constraints',                  oracle:'CREATE DOMAIN (not supported) — use CHECK constraints',
+    note:'User-defined types and bindings are deprecated Sybase patterns. Reimplement with CHECK constraints or domains.' },
+  { id:'SYB-141', name:'sp_rename',            category:'schema_legacy',    severity:'medium', score:1, pattern:/\bsp_rename\b/gi,
+    postgres:'ALTER TABLE ... RENAME TO / RENAME COLUMN',       mssql:'sp_rename works natively',                                    oracle:'ALTER TABLE ... RENAME TO / RENAME COLUMN',
+    note:'Object rename — use ALTER syntax in PG/Oracle.' },
+
+  // ---- ansi_good (zero score) ----
+  { id:'ANSI-001', name:'COALESCE (ANSI)',     category:'ansi_good',        severity:'low',    score:0, pattern:/\bcoalesce\s*\(/gi,
+    postgres:'Portable as-is',                                  mssql:'Portable as-is',                                              oracle:'Portable as-is',
+    note:'ANSI SQL — no migration needed.' },
+  { id:'ANSI-002', name:'CASE WHEN (ANSI)',    category:'ansi_good',        severity:'low',    score:0, pattern:/\bcase\b/gi,
+    postgres:'Portable as-is',                                  mssql:'Portable as-is',                                              oracle:'Portable as-is',
+    note:'ANSI SQL — no migration needed.' },
+  { id:'ANSI-003', name:'CAST (ANSI)',         category:'ansi_good',        severity:'low',    score:0, pattern:/\bcast\s*\([\s\S]{0,60}?\bas\b/gi,
+    postgres:'Portable as-is',                                  mssql:'Portable as-is',                                              oracle:'Portable as-is',
+    note:'ANSI SQL — no migration needed.' },
+  { id:'ANSI-004', name:'Standard JOINs',      category:'ansi_good',        severity:'low',    score:0, pattern:/\b(?:inner|left|right|full)\s+(?:outer\s+)?join\b/gi,
+    postgres:'Portable as-is',                                  mssql:'Portable as-is',                                              oracle:'Portable as-is',
+    note:'ANSI SQL — no migration needed.' },
+  { id:'ANSI-005', name:'Window functions',    category:'ansi_good',        severity:'low',    score:0, pattern:/\b(?:row_number|rank|dense_rank|ntile|lead|lag)\s*\(/gi,
+    postgres:'Portable as-is (window functions)',               mssql:'Portable as-is (2005+)',                                      oracle:'Portable as-is',
+    note:'SQL:2003 window functions — portable across all three targets.' },
 ];
 
 const CATEGORY_COLORS = {
@@ -2267,6 +2541,9 @@ const CATEGORY_COLORS = {
   data_type:       '#EDE7F6',
   syntax:          '#F9FBE7',
   identity:        '#FCE4EC',
+  trigger:         '#F1F8E9',
+  transaction:     '#E1F5FE',
+  schema_legacy:   '#FFF8E1',
   ansi_good:       '#E8F5E9',
 };
 
@@ -2283,7 +2560,17 @@ const CATEGORY_LABELS = {
   data_type:       'Data Type',
   syntax:          'Syntax',
   identity:        'Identity',
+  trigger:         'Trigger',
+  transaction:     'Transaction',
+  schema_legacy:   'Schema (legacy DDL)',
   ansi_good:       'ANSI (Portable)',
+};
+
+// Known migration targets. Referenced by state.targetDialect and rule.postgres/mssql/oracle.
+const TARGETS = {
+  postgres: { label: 'PostgreSQL', short: 'PG',    field: 'postgres', note: "Default target. Every rule carries a PostgreSQL rewrite hint." },
+  mssql:    { label: 'SQL Server', short: 'MSSQL', field: 'mssql',    note: "Closest cousin to Sybase — many constructs carry over unchanged." },
+  oracle:   { label: 'Oracle',     short: 'ORA',   field: 'oracle',   note: "Most translation work — PL/SQL semantics, sequence/trigger patterns, savepoints." },
 };
 
 // ============================================================
@@ -2544,7 +2831,7 @@ function buildAnnotatedHTML(src, allRanges) {
       `<span class="hl-tooltip">` +
       `<span class="tt-cat">${escapeHtml(rule.id)} — ${escapeHtml(CATEGORY_LABELS[rule.category] || rule.category)}</span>` +
       `<span class="tt-note">${escapeHtml(rule.note)}</span>` +
-      `<span class="tt-pg">PG: ${escapeHtml(rule.postgres)}</span>` +
+      `<span class="tt-pg">${TARGETS[state.targetDialect].short}: ${escapeHtml(rewriteFor(rule))}</span>` +
       `</span>`;
     html += `<span class="hl hl-${rule.category}" title="${escapeHtml(rule.note)}">${escapeHtml(matchText)}${tooltipHtml}</span>`;
     pos = r.end;
@@ -2874,7 +3161,7 @@ function buildSummaryTab(r) {
     for (const m of items) {
       html += `<div class="cat-note" style="margin-bottom:3px">
         <strong>${escapeHtml(m.rule.id)}</strong> ${escapeHtml(m.rule.name)} (${m.matches.length}x) —
-        <span class="cat-pg">${escapeHtml(m.rule.postgres)}</span>
+        <span class="cat-pg">${TARGETS[state.targetDialect].short}: ${escapeHtml(rewriteFor(m.rule))}</span>
         <span class="cat-note"> — ${escapeHtml(m.rule.note)}</span>
       </div>`;
     }
@@ -3098,7 +3385,7 @@ function buildHtmlDetails(results) {
     const issuesHtml = r.matchesByRule.length === 0
       ? '<p style="color:#666;font-style:italic">No migration issues detected.</p>'
       : r.matchesByRule.map(m =>
-          `<div class="issue-row"><span class="issue-id">${escapeHtml(m.rule.id)}</span> ${escapeHtml(m.rule.name)} — ${m.matches.length}x — PG: <em>${escapeHtml(m.rule.postgres)}</em> — ${escapeHtml(m.rule.note)}</div>`
+          `<div class="issue-row"><span class="issue-id">${escapeHtml(m.rule.id)}</span> ${escapeHtml(m.rule.name)} — ${m.matches.length}x — ${TARGETS[state.targetDialect].short}: <em>${escapeHtml(rewriteFor(m.rule))}</em> — ${escapeHtml(m.rule.note)}</div>`
         ).join('');
     const annotated = buildAnnotatedHTML(r.source, r.allRanges);
     return `<div class="obj-block">
@@ -3156,7 +3443,7 @@ function downloadMarkdown() {
       md += `| Rule | Name | Count | PostgreSQL Equivalent | Note |\n`;
       md += `|---|---|---|---|---|\n`;
       for (const m of r.matchesByRule) {
-        md += `| ${m.rule.id} | ${mdEsc(m.rule.name)} | ${m.matches.length} | \`${mdEsc(m.rule.postgres)}\` | ${mdEsc(m.rule.note)} |\n`;
+        md += `| ${m.rule.id} | ${mdEsc(m.rule.name)} | ${m.matches.length} | \`${mdEsc(rewriteFor(m.rule))}\` | ${mdEsc(m.rule.note)} |\n`;
       }
       md += `\n`;
     }
@@ -4136,6 +4423,7 @@ function copySQLToClipboard(btnEl) {
 function renderRuleCatalog() {
   const container = document.getElementById('rule-catalog');
   if (!container) return;
+  const esc = (s) => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   const headerRow = `<tr>
     <th>ID</th>
@@ -4143,32 +4431,32 @@ function renderRuleCatalog() {
     <th>Category</th>
     <th>Severity</th>
     <th>Score</th>
-    <th>PostgreSQL equivalent</th>
+    <th style="min-width:180px">PostgreSQL</th>
+    <th style="min-width:180px">SQL Server</th>
+    <th style="min-width:180px">Oracle</th>
   </tr>`;
 
   const bodyRows = RULES.map(r => {
     const catLabel = (CATEGORY_LABELS && CATEGORY_LABELS[r.category]) ? CATEGORY_LABELS[r.category] : r.category;
-    const idEsc       = (r.id       || '').replace(/</g, '&lt;');
-    const nameEsc     = (r.name     || '').replace(/</g, '&lt;');
-    const catEsc      = catLabel.replace(/</g, '&lt;');
-    const severityEsc = (r.severity || '').replace(/</g, '&lt;');
-    const postgresEsc = (r.postgres || '').replace(/</g, '&lt;');
     return `<tr>
-    <td class="rc-id">${idEsc}</td>
-    <td>${nameEsc}</td>
-    <td class="rc-cat">${catEsc}</td>
-    <td>${severityEsc}</td>
+    <td class="rc-id">${esc(r.id)}</td>
+    <td>${esc(r.name)}</td>
+    <td class="rc-cat">${esc(catLabel)}</td>
+    <td>${esc(r.severity)}</td>
     <td>${r.score}</td>
-    <td>${postgresEsc}</td>
+    <td>${esc(r.postgres)}</td>
+    <td>${esc(r.mssql)}</td>
+    <td>${esc(r.oracle)}</td>
   </tr>`;
   }).join('\n');
 
-  container.innerHTML = `<table>
+  container.innerHTML = `<div style="overflow-x:auto"><table>
   <thead>${headerRow}</thead>
   <tbody>
 ${bodyRows}
   </tbody>
-</table>`;
+</table></div>
+<div style="margin-top:10px;font-size:0.8rem;color:var(--text-muted)">${RULES.length} rules total. Target-dialect selector on the Analysis tab switches which rewrite hint is shown in the heat map tooltips and reports.</div>`;
 }
 
 // ============================================================
@@ -4279,7 +4567,7 @@ function buildSlides() {
   // Slide 1: Cover
   const s1 = `
     <h3>01 · Cover</h3>
-    <div class="slide-hero">Sybase → PostgreSQL<br>Migration Evaluation</div>
+    <div class="slide-hero">Sybase → ${TARGETS[state.targetDialect].label}<br>Migration Evaluation</div>
     <div class="slide-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px">
         <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Client / Organization</div><div style="font-size:1rem;margin-top:4px">${client}</div></div>
@@ -4584,7 +4872,7 @@ function buildTopDelayFactors() {
       factors.push({
         factor: `High ${CATEGORY_LABELS[cat] || cat} usage (${cnt} matches)`,
         severity: cnt >= 10 ? 'red' : 'amber',
-        mitigation: `Review all ${CATEGORY_LABELS[cat] || cat} usages and map to PostgreSQL equivalents.`,
+        mitigation: `Review all ${CATEGORY_LABELS[cat] || cat} usages and map to ${TARGETS[state.targetDialect].label} equivalents.`,
       });
     }
   }
@@ -4808,7 +5096,7 @@ function _headerBlock(title, subtitle) {
   return `<div class="page">
 <div class="doc-header">
   <div class="dh-title">Sybase &middot; Migration Evaluator</div>
-  <div class="dh-sub">Migration evaluation &middot; Sybase &rarr; PostgreSQL &middot; regex + structured checklist &middot; offline</div>
+  <div class="dh-sub">Migration evaluation &middot; Sybase &rarr; ${TARGETS[state.targetDialect].label} &middot; regex + structured checklist &middot; offline</div>
   <div class="dh-meta">
     <span>confidence <b>~${conf}%</b><span class="conf-help" title="${confTitle}">?</span></span>
     <span>regex-based triage</span>
@@ -4968,7 +5256,7 @@ ${_delayFactorsHTML(factors)}
   <div class="kv-chip"><div class="k">Total (person-months)</div><div class="v">${effort.central} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">PM</span></div></div>
   <div class="kv-chip"><div class="k">Calendar (2 FTE)</div><div class="v">~${effort.cal} <span style="font-size:0.7rem;color:#8B949E;font-weight:400">mo</span></div></div>
 </div>
-<div class="conf-note"><strong>About the ~${conf}% confidence number.</strong> This band reflects how well the 40-rule regex engine covers common Sybase T-SQL constructs (identity / text&middot;image / money / cursors / dynamic SQL / cross-DB refs / sp_* calls / GOTO / <code>@@</code> globals). It is the tool's self-assessed triage fidelity, not a statistical guarantee.
+<div class="conf-note"><strong>About the ~${conf}% confidence number.</strong> This band reflects how well the 60+ rule regex engine covers common Sybase T-SQL constructs (identity / text&middot;image / money / cursors / dynamic SQL / cross-DB refs / sp_* calls / GOTO / <code>@@</code> globals). It is the tool's self-assessed triage fidelity, not a statistical guarantee.
 <div class="conf-sub"><strong>What lowers it:</strong> malformed or minified SQL, non-Sybase dialects (Oracle / SQL Server / MySQL), constructs outside the rule set (Replication Server topology, custom extended stored procedures, Sybase IQ internals), or a partially-answered checklist. Results are a triage aid &mdash; not a substitute for on-site review or manual code inspection. No data leaves your browser.</div></div>
 </div>
 <div class="lim-footer">Generated by Sybase Migration Evaluator &middot; ~${conf}% confidence &middot; Regex-based triage aid, not an on-site audit &middot; Checklist is not exhaustive &middot; Questions or feedback: <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a></div>
@@ -4989,7 +5277,7 @@ function downloadTechReportMD() {
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 
   let md = `# Sybase · Migration Evaluator — Technical Migration Report\n\n`;
-  md += `*Migration evaluation · Sybase → PostgreSQL · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
+  md += `*Migration evaluation · Sybase → ${TARGETS[state.targetDialect].label} · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
   md += `> Regex-based triage. Not a substitute for reading the code or engaging the DBA. Checklist not exhaustive. Feedback: darshan.meel@gmail.com\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
   md += `**Client:** ${mdEsc(client)}  \n`;
@@ -5078,7 +5366,7 @@ function downloadExecBriefHTML() {
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation — Executive Summary</title>
 <style>${_exportCSSBase()}</style></head><body>
-${_headerBlock('Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary')}
+${_headerBlock('Executive Summary', `Sybase → ${TARGETS[state.targetDialect].label} Platform Risk Summary`)}
 <div style="background:linear-gradient(135deg,${ragColor} 0%,${ragColor}DD 100%);color:#fff;border-radius:6px;padding:22px 28px;margin:8px 0 28px;box-shadow:0 4px 12px rgba(0,0,0,0.08);position:relative;overflow:hidden">
   <div style="position:absolute;top:0;right:0;width:140px;height:100%;background:radial-gradient(circle at 100% 50%,rgba(255,255,255,0.08) 0%,transparent 70%);pointer-events:none"></div>
   <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.85;margin-bottom:8px;font-weight:600">&#9733; Overall Recommendation</div>
@@ -5151,7 +5439,7 @@ function downloadExecBriefMD() {
   }
 
   let md = `# Sybase · Migration Evaluator — Executive Summary\n\n`;
-  md += `*Migration evaluation · Sybase → PostgreSQL · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
+  md += `*Migration evaluation · Sybase → ${TARGETS[state.targetDialect].label} · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
   md += `> Regex-based triage. Not a substitute for reading the code or engaging the DBA. Checklist not exhaustive. Feedback: darshan.meel@gmail.com\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
   md += `**Client:** ${mdEsc(client)}  \n`;
