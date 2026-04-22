@@ -5583,7 +5583,9 @@ function downloadRawJSON() {
   const payload = {
     _disclaimer: "Regex-based triage tool. Confidence is computed dynamically from analysis + checklist coverage (floor 40%, ceiling 95%). Not a substitute for on-site review. Checklist is not exhaustive. Feedback: darshan.meel@gmail.com",
     tool: 'Sybase Migration Evaluator v2',
+    schemaVersion: 1,
     generatedAt: ts.toISOString(),
+    source: state.sourceDialect,
     confidence: computeConfidence(),
     meta: state.meta,
     scores: state.scores,
@@ -5591,6 +5593,8 @@ function downloadRawJSON() {
     checklist: state.checklist,
     delayFactors: buildTopDelayFactors(),
     effort,
+    sqlInput: document.getElementById('sql-input').value,
+    codeResults: state.codeResults,
   };
   downloadBlob(JSON.stringify(payload, null, 2), `sybase_evaluation_${formatDatetime(ts)}.json`, 'application/json');
   showToast('JSON exported.');
