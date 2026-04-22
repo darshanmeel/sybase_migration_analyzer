@@ -2970,6 +2970,12 @@ const SOURCES = {
   // mssql: { label: 'SQL Server', short: 'MSSQL', field: 'mssql', note: 'SQL Server T-SQL — coming soon' }
 };
 
+const TARGET_CODE_MULTIPLIER = {
+  mssql:    0.75,  // Sybase cousin; ~25% less rewrite effort
+  postgres: 1.0,   // default baseline
+  oracle:   1.25,  // more translation; ~25% more effort
+};
+
 // ============================================================
 // SCORING
 // ============================================================
