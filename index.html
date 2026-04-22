@@ -4963,7 +4963,7 @@ function buildSlides() {
   // Slide 1: Cover
   const s1 = `
     <h3>01 · Cover</h3>
-    <div class="slide-hero">Sybase → ${TARGETS[state.targetDialect].label}<br>Migration Evaluation</div>
+    <div class="slide-hero">${SOURCES[state.sourceDialect].label} → ${TARGETS[state.targetDialect].label}<br>Migration Evaluation</div>
     <div class="slide-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px">
         <div><div style="font-size:0.72rem;color:#8B949E;text-transform:uppercase;letter-spacing:0.12em">Client / Organization</div><div style="font-size:1rem;margin-top:4px">${client}</div></div>
@@ -5492,7 +5492,7 @@ function _headerBlock(title, subtitle) {
   return `<div class="page">
 <div class="doc-header">
   <div class="dh-title">Sybase &middot; Migration Evaluator</div>
-  <div class="dh-sub">Migration evaluation &middot; Sybase &rarr; ${TARGETS[state.targetDialect].label} &middot; regex + structured checklist &middot; offline</div>
+  <div class="dh-sub">Migration evaluation &middot; ${SOURCES[state.sourceDialect].label} → ${TARGETS[state.targetDialect].label} &middot; regex + structured checklist &middot; offline &middot; ~${conf}% confidence</div>
   <div class="dh-meta">
     <span>confidence <b>~${conf}%</b><span class="conf-help" title="${confTitle}">?</span></span>
     <span>regex-based triage</span>
@@ -5673,7 +5673,7 @@ function downloadTechReportMD() {
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 
   let md = `# Sybase · Migration Evaluator — Technical Migration Report\n\n`;
-  md += `*Migration evaluation · Sybase → ${TARGETS[state.targetDialect].label} · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
+  md += `*Migration evaluation · ${SOURCES[state.sourceDialect].label} → ${TARGETS[state.targetDialect].label} · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
   md += `> Regex-based triage. Not a substitute for reading the code or engaging the DBA. Checklist not exhaustive. Feedback: darshan.meel@gmail.com\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
   md += `**Client:** ${mdEsc(client)}  \n`;
@@ -5762,7 +5762,7 @@ function downloadExecBriefHTML() {
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation — Executive Summary</title>
 <style>${_exportCSSBase()}</style></head><body>
-${_headerBlock('Executive Summary', `Sybase → ${TARGETS[state.targetDialect].label} Platform Risk Summary`)}
+${_headerBlock('Executive Summary', `${SOURCES[state.sourceDialect].label} → ${TARGETS[state.targetDialect].label} Platform Risk Summary`)}
 <div style="background:linear-gradient(135deg,${ragColor} 0%,${ragColor}DD 100%);color:#fff;border-radius:6px;padding:22px 28px;margin:8px 0 28px;box-shadow:0 4px 12px rgba(0,0,0,0.08);position:relative;overflow:hidden">
   <div style="position:absolute;top:0;right:0;width:140px;height:100%;background:radial-gradient(circle at 100% 50%,rgba(255,255,255,0.08) 0%,transparent 70%);pointer-events:none"></div>
   <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.85;margin-bottom:8px;font-weight:600">&#9733; Overall Recommendation</div>
@@ -5835,7 +5835,7 @@ function downloadExecBriefMD() {
   }
 
   let md = `# Sybase · Migration Evaluator — Executive Summary\n\n`;
-  md += `*Migration evaluation · Sybase → ${TARGETS[state.targetDialect].label} · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
+  md += `*Migration evaluation · ${SOURCES[state.sourceDialect].label} → ${TARGETS[state.targetDialect].label} · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
   md += `> Regex-based triage. Not a substitute for reading the code or engaging the DBA. Checklist not exhaustive. Feedback: darshan.meel@gmail.com\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
   md += `**Client:** ${mdEsc(client)}  \n`;
