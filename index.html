@@ -3540,9 +3540,7 @@ function stat(val, label) {
 }
 
 // Recompute Est. Days and bucket pill counts when target changes.
-// Est. Days uses the same multiplier approach as computeEffortBand() for consistency
-// with the Reports tab: originalBucketSum × TARGET_CODE_MULTIPLIER.
-// Bucket pills use per-rule adjusted buckets for accurate per-object complexity display.
+// Both use per-rule target-adjusted bucket days, consistent with computeEffortBand().
 function updateBannerForTarget(results, tgt) {
   if (!results || !results.length) return;
   // Bucket pills and Est. Days: both use per-rule adjusted buckets per object.
@@ -5498,25 +5496,28 @@ function computeEffortBand() {
   const mult = 1 + 0.004 * gap;                        // readiness gap inflates up to ~40%
   const round1 = (v) => Math.round(v * 10) / 10;
 
-  // 1. Code migration — driven by per-object buckets, not raw LOC. A single trivial
-  //    proc is hours, a very-high proc is 2-4 days. Dynamic SQL / cursors add bumps.
+  // 1. Code migration — sum of per-object target-adjusted bucket days.
+  //    Per-rule overrides already encode target affinity (MSSQL rules score 0, etc.).
+  //    Readiness gap does not inflate code effort — it reflects scheduling / process risk,
+  //    not the technical rewrite work.
   let code = 0.5;
-  if (m && m.buckets) {
+  if (state.codeResults && state.codeResults.length) {
+    const tgt = state.targetDialect || 'postgres';
+    code = 0;
+    for (const r of state.codeResults) {
+      const adj = r.matchesByRule
+        ? computeTargetObjectScore(r.matchesByRule, r.lines, tgt)
+        : { bucket: r.bucket };
+      code += adj.bucket.days;
+    }
+    code = Math.max(0.5, code);
+  } else if (m && m.buckets) {
     code = (m.buckets.veryHigh || 0) * 3
          + (m.buckets.high     || 0) * 1.5
          + (m.buckets.medium   || 0) * 0.5
          + (m.buckets.low      || 0) * 0.15;
-    if (m.dynamicSqlCount > 0) code += Math.min(3,   0.5  * m.dynamicSqlCount);
-    if (m.cursorCount     > 0) code += Math.min(2,   0.25 * m.cursorCount);
     code = Math.max(0.5, code);
   }
-
-  // Target-dialect affinity affects code rewrite effort.
-  // MSSQL is syntactically closer to Sybase (0.75x). PostgreSQL is baseline (1.0x).
-  // Oracle requires more translation work (1.25x).
-  code *= (TARGET_CODE_MULTIPLIER[state.targetDialect] || 1.0);
-
-  code *= mult;
 
   // 2. Data migration — schema DDL, BCP/COPY, validation. Scales mildly with object count.
   let data = 2;
