@@ -2480,6 +2480,7 @@ const state = {
   scores: { code: null, readiness: null, composite: null },
   activeTab: 'analysis',
   targetDialect: 'postgres', // 'postgres' | 'mssql' | 'oracle'
+  sourceDialect: 'sybase',  // 'sybase' | future 'mssql' | ...
 };
 
 // Pull the rewrite string for the active (or passed) target; fall back gracefully.
@@ -2932,6 +2933,12 @@ const TARGETS = {
   postgres: { label: 'PostgreSQL', short: 'PG',    field: 'postgres', note: "Default target. Every rule carries a PostgreSQL rewrite hint." },
   mssql:    { label: 'SQL Server', short: 'MSSQL', field: 'mssql',    note: "Closest cousin to Sybase — many constructs carry over unchanged." },
   oracle:   { label: 'Oracle',     short: 'ORA',   field: 'oracle',   note: "Most translation work — PL/SQL semantics, sequence/trigger patterns, savepoints." },
+};
+
+// Known migration sources. Referenced by state.sourceDialect.
+const SOURCES = {
+  sybase: { label: 'Sybase', short: 'Sybase', field: 'sybase', note: 'Sybase T-SQL — 60+ regex rules tuned to ASE constructs.' },
+  // mssql: { label: 'SQL Server', short: 'MSSQL', field: 'mssql', note: 'SQL Server T-SQL — coming soon' }
 };
 
 // ============================================================
