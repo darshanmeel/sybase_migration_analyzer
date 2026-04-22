@@ -12,22 +12,23 @@ A single-file, fully offline HTML tool for **migration evaluation** of Sybase pl
 
 ## What It Does
 
-### Five tabs, one file
+### Six tabs, one file
 
 | Tab | What it does |
 |---|---|
 | **Analysis** | Paste Sybase T-SQL or upload a `.sql` file. A regex rule engine (40 patterns) splits input into objects (procs / views / functions / triggers), scores each, and produces a sortable heat map plus per-object collapsible detail with a color-highlighted annotated source view. |
 | **Checklist** | 70 phase-based migration-readiness items across six phases (Phase 1–6). Each item has a checkbox, notes/evidence field, risk weight (1–5), and a playbook reference. Readiness score updates live as you tick items. |
 | **SQL Library** | 27 ready-to-run Sybase discovery queries across 7 sections — platform & version, object inventory, connections & usage, performance diagnostics, schema quality, Sybase IQ / SQL Anywhere, and export helpers. One-click copy, searchable. |
-| **Reports** | Three live scores (Code Complexity, Migration Readiness, Composite Risk), an 8-slide presentation carousel, engagement-context narrative fields, and seven export formats (Methodology Deck HTML, Tech HTML, Tech Markdown, Executive Summary HTML, Executive Summary Markdown, Slide Deck HTML, Raw JSON). |
-| **About** | Prominent confidence disclosure (~90–95%), methodology, full rule catalog, and limitations. |
+| **Reports** | Three live scores (Code Complexity, Migration Readiness, Composite Risk), an 8-slide presentation carousel, engagement-context narrative fields, and six export formats (Tech HTML, Tech Markdown, Executive Summary HTML, Executive Summary Markdown, Slide Deck HTML, Raw JSON). |
+| **About** | User-focused overview, pre-engagement Methodology Deck download, methodology, full rule catalog, feedback links, and credit. |
+| **Limitations** ⚠ | Dedicated tab (red warning styling) listing exactly what the tool can and cannot do. Read before sharing any report with a stakeholder. |
 
 ### Three scores, one composite
 
 - **Code Complexity (0–100)** — derived from rule matches, LOC tiers, and density signals (Sybase-specific issues per 100 LOC, dynamic SQL, cross-DB refs, cursors). Tiers: LOW / MEDIUM / HIGH / VERY HIGH.
 - **Migration Readiness (0–100, higher = more gap)** — sum of weights of unchecked checklist items normalized to a percentage. Items like "backup verified by restore test", "original architect available", or "source code in version control" carry higher weights. Tiers: READY / MOSTLY READY / MATERIAL GAPS / SEVERE GAPS.
 - **Composite Risk (0–100)** — `0.45 × CodeComplexity + 0.55 × Readiness`. Readiness is weighted slightly heavier because human/process risks are harder to recover from than code.
-- **Effort band (person-months)** — scaled by the readiness gap. Actual effort depends on team skill, tooling maturity, and scope. Shown as a range.
+- **Effort band (person-months)** — baseline of 1 PM per ~8,000 LOC, plus complexity bumps for high/very-high objects and dynamic SQL / cursor usage. The readiness gap inflates the estimate by up to 50%. Shown as a ±15% band. Actual effort depends on team skill, tooling maturity, and scope.
 - **Top delay factors** — ranked list on the executive summary: all unchecked red-flag items by weight plus the top 3 rule categories by match count, each with a mitigation hint.
 
 ### Two reports, two audiences
@@ -35,7 +36,7 @@ A single-file, fully offline HTML tool for **migration evaluation** of Sybase pl
 - **Technical Report** (HTML or Markdown) — full analyzer findings, heat map, top-10 objects by score, rule-hit summary, phase-grouped checklist answers with notes, delay factors, effort band. Intended for the engineering team.
 - **Executive Summary** (HTML or Markdown) — 2–3 page summary: three scores prominently, top-3 macro risks, effort band, approach recommendation (phased vs big-bang, team composition, rollback requirements, key dependencies). Intended for sponsors and decision-makers.
 
-Plus a **Methodology Deck (HTML)** — 8 self-contained slides with keyboard nav to show clients at the start of an engagement, before any analysis is run — and a **Slide Deck (HTML)** — the same 8-slide format populated with actual evaluation results — and **Raw Data (JSON)** — full state dump for archival or downstream tooling.
+Plus a **Methodology Deck (HTML)** — 8 self-contained slides with keyboard nav to show clients at the start of an engagement, before any analysis is run. The Methodology Deck button is in the **About tab**, since it needs no data and is used before any analysis. There is also a **Slide Deck (HTML)** — the same 8-slide format populated with actual evaluation results — and **Raw Data (JSON)** — full state dump for archival or downstream tooling.
 
 ### Privacy by default
 
@@ -67,7 +68,9 @@ Every number the tool outputs ships with a visible `~92%` confidence label. The 
 
 **It does not export to PDF.** Use the browser's Print → Save as PDF on any HTML export. The HTML exports are styled to print cleanly.
 
-**Rewrite suggestions are Sybase-specific.** The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase. If you run it against Oracle, SQL Server, MySQL, DB2, or Informix, the analyzer output will be noisy — but the **checklist, SQL Library, scoring model, reports, and slide decks are fully reusable**. Contact the maintainer if you want rule packs for other source databases.
+**Rewrite suggestions are Sybase-specific.** The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase. If you run it against Oracle, SQL Server, MySQL, DB2, or Informix, the analyzer output will be noisy — but the **checklist, SQL Library, scoring model, reports, and slide decks are fully reusable**. Rule packs for SQL Server, Oracle, and MySQL are planned — email feedback to prioritize.
+
+**Read the Limitations tab.** The in-app **Limitations** tab (red warning styling, rightmost in the nav) describes exactly what the tool can and cannot do. Read it before sharing any report with a stakeholder.
 
 ---
 
@@ -78,7 +81,7 @@ You don't need to use every tab. Common paths:
 - **Analysis-only:** paste SQL, click Analyze. Code Complexity populates; Migration Readiness stays "Not assessed"; Composite equals Code with a caveat. Export a Technical Report from the analyzer output.
 - **Checklist-only:** skip Analysis entirely. Work the checklist during discovery calls. Readiness score updates live. Export an Executive Summary from checklist answers alone.
 - **Both (recommended for a complete assessment):** run the analyzer on extracted DDL, work the checklist across the discovery phases, then export both reports from the Reports tab.
-- **Methodology Deck first:** export the Methodology Deck before any engagement begins — it requires no data and explains the process to the client.
+- **Methodology Deck first:** export the Methodology Deck before any engagement begins — it requires no data and explains the process to the client. Download it from the **About tab** (Pre-engagement materials section).
 
 ---
 
@@ -127,7 +130,7 @@ Or just download `index.html` directly from the repo and double-click it. It run
 ## Repository Layout
 
 ```
-index.html     ← the tool (single self-contained file, ~5,200 lines)
+index.html     ← the tool (single self-contained file, ~5,300 lines)
 README.md      ← this file
 LICENSE
 .gitignore

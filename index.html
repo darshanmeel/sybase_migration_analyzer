@@ -1421,10 +1421,26 @@
   .limitations-banner strong { color: var(--color-veryhigh); letter-spacing: 0.04em; }
 
   .about-limitations {
-    border-left: 3px solid var(--color-veryhigh) !important;
-    background: linear-gradient(135deg, rgba(248,81,73,0.06), rgba(248,81,73,0.01)) !important;
+    border-left: 3px solid var(--color-veryhigh);
+    background: linear-gradient(180deg, rgba(248,81,73,0.04), rgba(248,81,73,0.01));
   }
   .about-limitations h3 { color: var(--color-veryhigh) !important; }
+  .about-limitations li { margin-bottom: 8px; }
+
+  /* ---- warn tab button ---- */
+  .tab-nav button.warn {
+    color: var(--color-veryhigh);
+  }
+  .tab-nav button.warn:hover,
+  .tab-nav button.warn.active {
+    color: var(--color-veryhigh);
+    border-bottom-color: var(--color-veryhigh);
+  }
+  .tab-nav button.warn::before {
+    content: "\26A0";
+    margin-right: 4px;
+    font-size: 0.85em;
+  }
 
   /* ---- RED FLAGS on reports ---- */
   .risk-row {
@@ -1514,6 +1530,7 @@
   <button data-tab="sqlref" onclick="switchTab('sqlref')"><span class="tab-bracket">[</span>sql.ref<span class="tab-bracket">]</span></button>
   <button data-tab="reports" onclick="switchTab('reports')"><span class="tab-bracket">[</span>reports<span class="tab-bracket">]</span></button>
   <button data-tab="about" onclick="switchTab('about')"><span class="tab-bracket">[</span>about<span class="tab-bracket">]</span></button>
+  <button data-tab="limitations" class="warn" onclick="switchTab('limitations')"><span class="tab-bracket">[</span>limitations<span class="tab-bracket">]</span></button>
 </nav>
 
 <!-- SCORE STRIP -->
@@ -1550,8 +1567,8 @@
 <div class="limitations-banner">
   <strong>&#9888; NOTE:</strong>
   This is a regex-based triage tool with approximately 90–95% confidence on well-formed input. Results are not a substitute for reading the code or talking to the DBA.
-  <a href="#" onclick="switchTab('about'); setTimeout(function(){ var el = document.getElementById('limitations'); if (el) el.scrollIntoView({behavior:'smooth'}); }, 50); return false;"
-     style="color: var(--color-veryhigh); font-weight: 600; margin-left: 6px; text-decoration: underline;">Read limitations &rarr;</a>
+  <a href="#" onclick="switchTab('limitations'); return false;"
+     style="color: var(--color-veryhigh); font-weight: 600; margin-left: 6px; text-decoration: underline;">Read full limitations &rarr;</a>
 </div>
 
 <!-- ===== TAB: ANALYSIS ===== -->
@@ -1671,11 +1688,8 @@ GO"></textarea>
   <div id="reports-empty" class="report-empty">
     <div class="re-big">No data yet</div>
     <div>Run an analysis on the <b>Analysis</b> tab, and/or fill in the <b>Checklist</b> tab. Scores and report exports appear here once there is data to summarize.</div>
-    <div style="margin-top: 18px;">
-      <button class="report-action-btn" onclick="downloadMethodologyDeck()" style="display:inline-flex;">
-        <span class="rab-title">Methodology Deck · HTML</span>
-        <span class="rab-desc">You can download this now — it doesn't need any data</span>
-      </button>
+    <div style="margin-top: 18px; font-size: 0.85rem; color: var(--text-muted);">
+      The Methodology Deck is available from the <a href="#" onclick="switchTab('about'); return false;" style="color: var(--accent); text-decoration: underline;">About tab</a> — it doesn't need any data.
     </div>
   </div>
   <div id="reports-content" style="display:none;">
@@ -1699,7 +1713,6 @@ GO"></textarea>
     <div class="report-actions">
       <h3>Export</h3>
       <div class="report-action-grid">
-        <button class="report-action-btn" onclick="downloadMethodologyDeck()"><span class="rab-title">Methodology Deck · HTML</span><span class="rab-desc">Pre-engagement: what's needed, what each phase covers, what you'll receive</span></button>
         <button class="report-action-btn" onclick="downloadTechReportHTML()"><span class="rab-title">Technical Report · HTML</span><span class="rab-desc">Full analyzer findings + checklist answers + scores</span></button>
         <button class="report-action-btn" onclick="downloadTechReportMD()"><span class="rab-title">Technical Report · Markdown</span><span class="rab-desc">Same content, plain-text for Notion / Confluence</span></button>
         <button class="report-action-btn" onclick="downloadExecBriefHTML()"><span class="rab-title">Executive Summary · HTML</span><span class="rab-desc">2–3 page summary for sponsors and decision-makers</span></button>
@@ -1720,7 +1733,7 @@ GO"></textarea>
       <div class="atl-title">What it does &amp; doesn't do</div>
       <div class="atl-desc">Capabilities, scoring model, what's in and out of scope.</div>
     </a>
-    <a href="#limitations" class="about-toplink danger">
+    <a href="#" onclick="switchTab('limitations'); return false;" class="about-toplink danger">
       <div class="atl-tag">&#9888; READ THIS FIRST</div>
       <div class="atl-title">Limitations</div>
       <div class="atl-desc">Important caveats. A triage aid — not a real parser, not an on-site audit.</div>
@@ -1728,9 +1741,30 @@ GO"></textarea>
   </div>
 
   <div class="about-hero">
-    <div class="hero-tag">Confidence · Methodology · Limitations</div>
-    <h2>This tool produces estimates with approximately <span class="hero-num">90–95%</span> confidence for well-formed input.</h2>
-    <p>The score is regex-based code analysis plus a structured checklist. <b>Confidence drops sharply</b> when SQL is malformed, when the checklist is partially filled, or when the underlying platform includes features outside the rule set (Sybase IQ specifics, custom extended stored procedures, Replication Server topology, undocumented thick-client dependencies). Results are a <b>triage aid</b>, not a substitute for on-site review, interviews with the engineering team, or reading the actual code.</p>
+    <div class="hero-tag">What this tool can do for you</div>
+    <h2>Evaluate a Sybase migration in a day, not a month.</h2>
+    <p>This tool turns a pile of Sybase stored procedures and a series of discovery calls into three clear numbers, two written reports, and a pitch deck — all offline, all in a single HTML file. It is built for migration projects, whether you are evaluating an internal system or a platform owned by another organization. Use it to size the migration, spot the biggest risks before they become blockers, and communicate the findings to both engineers and decision-makers.</p>
+  </div>
+
+  <div class="about-section" id="materials">
+    <h3>Pre-engagement materials</h3>
+    <p>Download the methodology slide deck to show clients <b>before</b> any analysis starts. It explains what the evaluation covers, what inputs are needed, and what each phase delivers. It uses no client data — you can share it immediately.</p>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+      <button class="report-action-btn" onclick="downloadMethodologyDeck()">
+        <span class="rab-title">Methodology Deck · HTML</span>
+        <span class="rab-desc">Pre-engagement: what's needed, what each phase covers</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h3>Who this tool is for</h3>
+    <ul>
+      <li><b>DBAs and engineering leads</b> planning a Sybase-to-PostgreSQL migration — estimate effort, find the hardest objects first, share a technical report with the team.</li>
+      <li><b>Consultants / evaluators</b> running a migration-readiness review — structured checklist across six phases, auto-generated executive summary for sponsors.</li>
+      <li><b>Architects</b> doing due-diligence or scoping — quickly see dynamic SQL, cross-DB joins, cursor usage, and other migration blockers.</li>
+      <li><b>Project managers</b> who need an effort band and a list of delay factors to build a realistic plan.</li>
+    </ul>
   </div>
 
   <div id="what-it-does"></div>
@@ -1744,19 +1778,9 @@ GO"></textarea>
       <li>Keeps a copy-ready SQL discovery library for platform, inventory, connections, performance, and schema-quality queries.</li>
       <li>Runs entirely in the browser — no network, no storage, no telemetry.</li>
     </ul>
-    <h3 style="margin-top: 18px;">What this tool does NOT do</h3>
-    <ul>
-      <li>Does not parse SQL. Regex-only. Unusual formatting can cause false positives or misses.</li>
-      <li>Does not execute SQL or connect to any database.</li>
-      <li>Does not save state between sessions. Refresh clears everything.</li>
-      <li>Does not capture business-logic complexity — only syntax and pattern counts.</li>
-      <li>Does not verify checklist answers. Self-reported, not cross-checked.</li>
-      <li>Does not generate production-ready PostgreSQL rewrites. PG equivalents shown are starting points.</li>
-      <li>Does not export to PDF directly. Use the browser's Print &rarr; Save as PDF.</li>
-    </ul>
     <h3 style="margin-top: 18px;">Other databases</h3>
     <p>
-      The same tool works for <b>any relational database</b> you want to evaluate for migration — Oracle, SQL Server, MySQL, DB2, Informix. The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase, so those specific suggestions will not be meaningful for other sources — but the <b>checklist, SQL Library, scoring model, reports, and slide decks</b> all translate directly. If you need rules tuned for another source database, send us feedback (below) and we can add rule packs.
+      The same tool works for <b>any relational database</b> you want to evaluate for migration — Oracle, SQL Server, MySQL, DB2, Informix. The analyzer's 40 regex rules and PostgreSQL rewrite suggestions are tuned for Sybase, so those specific suggestions will not be meaningful for other sources — but the <b>checklist, SQL Library, scoring model, reports, and slide decks</b> all translate directly. Rule packs for SQL Server, Oracle, and MySQL are planned — email feedback to prioritize.
     </p>
   </div>
 
@@ -1771,23 +1795,9 @@ GO"></textarea>
       <li><b>Code Complexity (0–100):</b> derived from per-object rule matches and LOC tiers from the analyzer. Normalized across objects. Tiers: 0–30 LOW, 31–55 MEDIUM, 56–80 HIGH, 81–100 VERY HIGH.</li>
       <li><b>Migration Readiness (0–100, higher = more gap):</b> sum of weights of unchecked checklist items, normalized to percentage. Tiers: 0–25 READY, 26–50 MOSTLY READY, 51–75 MATERIAL GAPS, 76–100 SEVERE GAPS.</li>
       <li><b>Composite Risk (0–100):</b> <code>0.45 × CodeComplexity + 0.55 × Readiness</code>. Readiness is weighted slightly heavier because human/process risks are harder to recover from than code. If only one input exists, the composite equals that one (with a caveat).</li>
-      <li><b>Effort estimate (person-months):</b> estimated from per-object scores and LOC, scaled by the readiness gap. Ranges are shown as ±15% around a central estimate. Treat the range as a planning starting point — actual effort varies significantly with team skill, tooling maturity, and scope.</li>
+      <li><b>Effort estimate (person-months):</b> baseline of 1 PM per ~8,000 LOC, plus complexity bumps for high/very-high objects and for dynamic SQL and cursor usage. The readiness gap inflates the estimate by up to 50%. Shown as a ±15% band. Actual effort varies significantly with team skill, tooling maturity, and scope.</li>
     </ul>
-    <p style="margin-top: 10px; font-size: 0.83rem; color: var(--text-muted);">The effort estimate is calibrated against a typical mid-sized Sybase engagement and scaled by the readiness gap. Actual effort will vary based on team skill, tooling maturity, and scope decisions — treat the range as a starting point for planning, not a commitment.</p>
-  </div>
-
-  <div class="about-section about-limitations" id="limitations">
-    <h3>Known limitations</h3>
-    <ol>
-      <li>This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.</li>
-      <li>Scoring is rubric-based. Two objects with identical scores may take very different times to rewrite in practice.</li>
-      <li>Business logic complexity is not captured — the tool only analyzes syntax, not semantics.</li>
-      <li>No data leaves your browser. Nothing is uploaded, logged, or stored.</li>
-      <li>Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.</li>
-      <li>Checklist answers are <b>self-reported</b>, not independently verified by the tool.</li>
-      <li>Scoring weights are opinionated. Other engagements may warrant different weights.</li>
-      <li>The effort formula is calibrated against a typical mid-sized engagement and will vary significantly based on team skill, tooling maturity, and scope decisions.</li>
-    </ol>
+    <p style="margin-top: 10px; font-size: 0.83rem; color: var(--text-muted);">The effort estimate is an order-of-magnitude starting point. Actual effort will vary based on team skill, tooling maturity, and scope decisions — treat the range as a planning starting point, not a commitment.</p>
   </div>
 
   <div class="about-section">
@@ -1829,6 +1839,54 @@ GO"></textarea>
     <p style="margin-top: 8px;">The author credit on exports can be hidden per session via the gear icon in the header (default: on).</p>
   </div>
 </section>
+
+<!-- ===== TAB: LIMITATIONS ===== -->
+<section class="tab-panel" id="tab-limitations">
+
+  <div class="about-hero" style="border-color: rgba(248,81,73,0.4); border-left: 3px solid var(--color-veryhigh); background: linear-gradient(135deg, rgba(248,81,73,0.10), rgba(248,81,73,0.02));">
+    <div class="hero-tag" style="color: var(--color-veryhigh);">&#9888; READ THIS CAREFULLY</div>
+    <h2>Limitations of this tool</h2>
+    <p>This page describes exactly what this tool can and cannot do. Read it before sharing any report with a stakeholder.</p>
+  </div>
+
+  <div class="about-section about-limitations">
+    <h3 style="color: var(--color-veryhigh);">Known limitations</h3>
+    <ol>
+      <li>This tool uses regex-based pattern matching, not a real SQL parser. Results are a triage aid, not a substitute for manual review.</li>
+      <li>Scoring is rubric-based. Two objects with identical scores may take very different times to rewrite in practice.</li>
+      <li>Business logic complexity is not captured — the tool only analyzes syntax, not semantics.</li>
+      <li>Rewrite suggestions (if shown) are illustrative only and are NOT production-ready.</li>
+      <li>Checklist answers are <b>self-reported</b>, not independently verified by the tool.</li>
+      <li><b>The checklist is not exhaustive.</b> Real engagements will surface items the tool did not anticipate. Document those and send them to the maintainer so the tool improves.</li>
+      <li>Scoring weights are opinionated. Other engagements may warrant different weights.</li>
+      <li>The effort formula is an order-of-magnitude estimate based on code size and complexity. It will vary significantly based on team skill, tooling maturity, and scope.</li>
+      <li>No data leaves your browser. Nothing is uploaded, logged, or stored.</li>
+    </ol>
+  </div>
+
+  <div class="about-section about-limitations">
+    <h3 style="color: var(--color-veryhigh);">When confidence drops</h3>
+    <p>The tool produces estimates with approximately <b>90–95% confidence</b> for a well-formed input and a substantially-filled checklist. Confidence drops sharply when:</p>
+    <ul>
+      <li>SQL is malformed or mixed with non-SQL content</li>
+      <li>The checklist is sparsely filled</li>
+      <li>The platform uses features outside the 40-rule set (custom extended stored procs, IQ columnar analytics, Replication Server topology, undocumented thick-client dependencies)</li>
+      <li>The source dialect is not Sybase — the analyzer's rewrite suggestions are Sybase-specific (see the Other Databases note in About)</li>
+    </ul>
+  </div>
+
+  <div class="about-section about-limitations">
+    <h3 style="color: var(--color-veryhigh);">What it is NOT</h3>
+    <ul>
+      <li>Not a SQL parser</li>
+      <li>Not an on-site audit</li>
+      <li>Not a substitute for engaging the DBA or reading the actual code</li>
+      <li>Not a production-ready PostgreSQL rewrite engine</li>
+      <li>Not tuned for non-Sybase rule packs yet (Oracle / SQL Server / MySQL — coming)</li>
+    </ul>
+  </div>
+
+</section><!-- /tab-limitations -->
 
 </div><!-- /main-wrap -->
 
@@ -2804,20 +2862,20 @@ function downloadHTML() {
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#F5F5F5;color:#212121;font-size:14px}
 #wrap{max-width:1200px;margin:0 auto;padding:24px}
-h1{background:#1A237E;color:#fff;padding:16px 24px;margin:-24px -24px 24px;font-size:1.2rem}
+h1{background:#111827;color:#fff;padding:16px 24px;margin:-24px -24px 24px;font-size:1.2rem}
 table{width:100%;border-collapse:collapse;background:#fff;font-size:0.82rem;margin-bottom:24px}
-th{background:#1A237E;color:#fff;padding:8px 10px;text-align:left;font-size:0.78rem;text-transform:uppercase}
+th{background:#F3F4F6;color:#374151;padding:8px 10px;text-align:left;font-size:0.78rem;text-transform:uppercase}
 td{padding:7px 10px;border-bottom:1px solid #eee}
 .bucket-low{background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
 .bucket-medium{background:#FFF9C4;color:#F57F17;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
 .bucket-high{background:#FFE0B2;color:#E65100;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
 .bucket-veryhigh{background:#FFCDD2;color:#B71C1C;padding:2px 8px;border-radius:10px;font-weight:700;font-size:0.72rem}
 .obj-block{background:#fff;border:1px solid #ddd;border-radius:6px;margin-bottom:16px;padding:16px}
-.obj-block h3{margin:0 0 8px;font-size:0.95rem;color:#1A237E}
+.obj-block h3{margin:0 0 8px;font-size:0.95rem;color:#111827}
 .issue-row{margin-bottom:6px;font-size:0.82rem}
 .issue-id{font-weight:700;color:#283593}
 pre{background:#FAFAFA;border:1px solid #ddd;padding:12px;font-size:11px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
-.meta{background:#1A237E;color:#fff;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.85rem}
+.meta{background:#F9FAFB;color:#374151;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.85rem;border:1px solid #E5E7EB}
 .meta-row{margin-bottom:4px}
 footer{margin-top:32px;font-size:0.78rem;color:#757575;border-top:1px solid #ddd;padding-top:16px}
 </style>
@@ -4319,38 +4377,54 @@ function buildTopDelayFactors() {
 
 function computeEffortBand() {
   const m = state.codeMetrics;
-  let base = 1;
+  let base = 0.25;  // floor — even trivial work is not zero
   if (m && m.totalLOC) {
-    const weighted =
-        (m.buckets.veryHigh || 0) * 1500 +
-        (m.buckets.high     || 0) * 800 +
-        (m.buckets.medium   || 0) * 400 +
-        (m.buckets.low      || 0) * 150;
-    base = Math.max(1, weighted / 4000);
+    // Baseline: ~1 PM per 8,000 LOC of analyzed source
+    base = m.totalLOC / 8000;
+    // Complexity bump: harder objects add extra time
+    base += (m.buckets.veryHigh * 0.30)
+          + (m.buckets.high      * 0.10)
+          + (m.buckets.medium    * 0.03);
+    // Extra signals
+    if (m.dynamicSqlCount > 0) base += Math.min(0.8, 0.1 * m.dynamicSqlCount);
+    if (m.cursorCount     > 0) base += Math.min(0.5, 0.05 * m.cursorCount);
+    base = Math.max(0.25, base);
   }
+  // Readiness gap inflates by up to 50% — much less aggressive than before
   const readinessGap = state.scores.readiness || 0;
-  const mult = 1 + 0.01 * readinessGap;
+  const mult = 1 + 0.005 * readinessGap;
   const central = base * mult;
+  const round1 = (v) => Math.round(v * 10) / 10;
   return {
-    low:     Math.max(1, Math.round(central * 0.85)),
-    high:    Math.max(2, Math.round(central * 1.25)),
-    central: Math.round(central),
+    low: Math.max(0.25, round1(central * 0.85)),
+    high: round1(central * 1.25),
+    central: round1(central)
   };
 }
 
 // ---- Export helpers ----
 function _exportCSSBase() {
-  return `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#fff;color:#1a1a2e;font-size:14px;line-height:1.6}
-h1{font-size:1.6rem;margin:0 0 6px}h2{font-size:1.2rem;margin:24px 0 8px;color:#1a1a2e;border-bottom:2px solid #F59E0B;padding-bottom:4px}h3{font-size:1rem;margin:16px 0 6px;color:#444}
-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88rem}th{text-align:left;padding:7px 10px;background:#F5F5F5;color:#555;font-weight:600;border-bottom:2px solid #ddd}td{padding:7px 10px;border-bottom:1px solid #eee}
-.score-row{display:flex;gap:24px;flex-wrap:wrap;margin:16px 0}.score-card{background:#F9F9F9;border:1px solid #ddd;border-radius:4px;padding:16px 20px;min-width:160px}
-.score-num{font-size:2.4rem;font-weight:300;color:#1a1a2e}.score-label{font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.1em}.score-tier{font-size:0.8rem;font-weight:600;margin-top:4px}
+  return `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;background:#fff;color:#111827;font-size:14px;line-height:1.6}
+h1{font-size:1.6rem;margin:0 0 6px}h2{font-size:1.2rem;margin:24px 0 8px;color:#111827;border-bottom:2px solid #F59E0B;padding-bottom:4px}h3{font-size:1rem;margin:16px 0 6px;color:#111827}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88rem}th{text-align:left;padding:8px 10px;background:#F3F4F6;color:#374151;font-weight:600;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #D1D5DB}td{padding:7px 10px;border-bottom:1px solid #eee}
+.score-row{display:flex;gap:24px;flex-wrap:wrap;margin:16px 0}.score-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:4px;padding:16px 20px;min-width:160px}
+.score-num{font-size:2.4rem;font-weight:300;color:#111827}.score-label{font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.1em}.score-tier{font-size:0.8rem;font-weight:600;margin-top:4px}
 .t-low{color:#2da44e}.t-medium{color:#bf8700}.t-high{color:#d1400d}.t-veryhigh{color:#cf222e}
 .risk-block{border-left:3px solid #ddd;padding:8px 12px;margin:8px 0;border-radius:0 3px 3px 0}
 .risk-block.red{border-color:#cf222e;background:#fff0f0}.risk-block.amber{border-color:#bf8700;background:#fffbf0}.risk-block.green{border-color:#2da44e;background:#f0fff4}
-.conf-note{background:#F5F5F5;border:1px solid #ddd;border-radius:4px;padding:12px;font-size:0.82rem;color:#666;margin-top:24px}
+.conf-note{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:4px;padding:12px;font-size:0.82rem;color:#666;margin-top:24px}
+.meta{background:#F9FAFB;color:#374151;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.85rem;border:1px solid #E5E7EB}
 .meta-row{font-size:0.82rem;color:#888;margin-bottom:4px}
 ul,ol{padding-left:24px;margin:8px 0}li{margin-bottom:4px}
+.doc-header{background:linear-gradient(180deg,#1A2029 0%,#151B23 100%);color:#E6EDF3;padding:22px 28px;border-bottom:2px solid #F59E0B;margin:-24px -24px 24px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.doc-header .dh-title{font-size:0.9rem;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:4px}
+.doc-header .dh-title::before{content:"\\25C6";color:#F59E0B;margin-right:10px}
+.doc-header .dh-sub{font-size:0.78rem;color:#8B949E;letter-spacing:0.04em}
+.doc-header .dh-meta{margin-top:10px;font-size:0.78rem;color:#8B949E;display:flex;flex-wrap:wrap;gap:14px}
+.doc-header .dh-meta b{color:#E6EDF3;font-weight:500}
+.doc-subnote{color:#8B949E;background:#FFF;border:1px solid #E5E7EB;border-left:3px solid #F59E0B;padding:8px 14px;font-size:0.78rem;margin-bottom:16px;border-radius:3px}
+.doc-subnote a{color:#B67508;text-decoration:underline}
+.lim-footer{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:0.76rem;color:#555;text-align:center}
 @media print{body{font-size:12px}h1{font-size:1.3rem}h2{font-size:1rem}}`;
 }
 
@@ -4364,22 +4438,27 @@ function _scoreSection(label, score, tiers, tcls) {
 
 function _headerBlock(title, subtitle) {
   const conf = Math.round((state.confidence || 0.92) * 100);
-  const creditHtml = state.showCredit ? '<div style="margin-top:4px;font-size:0.82rem;color:#888">Prepared by Darshan Singh</div>' : '';
+  const creditSpan = state.showCredit ? '<span>prepared by <b>Darshan Singh</b></span>' : '';
   const client = escapeHtml(state.meta.client || 'Organization');
   const analyst = state.meta.analyst ? escapeHtml(state.meta.analyst) : '';
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  return `<div style="background:#1a1a2e;color:#fff;padding:24px 32px;margin-bottom:0">
-    <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px">Sybase Migration Evaluator v2</div>
-    <h1 style="color:#fff;margin-bottom:6px">${escapeHtml(title)}</h1>
-    <div style="color:rgba(255,255,255,0.75);font-size:0.88rem">${escapeHtml(subtitle)}</div>
-    <div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap">
-      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Client: <strong style="color:#fff">${client}</strong></span>
-      ${analyst ? `<span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Prepared by: <strong style="color:#fff">${analyst}</strong></span>` : ''}
-      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Date: <strong style="color:#fff">${today}</strong></span>
-      <span style="font-size:0.82rem;color:rgba(255,255,255,0.6)">Confidence: <strong style="color:#F59E0B">~${conf}%</strong></span>
-    </div>
-    ${creditHtml}
-  </div>`;
+  return `<div style="padding:24px 32px 0">
+<div class="doc-header">
+  <div class="dh-title">Sybase &middot; Migration Evaluator</div>
+  <div class="dh-sub">Migration evaluation &middot; Sybase &rarr; PostgreSQL &middot; regex + structured checklist &middot; offline</div>
+  <div class="dh-meta">
+    <span>confidence <b>~${conf}%</b></span>
+    <span>regex-based triage</span>
+    ${creditSpan}
+    <span>client: <b>${client}</b></span>
+    ${analyst ? `<span>prepared by: <b>${analyst}</b></span>` : ''}
+    <span>date: <b>${today}</b></span>
+    <span>report type: <b>${escapeHtml(title)}</b></span>
+  </div>
+</div>
+<div class="doc-subnote">
+  This report is produced by a regex-based triage tool with approximately 90&ndash;95% confidence on well-formed input. Not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive &mdash; document cases the tool missed and share feedback at <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a>.
+</div>`;
 }
 
 function _checklistSectionHTML() {
@@ -4479,14 +4558,8 @@ function downloadTechReportHTML() {
   ).join('') : '';
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Technical Migration Report</title>
-<style>${_exportCSSBase()}
-.lim-banner{background:#FFF1F0;border:1px solid #F85149;border-left:4px solid #F85149;color:#721712;padding:10px 14px;border-radius:4px;font-size:0.82rem;margin-bottom:18px}
-.lim-banner strong{color:#F85149}
-.lim-footer{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:0.76rem;color:#555;text-align:center}
-</style></head><body>
+<style>${_exportCSSBase()}</style></head><body>
 ${_headerBlock('Technical Migration Report', 'Full analyzer findings, checklist answers, and scoring')}
-<div style="padding:24px 32px">
-<div class="lim-banner"><strong>&#9888; Limitations apply.</strong> This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.</div>
 <h2>Scores</h2>
 <div class="score-row">
   ${_scoreSection('Code Complexity', state.scores.code, TIER_CODE)}
@@ -4538,8 +4611,9 @@ function downloadTechReportMD() {
   const analyst = state.meta.analyst || '';
   const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 
-  let md = `# Technical Migration Report\n\n`;
-  md += `> &#9888; **Limitations apply.** This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.\n>\n\n`;
+  let md = `# Sybase · Migration Evaluator — Technical Migration Report\n\n`;
+  md += `*Migration evaluation · Sybase → PostgreSQL · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
+  md += `> Regex-based triage. Not a substitute for reading the code or engaging the DBA. Checklist not exhaustive. Feedback: darshan.meel@gmail.com\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
   md += `**Client:** ${mdEsc(client)}  \n`;
   if (analyst) md += `**Prepared by:** ${mdEsc(analyst)}  \n`;
@@ -4626,14 +4700,8 @@ function downloadExecBriefHTML() {
   ).join('');
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Migration Evaluation — Executive Summary</title>
-<style>${_exportCSSBase()}
-.lim-banner{background:#FFF1F0;border:1px solid #F85149;border-left:4px solid #F85149;color:#721712;padding:10px 14px;border-radius:4px;font-size:0.82rem;margin-bottom:18px}
-.lim-banner strong{color:#F85149}
-.lim-footer{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:0.76rem;color:#555;text-align:center}
-</style></head><body>
-${_headerBlock('Migration Evaluation — Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary')}
-<div style="padding:24px 32px">
-<div class="lim-banner"><strong>&#9888; Limitations apply.</strong> This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.</div>
+<style>${_exportCSSBase()}</style></head><body>
+${_headerBlock('Executive Summary', 'Sybase → PostgreSQL Platform Risk Summary')}
 <div style="background:${ragColor};color:#fff;border-radius:4px;padding:20px 24px;margin-bottom:24px">
   <div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.8;margin-bottom:6px">Overall Recommendation</div>
   <div style="font-size:1.1rem;line-height:1.6">${overallRec}</div>
@@ -4696,8 +4764,9 @@ function downloadExecBriefMD() {
     conditions = ['Approach: defer project until red-flag items resolved, then phased migration only', 'Team: 3+ senior PL/pgSQL developers, 1 DBA, 1 integration specialist, 1 project lead, 1 QA lead', 'All red-flag items resolved before migration starts', 'Mandate backup/restore test and rollback drill', 'Go/no-go decision at every phase boundary'];
   }
 
-  let md = `# Migration Evaluation — Executive Summary\n\n`;
-  md += `> &#9888; **Limitations apply.** This report is produced by a regex-based triage tool with approximately 90–95% confidence on well-formed input. It is not a substitute for reading the code or engaging the DBA on-site. The checklist is not exhaustive — expect to encounter situations the tool did not anticipate.\n>\n\n`;
+  let md = `# Sybase · Migration Evaluator — Executive Summary\n\n`;
+  md += `*Migration evaluation · Sybase → PostgreSQL · regex + structured checklist · offline · ~${conf}% confidence*\n\n`;
+  md += `> Regex-based triage. Not a substitute for reading the code or engaging the DBA. Checklist not exhaustive. Feedback: darshan.meel@gmail.com\n\n`;
   md += `**Tool:** Sybase Migration Evaluator v2  \n`;
   md += `**Client:** ${mdEsc(client)}  \n`;
   if (analyst) md += `**Prepared by:** ${mdEsc(analyst)}  \n`;
@@ -4756,10 +4825,10 @@ function downloadMethodologyDeck() {
     #deck-next-area{position:fixed;right:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
     #deck-prev-area:hover,#deck-next-area:hover{opacity:1;background:rgba(255,255,255,0.04)}
     #deck-prev-area span,#deck-next-area span{font-size:2rem;color:#8B949E}
-    .slide-limit-note{position:absolute;bottom:12px;left:20px;right:20px;font-size:0.68rem;color:#888;text-align:center;padding-top:6px;border-top:1px solid #eee}
+    .slide-limit-note{position:absolute;bottom:12px;left:20px;right:20px;font-size:0.66rem;color:#6E7681;text-align:center;letter-spacing:0.04em;padding-top:6px;border-top:1px solid rgba(245,158,11,0.2)}
   `;
 
-  const _slimNote = `<div class="slide-limit-note">&#9888; Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
+  const _slimNote = `<div class="slide-limit-note">Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
 
   // Slide 1: Cover
   const ms1 = `
@@ -5049,10 +5118,10 @@ function downloadSlideDeck() {
     #deck-next-area{position:fixed;right:0;top:0;width:80px;height:100vh;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
     #deck-prev-area:hover,#deck-next-area:hover{opacity:1;background:rgba(255,255,255,0.04)}
     #deck-prev-area span,#deck-next-area span{font-size:2rem;color:#8B949E}
-    .slide-limit-note{position:absolute;bottom:12px;left:20px;right:20px;font-size:0.68rem;color:#888;text-align:center;padding-top:6px;border-top:1px solid #333}
+    .slide-limit-note{position:absolute;bottom:12px;left:20px;right:20px;font-size:0.66rem;color:#6E7681;text-align:center;letter-spacing:0.04em;padding-top:6px;border-top:1px solid rgba(245,158,11,0.2)}
   `;
 
-  const _slimNoteSD = `<div class="slide-limit-note">&#9888; Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
+  const _slimNoteSD = `<div class="slide-limit-note">Regex-based triage &middot; ~92% confidence &middot; Not a substitute for on-site review &middot; Checklist not exhaustive &middot; darshan.meel@gmail.com</div>`;
 
   const slidesHTML = slides.map((s, i) =>
     `<div class="slide${i === 0 ? ' active' : ''}" data-idx="${i}">${s.html}${_slimNoteSD}</div>`
