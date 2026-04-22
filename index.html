@@ -5322,6 +5322,12 @@ function computeEffortBand() {
     if (m.cursorCount     > 0) code += Math.min(2,   0.25 * m.cursorCount);
     code = Math.max(0.5, code);
   }
+
+  // Target-dialect affinity affects code rewrite effort.
+  // MSSQL is syntactically closer to Sybase (0.75x). PostgreSQL is baseline (1.0x).
+  // Oracle requires more translation work (1.25x).
+  code *= (TARGET_CODE_MULTIPLIER[state.targetDialect] || 1.0);
+
   code *= mult;
 
   // 2. Data migration — schema DDL, BCP/COPY, validation. Scales mildly with object count.
