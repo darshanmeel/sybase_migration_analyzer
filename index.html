@@ -1494,6 +1494,120 @@
     font-size: 1rem; color: var(--text); font-style: normal; margin-bottom: 6px; font-weight: 500;
   }
 
+  /* ---- FAQ TAB ---- */
+  .faq-hero {
+    background: linear-gradient(135deg, rgba(0,112,242,0.10), rgba(0,112,242,0.02));
+    border: 1px solid rgba(0,112,242,0.28);
+    border-left: 3px solid #0070F2;
+    border-radius: 4px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+  }
+  .faq-hero-tag {
+    font-family: var(--mono); font-size: 0.68rem;
+    color: #60A5FA; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .faq-hero h2 {
+    color: var(--text); font-size: 1.4rem; font-weight: 600;
+    margin-bottom: 10px; letter-spacing: -0.01em;
+  }
+  .faq-hero p { color: var(--text); line-height: 1.6; font-size: 0.9rem; }
+  .faq-hero a { color: var(--accent); }
+  .faq-cap-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 26px;
+  }
+  @media (max-width: 780px) {
+    .faq-cap-grid { grid-template-columns: 1fr; }
+  }
+  .faq-cap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 22px 20px;
+    box-shadow: var(--shadow-card);
+  }
+  .faq-cap-can    { border-left: 3px solid var(--color-low); }
+  .faq-cap-cannot { border-left: 3px solid var(--color-veryhigh); }
+  .faq-cap-head {
+    font-family: var(--mono); font-size: 0.72rem;
+    letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .faq-cap-can .faq-cap-head    { color: var(--color-low); }
+  .faq-cap-cannot .faq-cap-head { color: var(--color-veryhigh); }
+  .faq-cap-card ul { padding-left: 20px; margin: 0; list-style: none; }
+  .faq-cap-card li {
+    padding: 5px 0; font-size: 0.85rem; color: var(--text);
+    position: relative;
+  }
+  .faq-cap-can li::before {
+    content: "\2713"; color: var(--color-low); margin-right: 10px;
+    font-weight: 700; margin-left: -20px; display: inline-block; width: 20px;
+  }
+  .faq-cap-cannot li::before {
+    content: "\2715"; color: var(--color-veryhigh); margin-right: 10px;
+    font-weight: 700; margin-left: -20px; display: inline-block; width: 20px;
+  }
+  .faq-section { margin-bottom: 28px; }
+  .faq-section h3 {
+    font-family: var(--mono);
+    font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .faq-item > summary {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    list-style: none;
+    position: relative;
+    padding-right: 42px;
+    transition: background 0.15s ease;
+  }
+  .faq-item > summary::-webkit-details-marker { display: none; }
+  .faq-item > summary::after {
+    content: "+";
+    position: absolute; right: 18px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 300;
+    transition: transform 0.2s ease;
+  }
+  .faq-item[open] > summary::after { content: "\2212"; }
+  .faq-item[open] > summary { background: var(--surface-raised); border-bottom: 1px solid var(--border); }
+  .faq-item:hover > summary { background: var(--surface-hover); }
+  .faq-item .faq-body {
+    padding: 14px 18px 18px;
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .faq-item .faq-body ul,
+  .faq-item .faq-body ol { padding-left: 22px; margin: 8px 0; }
+  .faq-item .faq-body li { margin-bottom: 4px; }
+  .faq-item .faq-body code {
+    background: var(--bg); color: var(--accent);
+    padding: 1px 6px; border-radius: 3px;
+    font-family: var(--mono); font-size: 0.88em;
+    border: 1px solid var(--border);
+  }
+  .faq-item .faq-body a { color: var(--accent); }
+
   /* ---- ABOUT TAB ---- */
   .about-hero {
     background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02));
@@ -1719,6 +1833,7 @@
   <button data-tab="checklist" onclick="switchTab('checklist')"><span class="tab-bracket">[</span>checklist<span class="tab-bracket">]</span></button>
   <button data-tab="sqlref" onclick="switchTab('sqlref')"><span class="tab-bracket">[</span>sql.ref<span class="tab-bracket">]</span></button>
   <button data-tab="reports" onclick="switchTab('reports')"><span class="tab-bracket">[</span>reports<span class="tab-bracket">]</span></button>
+  <button data-tab="faq" onclick="switchTab('faq')"><span class="tab-bracket">[</span>faq<span class="tab-bracket">]</span></button>
   <button data-tab="about" onclick="switchTab('about')"><span class="tab-bracket">[</span>about<span class="tab-bracket">]</span></button>
   <button data-tab="limitations" class="warn" onclick="switchTab('limitations')"><span class="tab-bracket">[</span>limitations<span class="tab-bracket">]</span></button>
 </nav>
@@ -1922,6 +2037,252 @@ GO"></textarea>
       </div>
     </div>
   </div>
+</section>
+
+<!-- ===== TAB: FAQ ===== -->
+<section class="tab-panel" id="tab-faq">
+
+  <div class="faq-hero">
+    <div class="faq-hero-tag">FAQ &middot; Capabilities &middot; Limitations</div>
+    <h2>Frequently Asked Questions</h2>
+    <p>What the tool does, what it doesn't, and how to use it well. Click a question to expand the answer. A shorter, dedicated Limitations view is in the <a href="#" onclick="switchTab('limitations');return false;" style="color:var(--accent)">Limitations tab</a>.</p>
+  </div>
+
+  <div class="faq-cap-grid">
+    <div class="faq-cap-card faq-cap-can">
+      <div class="faq-cap-head">&#10003; WHAT IT CAN DO</div>
+      <ul>
+        <li>Analyze pasted Sybase T-SQL against 60+ regex rules and score each object</li>
+        <li>Offer rewrite hints for <b>three</b> migration targets: PostgreSQL, SQL Server, Oracle</li>
+        <li>Walk a 70-item phase-based migration readiness checklist</li>
+        <li>Compute three live scores (Code Complexity, Readiness, Composite Risk)</li>
+        <li>Break effort into Code / Data / Infra person-days (App migration flagged out-of-scope)</li>
+        <li>Export Technical Report, Executive Summary, Slide Deck, JSON, and Methodology Deck</li>
+        <li>Provide a 27-query Sybase discovery SQL library you can copy &amp; run</li>
+        <li>Run fully offline — no network calls, no storage, no telemetry</li>
+      </ul>
+    </div>
+    <div class="faq-cap-card faq-cap-cannot">
+      <div class="faq-cap-head">&#10005; WHAT IT CANNOT DO</div>
+      <ul>
+        <li>Not a SQL parser — pure regex; won't catch everything, can false-positive on unusual formatting</li>
+        <li>Does not execute SQL against any database</li>
+        <li>Does not produce production-ready rewrites — rewrite hints are starting points</li>
+        <li>Does not verify checklist answers — all are self-reported</li>
+        <li>Does not capture business-logic complexity (only syntax patterns)</li>
+        <li>Does not persist state between sessions (export JSON to resume)</li>
+        <li>Does not support multi-file upload (concatenate before pasting)</li>
+        <li>Does not replace on-site DBA review or manual code inspection</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <h3>Getting started</h3>
+
+    <details class="faq-item" open>
+      <summary>What is this tool for?</summary>
+      <div class="faq-body">It operationalizes a Sybase&rarr;PostgreSQL / SQL Server / Oracle migration evaluation. You paste DDL, answer a structured readiness checklist, and the tool produces three live risk scores, a code-complexity heat map, a person-day effort breakdown, and a set of HTML / Markdown / JSON / slide-deck exports suitable for handing to an engineering team or an executive sponsor.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Do I need to install anything?</summary>
+      <div class="faq-body">No. The entire tool is a single <code>index.html</code> file. Open it directly in a browser — or use the hosted GitHub Pages copy. There is no backend, no database, and no package to install.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Does any of my data leave the browser?</summary>
+      <div class="faq-body">No. There are zero <code>fetch()</code> calls, zero CDN references, and zero external resources. The tool does not use <code>localStorage</code> or <code>sessionStorage</code> either. Your client's SQL and checklist answers never leave the tab. Closing the tab clears everything — if you need to resume a session, export the Raw JSON from the Reports tab and re-import (planned).</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>What's the fastest way to get a report?</summary>
+      <div class="faq-body">
+        <ol>
+          <li>Paste Sybase T-SQL on the <b>Analysis</b> tab and click Analyze.</li>
+          <li>Answer whatever you can on the <b>Checklist</b> tab. You don't need 100%.</li>
+          <li>Go to the <b>Reports</b> tab and click Technical Report or Executive Summary.</li>
+        </ol>
+        You'll get a fully branded HTML report in under a minute. For an analysis-only or checklist-only run, you can skip either of the first two steps — the report will just mark the missing side as "Not assessed".
+      </div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Analysis &amp; rules</h3>
+
+    <details class="faq-item">
+      <summary>What does the analyzer actually detect?</summary>
+      <div class="faq-body">60+ regex patterns covering Sybase-specific functions (ISNULL, GETDATE, CHARINDEX&hellip;), globals (<code>@@identity</code>, <code>@@rowcount</code>&hellip;), dynamic SQL (<code>EXEC()</code>, <code>sp_executesql</code>), cross-database refs (<code>db..table</code>), temp tables (<code>#temp</code>, <code>##temp</code>), locking hints (<code>NOLOCK</code>, <code>HOLDLOCK</code>, <code>READPAST</code>&hellip;), cursors, GOTO, RAISERROR/PRINT, data types (MONEY, TEXT/IMAGE, TINYINT, TIMESTAMP row-version), legacy syntax (TOP, SELECT INTO #temp, pre-ANSI <code>*=</code> joins, COMPUTE, SET ROWCOUNT, USE &lt;db&gt;), identity, trigger pseudo-tables, transaction control, and deprecated DDL (<code>sp_addtype</code>, CREATE DEFAULT, CREATE RULE). See the full catalog on the About tab.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Why regex instead of a real parser?</summary>
+      <div class="faq-body">Regex is cheap, fast, embedded inline in the HTML, and good enough for triage. A real parser (ANTLR, tree-sitter) would need a build step, a larger bundle, and would still need dialect-specific grammars. For the triage-and-scope use case, regex gets you 90% of the way for 5% of the cost. The tradeoff: false positives on unusual formatting, and false negatives on constructs outside the rule set.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Can I use this for non-Sybase source code?</summary>
+      <div class="faq-body">Partially. The rule set is tuned for Sybase T-SQL, so rule matches will be noisy on Oracle / MySQL / DB2 / Informix sources. But the <b>checklist, SQL Library, scoring model, reports, and slide decks</b> are dialect-neutral and reusable. If that's your situation, skip the Analysis tab and work the Checklist — you'll still get a Migration Readiness score, a Composite Risk, an effort breakdown, and both report exports.</div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Target dialect (PostgreSQL / SQL Server / Oracle)</h3>
+
+    <details class="faq-item">
+      <summary>How do I switch migration targets?</summary>
+      <div class="faq-body">On the <b>Analysis</b> tab, use the Target dialect segmented control (PostgreSQL / SQL Server / Oracle). The heat-map tooltips, per-object detail blocks, rule catalog, and Reports tab re-render in place. You don't need to re-analyze.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Which target is easiest to migrate to from Sybase?</summary>
+      <div class="faq-body"><b>SQL Server</b> is the closest cousin — shares the same T-SQL ancestry, so many constructs carry over unchanged (GETDATE, ISNULL, @@rowcount, TRY/CATCH). <b>PostgreSQL</b> requires the most rewrite volume but has the richest modern feature set and is license-friendly. <b>Oracle</b> is the most distinctive — PL/SQL semantics, sequence+trigger patterns for identity, savepoint-based nested transactions, and a different exception model. The Composite Risk score is the same regardless of target; what changes is the per-rule rewrite cost.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Are the rewrite hints production-ready?</summary>
+      <div class="faq-body">No. They're <em>starting points</em>. Every real rewrite needs human judgement about data types, NULL handling, transaction semantics, error codes, and performance characteristics. Use the hints to scope and estimate — not to paste directly into production.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>What about MySQL / DB2 / Snowflake / BigQuery targets?</summary>
+      <div class="faq-body">Not in the current rule set. The scoring model, checklist, and report structure are all dialect-neutral so the tool is still useful for those projects, but per-rule rewrite hints are Sybase&rarr;{PG, MSSQL, Oracle} only. If you'd like a rule pack for another target, email <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a>.</div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Scores &amp; confidence</h3>
+
+    <details class="faq-item">
+      <summary>How is Code Complexity computed?</summary>
+      <div class="faq-body">Each detected pattern has a score (0 for ANSI-portable rules, up to 5 for dynamic SQL). Per-object scores are summed and bucketed into Low / Medium / High / Very High. The 0&ndash;100 Code Complexity score is a normalised average of object scores, sized to the LOC footprint. Tiers: 0&ndash;30 LOW, 31&ndash;55 MEDIUM, 56&ndash;80 HIGH, 81&ndash;100 VERY HIGH.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>How is Migration Readiness computed?</summary>
+      <div class="faq-body">Sum the <code>riskWeight</code> (1&ndash;5) of every <em>unchecked</em> checklist item, divide by the total possible weight, multiply by 100. Higher = more gap. Tiers: 0&ndash;25 READY, 26&ndash;50 MOSTLY READY, 51&ndash;75 MATERIAL GAPS, 76&ndash;100 SEVERE GAPS. Unfilled = "Not assessed" — it does not default to zero, so an empty checklist does not flatter the score.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>What is the Composite Risk?</summary>
+      <div class="faq-body"><code>0.45 &times; CodeComplexity + 0.55 &times; Readiness</code>. Readiness is weighted slightly higher because human and process risks are harder to recover from than code. If only one input is available, the Composite equals that input with a caveat.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Where does the confidence number come from?</summary>
+      <div class="faq-body">It is <b>computed dynamically</b>, not hardcoded. Starts at 55% baseline. +20% if the analyzer has run, +5% if the analyzed SQL actually contains Sybase-specific patterns (a dialect sanity check), -15% if it has been analyzed but no Sybase patterns were found (likely wrong dialect pasted). Up to +20% scaled by how much of the checklist you've answered. Floor 40%, ceiling 95%. The number in the header is live.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>What's a "red flag" item?</summary>
+      <div class="faq-body">Checklist items with <code>redFlagIfUnchecked: true</code> are the ones that would most likely cause the project to slip or fail if left unresolved — missing backups, no original architect, no source control, untested rollback procedure. They show a red marker next to the question and surface in the Top Delay Factors section of every report regardless of their raw weight.</div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Effort model</h3>
+
+    <details class="faq-item">
+      <summary>How are effort numbers calculated?</summary>
+      <div class="faq-body">Effort is split into three workstreams — <b>Code</b>, <b>Data</b>, <b>Infra</b> — plus <b>App</b> which is flagged out-of-scope. Code uses per-object bucket days (Low 0.15 / Medium 0.5 / High 1.5 / Very High 3 person-days) plus small bumps for dynamic SQL and cursor usage. Data starts at 2 person-days and scales mildly with object count. Infra starts at 4 person-days with a premium for larger platforms. All three are then multiplied by a readiness inflation factor (up to ~40% extra for a SEVERE GAPS readiness score).</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Why is App migration out of scope?</summary>
+      <div class="faq-body">Application changes — connection strings, driver swaps, ORM configuration, endpoint updates — are almost always owned by a different team (usually the application engineering team) and require knowledge the database migration team doesn't have. Pretending to estimate them produces misleading totals. The report flags app migration explicitly as OUT OF SCOPE so the reader knows to get a separate estimate.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Do the per-object days add up to the total?</summary>
+      <div class="faq-body">The per-object heat-map days equal the raw code-migration sum. The Reports tab Code Migration card also adds dynamic-SQL / cursor bumps and applies the readiness inflation multiplier, so its number is typically slightly higher than the heat-map column sum. Both come from the same <code>computeEffortBand()</code> function.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>How do I adjust for my team's actual throughput?</summary>
+      <div class="faq-body">Treat the number as the tool's calibrated baseline for a mid-level team. If your team is very senior, scale down 20&ndash;30%. If new to PL/pgSQL, scale up 20&ndash;40%. Always layer 20&ndash;30% contingency for UAT and go-live stabilisation on top — the tool does not include this.</div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Reports &amp; exports</h3>
+
+    <details class="faq-item">
+      <summary>Which report do I send to whom?</summary>
+      <div class="faq-body"><b>Technical Report</b> &rarr; the engineering team or DBA. Full analyzer findings, per-object heat map, rule catalog, and phase-by-phase checklist answers with notes. <b>Executive Summary</b> &rarr; the sponsor or decision-maker. 2&ndash;3 pages with three scores, top-3 macro risks, effort band by workstream, and an approach recommendation. <b>Slide Deck</b> &rarr; to present live on a call. Instagram-style carousel, keyboard nav. <b>Methodology Deck</b> &rarr; to the client at the <em>start</em> of the engagement, before any analysis has been run.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>How do I export to PDF?</summary>
+      <div class="faq-body">Open any HTML export in a browser and use Print &rarr; Save as PDF. The exports have a dedicated print stylesheet: the SAP-blue backdrop flattens to solid dark, margins tighten, and the content fills the page edge-to-edge.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>What's in the Raw JSON?</summary>
+      <div class="faq-body">The full state dump: meta (client, analyst, dates), scores, codeMetrics, all checklist answers with notes, computed delay factors, and effort band. Intended for archival or re-importing into a different tool. Re-import into this tool is on the roadmap.</div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Privacy &amp; limitations</h3>
+
+    <details class="faq-item">
+      <summary>Where does the SQL go after I paste it?</summary>
+      <div class="faq-body">Into a JavaScript variable in your browser tab. Nowhere else. No <code>fetch</code>, no <code>XMLHttpRequest</code>, no analytics, no telemetry. DevTools &rarr; Network &rarr; reload will show zero external requests.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Does refreshing the page lose my work?</summary>
+      <div class="faq-body">Yes. There is deliberately no persistence. For multi-session engagements: export Raw JSON at the end of each session. Full re-import support is planned.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>When should I NOT trust the output?</summary>
+      <div class="faq-body">
+        <ul>
+          <li>Malformed or minified SQL &mdash; regex can't recover from it</li>
+          <li>Source that isn't actually Sybase T-SQL &mdash; the analyzer will still match generic patterns but rewrite hints may be misleading</li>
+          <li>Features outside the rule set &mdash; custom extended stored procs, Sybase IQ columnar analytics, Replication Server topology, undocumented thick-client dependencies</li>
+          <li>A mostly-empty checklist &mdash; the readiness score requires self-reported data to mean anything</li>
+          <li>Any situation where a stakeholder is treating the report as a substitute for an on-site DBA review. It isn't.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>How should I use the output in a conversation with a DBA?</summary>
+      <div class="faq-body">As a scoping aid. "The analyzer flags ~40 Sybase-specific calls in these 7 procedures, 2 of which use dynamic SQL and 1 uses cursors. What's your take on whether that's representative of the rest of the platform?" is a much better opener than "how complex is your platform?" The tool gives you a concrete starting point for the real conversation.</div>
+    </details>
+  </div>
+
+  <div class="faq-section">
+    <h3>Feedback &amp; roadmap</h3>
+
+    <details class="faq-item">
+      <summary>How do I suggest a new rule or checklist item?</summary>
+      <div class="faq-body">Email <a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a> &mdash; include the construct / question, why it matters, and (for checklist items) a suggested risk weight (1&ndash;5). There's a pre-filled template linked from the README.</div>
+    </details>
+
+    <details class="faq-item">
+      <summary>What's on the roadmap?</summary>
+      <div class="faq-body">
+        <ul>
+          <li>Raw-JSON re-import so you can resume an engagement across days</li>
+          <li>Additional target dialects (MySQL, Snowflake, BigQuery rule packs)</li>
+          <li>Additional source dialects (Oracle PL/SQL, MSSQL T-SQL rule packs)</li>
+          <li>Multi-file upload</li>
+          <li>Per-object PostgreSQL rewrite <em>drafts</em> (not just hints) for the simplest constructs</li>
+        </ul>
+        None of this is promised &mdash; feedback drives priority.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Who built this?</summary>
+      <div class="faq-body">Darshan Singh (<a href="mailto:darshan.meel@gmail.com">darshan.meel@gmail.com</a>). Methodology notes and build spec are kept local in <code>.internal/</code> and not tracked in git. Credit appears on every export by default; use the gear icon in the header to hide it per session.</div>
+    </details>
+  </div>
+
 </section>
 
 <!-- ===== TAB: ABOUT ===== -->
