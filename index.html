@@ -108,7 +108,7 @@
   }
 
   /* ---- INPUT PANEL ---- */
-  #input-panel textarea {
+  #sql-analysis-card textarea {
     width: 100%;
     height: 220px;
     font-family: var(--mono);
@@ -752,7 +752,7 @@
     box-shadow: var(--shadow-card);
   }
   .card-title { color: var(--text-dim); font-weight: 500; letter-spacing: 0.14em; }
-  #input-panel textarea {
+  #sql-analysis-card textarea {
     background: var(--bg);
     color: var(--text);
     border-color: var(--border);
@@ -1895,7 +1895,7 @@
   </div>
 
   <!-- INPUT PANEL -->
-  <div class="card" id="input-panel">
+  <div class="card" id="sql-analysis-card">
     <div class="card-title">Input — Paste Sybase T-SQL or Upload a File</div>
     <textarea id="sql-input" placeholder="Paste your Sybase T-SQL here...
 Example:
@@ -2512,6 +2512,7 @@ function setTargetDialect(t) {
   if (state.activeTab === 'reports') renderReports();
   if (typeof renderRuleCatalog === 'function')  renderRuleCatalog();
   if (typeof showToast === 'function') showToast('Target: ' + TARGETS[t].label);
+  updateDialectStrings();
 }
 
 // ============================================================
@@ -2528,6 +2529,30 @@ function switchTab(name) {
   window.scrollTo(0, 0);
   // Lazy render tabs that depend on current state
   if (name === 'reports') renderReports();
+}
+
+// Update dialect-dependent UI strings (subtitle, input card title, source pill)
+function updateDialectStrings() {
+  const src = SOURCES[state.sourceDialect];
+  const tgt = TARGETS[state.targetDialect];
+
+  // Update the header subtitle
+  const subtitle = document.querySelector('#app-header .title-block p');
+  if (subtitle) {
+    subtitle.textContent = `Migration evaluation · ${src.label} → ${tgt.label} · regex + structured checklist · offline`;
+  }
+
+  // Update input card title
+  const inputTitle = document.querySelector('#sql-analysis-card .card-title');
+  if (inputTitle) {
+    inputTitle.textContent = `Input — Paste ${src.label} T-SQL or Upload a File`;
+  }
+
+  // Update source pill label (from Task A2)
+  const sourceLabel = document.getElementById('source-label');
+  if (sourceLabel) {
+    sourceLabel.textContent = src.label;
+  }
 }
 
 // ============================================================
@@ -6257,6 +6282,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSQLLibrary();
   renderRuleCatalog();
   updateScoreStrip();           // hidden until data exists
+  // Initialize dialect-dependent display strings
+  updateDialectStrings();
   // Keyboard nav for the Reports-tab carousel (when Reports tab is active)
   document.addEventListener('keydown', (ev) => {
     if (state.activeTab !== 'reports') return;
