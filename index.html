@@ -3539,6 +3539,20 @@ function stat(val, label) {
 
 // ============================================================
 // RENDER HEAT MAP
+// Compute target-adjusted per-object score and bucket.
+// Rules that are native to the target get a lower (or zero) score.
+function computeTargetObjectScore(matchesByRule, lines, tgt) {
+  let adjustedRuleScore = 0;
+  for (const m of matchesByRule) {
+    if (m.rule.category === 'ansi_good') continue;
+    const override    = RULE_TARGET_SCORE_OVERRIDE[m.rule.id];
+    const targetScore = (override && override[tgt] != null) ? override[tgt] : m.rule.score;
+    adjustedRuleScore += targetScore;  // once per rule that fires in this object
+  }
+  const score = adjustedRuleScore + locScore(lines);
+  return { score, bucket: bucket(score) };
+}
+
 // ============================================================
 function renderHeatMap(results) {
   renderTableRows(results);
@@ -3549,9 +3563,12 @@ function renderHeatMap(results) {
 function renderTableRows(results) {
   const tbody = document.getElementById('heatmap-tbody');
   tbody.innerHTML = '';
+  const tgt = state.targetDialect || 'postgres';
   const sorted = sortResults([...results]);
   for (let i = 0; i < sorted.length; i++) {
     const r = sorted[i];
+    // Compute target-adjusted score for this object
+    const adj = r.matchesByRule ? computeTargetObjectScore(r.matchesByRule, r.lines, tgt) : { score: r.totalScore, bucket: r.bucket };
     const tr = document.createElement('tr');
     tr.innerHTML =
       `<td class="obj-name-cell" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</td>` +
@@ -3562,9 +3579,9 @@ function renderTableRows(results) {
       `<td class="${r.hasDynamicSQL ? 'flag-yes' : 'flag-no'}">${r.hasDynamicSQL ? 'Yes' : 'No'}</td>` +
       `<td class="${r.hasCrossDB ? 'flag-yes' : 'flag-no'}">${r.hasCrossDB ? 'Yes' : 'No'}</td>` +
       `<td class="${r.hasCursor ? 'flag-yes' : 'flag-no'}">${r.hasCursor ? 'Yes' : 'No'}</td>` +
-      `<td><strong>${r.totalScore}</strong></td>` +
-      `<td><span class="bucket-badge ${r.bucket.cls}">${r.bucket.name}</span></td>` +
-      `<td>${r.bucket.days}</td>`;
+      `<td><strong>${adj.score}</strong></td>` +
+      `<td><span class="bucket-badge ${adj.bucket.cls}">${adj.bucket.name}</span></td>` +
+      `<td>${adj.bucket.days}</td>`;
     tr.onclick = () => jumpToDetail(results.indexOf(r));
     tbody.appendChild(tr);
   }
@@ -3638,23 +3655,25 @@ function buildLegend() {
 function renderDetails(results) {
   const container = document.getElementById('details-container');
   container.innerHTML = '';
+  const tgt = state.targetDialect || 'postgres';
   results.forEach((r, idx) => {
     const div = document.createElement('div');
     div.className = 'obj-detail';
     div.id = `obj-detail-${idx}`;
+    const adj = r.matchesByRule ? computeTargetObjectScore(r.matchesByRule, r.lines, tgt) : { score: r.totalScore, bucket: r.bucket };
 
     div.innerHTML =
       `<div class="obj-detail-header" onclick="toggleDetail(${idx})">
          <div class="obj-detail-title">
            <span class="obj-detail-name">${escapeHtml(r.name)}</span>
            <span class="type-badge type-${r.type}">${r.type}</span>
-           <span class="bucket-badge ${r.bucket.cls}">${r.bucket.name}</span>
+           <span class="bucket-badge ${adj.bucket.cls}">${adj.bucket.name}</span>
          </div>
          <div class="obj-detail-meta">
-           <span>Score: <strong>${r.totalScore}</strong></span>
+           <span>Score: <strong>${adj.score}</strong></span>
            <span>LOC: ${r.lines}</span>
            <span>Issues: ${r.totalIssues}</span>
-           <span>Est: ${r.bucket.effort}</span>
+           <span>Est: ${adj.bucket.effort}</span>
          </div>
        </div>
        <div class="obj-detail-body" id="obj-body-${idx}">
